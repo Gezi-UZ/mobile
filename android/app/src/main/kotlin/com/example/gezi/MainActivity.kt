@@ -1,4 +1,4 @@
-package com.example.ciyera_app
+package com.example.gezi
 
 import io.flutter.embedding.android.FlutterActivity
 

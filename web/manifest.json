@@ -1,6 +1,6 @@
 {
-    "name": "ciyera_app",
-    "short_name": "ciyera_app",
+    "name": "Gezi",
+    "short_name": "Gezi",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

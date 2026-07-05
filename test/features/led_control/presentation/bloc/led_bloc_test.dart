@@ -1,12 +1,12 @@
-import 'package:ciyera_app/core/errors/failures.dart';
-import 'package:ciyera_app/core/usecases/usecases.dart';
-import 'package:ciyera_app/features/led_control/domain/entities/led.dart';
-import 'package:ciyera_app/features/led_control/domain/repositories/led_repository.dart';
-import 'package:ciyera_app/features/led_control/domain/usecases/get_all_leds.dart';
-import 'package:ciyera_app/features/led_control/domain/usecases/toggle_led.dart';
-import 'package:ciyera_app/features/led_control/presentation/bloc/led_bloc.dart';
-import 'package:ciyera_app/features/led_control/presentation/bloc/led_event.dart';
-import 'package:ciyera_app/features/led_control/presentation/bloc/led_state.dart';
+import 'package:gezi/core/errors/failures.dart';
+import 'package:gezi/core/usecases/usecases.dart';
+import 'package:gezi/features/led_control/domain/entities/led.dart';
+import 'package:gezi/features/led_control/domain/repositories/led_repository.dart';
+import 'package:gezi/features/led_control/domain/usecases/get_all_leds.dart';
+import 'package:gezi/features/led_control/domain/usecases/toggle_led.dart';
+import 'package:gezi/features/led_control/presentation/bloc/led_bloc.dart';
+import 'package:gezi/features/led_control/presentation/bloc/led_event.dart';
+import 'package:gezi/features/led_control/presentation/bloc/led_state.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 

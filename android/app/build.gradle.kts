@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ciyera_app"
+    namespace = "com.example.gezi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "29.0.13113456"
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.ciyera_app"
+        applicationId = "com.example.gezi"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

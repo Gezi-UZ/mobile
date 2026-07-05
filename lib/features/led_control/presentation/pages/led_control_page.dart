@@ -24,7 +24,7 @@ class _LedControlPageState extends State<LedControlPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ciyera - LED Control'),
+        title: const Text('Gezi - LED Control'),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         actions: [
