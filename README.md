@@ -1,4 +1,4 @@
-# ciyera_app
+# Gezi
 
 A new Flutter project.
 
