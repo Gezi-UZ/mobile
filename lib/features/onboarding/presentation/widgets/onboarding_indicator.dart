@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/theme.dart';
 
 class OnboardingIndicator extends StatelessWidget {
   final int totalSteps;
@@ -23,7 +24,7 @@ class OnboardingIndicator extends StatelessWidget {
           height: 6.0,
           margin: EdgeInsets.only(right: index < totalSteps - 1 ? 8.0 : 0.0),
           decoration: ShapeDecoration(
-            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.35),
+            color: isActive ? AppTheme.white : AppTheme.white.withValues(alpha: 0.35),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(100),
             ),

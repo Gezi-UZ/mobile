@@ -23,8 +23,8 @@ class OnboardingContent extends StatelessWidget {
             height: 200,
             child: Center(
               child: Container(
-                width: 96,
-                height: 96,
+                width: step.imageWidth,
+                height: step.imageHeight,
                 clipBehavior: Clip.antiAlias,
                 decoration: ShapeDecoration(
                   color: Colors.transparent,
@@ -32,18 +32,21 @@ class OnboardingContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                 ),
-                child: step.imageUrl.endsWith('.svg')
-                    ? SvgPicture.asset(
-                        step.imageUrl,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.asset(
-                        step.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(color: Colors.grey);
-                        },
-                      ),
+                child: step.customImageWidget ??
+                    (step.imageUrl != null
+                        ? (step.imageUrl!.endsWith('.svg')
+                            ? SvgPicture.asset(
+                                step.imageUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                step.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(color: Colors.grey);
+                                },
+                              ))
+                        : const SizedBox()),
               ),
             ),
           ),
@@ -51,14 +54,9 @@ class OnboardingContent extends StatelessWidget {
           Text(
             step.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 48,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w700,
-              height: 1.25,
-              letterSpacing: -1.20,
-            ),
+            style: step.isLargeTitle
+                ? Theme.of(context).textTheme.displayLarge
+                : Theme.of(context).textTheme.displayMedium,
           ),
           const SizedBox(height: 12),
           ConstrainedBox(
@@ -66,13 +64,7 @@ class OnboardingContent extends StatelessWidget {
             child: Text(
               step.subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.80),
-                fontSize: 14,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w400,
-                height: 1.63,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
         ],

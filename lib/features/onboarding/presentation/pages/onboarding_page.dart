@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../domain/entities/onboarding_step_entity.dart';
 import '../widgets/onboarding_content.dart';
 import '../widgets/onboarding_indicator.dart';
 import '../widgets/onboarding_primary_button.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../injection_container.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -20,9 +24,38 @@ class _OnboardingPageState extends State<OnboardingPage> {
     const OnboardingStepEntity(
       title: 'Gezi',
       subtitle: 'Energia sem fronteiras de distância.',
-      imageUrl: 'assets/images/gezi-logo.svg',
+      imageUrl: 'assets/images/gezi-logo.png',
+      isLargeTitle: true,
+    ),
+    const OnboardingStepEntity(
+      title: 'Recarregue de onde estiver',
+      subtitle:
+          'Pague via M-Pesa ou e-Mola e o crédito chega directamente ao contador —em qualquer lugar e a qualquer momento',
+      backgroundColors: [AppTheme.darkOrange, AppTheme.darkerOrange],
+      footerText: 'ELECTRICIDADE DE MOÇAMBIQUE',
+      imageUrl: 'assets/images/onboarding-content1.svg',
+      imageWidth: 220.0,
+      imageHeight: 200.0,
+    ),
+    const OnboardingStepEntity(
+      title: 'Controle o seu saldo',
+      subtitle:
+          'Monitorize o consumo em tempo real, receba alertas de saldo baixo e veja o histórico completo.',
+      backgroundColors: [AppTheme.primaryOrange, AppTheme.lightOrange],
+      footerText: 'ELECTRICIDADE DE MOÇAMBIQUE',
+      imageUrl: 'assets/images/onboarding-content-2.svg',
+      imageWidth: 220.0,
+      imageHeight: 200.0,
     ),
   ];
+
+  Future<void> _completeOnboarding() async {
+    final prefs = sl<SharedPreferences>();
+    await prefs.setBool('has_seen_onboarding', true);
+    if (mounted) {
+      context.go('/login');
+    }
+  }
 
   void _onNextPressed() {
     if (_currentIndex < _steps.length - 1) {
@@ -31,25 +64,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // TODO: Handle completion (Navigate to Home or Auth)
+      _completeOnboarding();
     }
   }
 
   void _onSkipPressed() {
-    // TODO: Handle skip (Navigate to Home or Auth)
+    _completeOnboarding();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment(0.32, 0.00),
-            end: Alignment(0.68, 1.00),
-            colors: [Color(0xFFFF6A00), Color(0xFFE84300)],
+            begin: const Alignment(0.32, 0.00),
+            end: const Alignment(0.68, 1.00),
+            colors: _steps[_currentIndex].backgroundColors,
           ),
         ),
         child: SafeArea(
@@ -70,7 +104,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 32,
+                bottom: 56,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Column(
@@ -84,29 +118,40 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         const SizedBox(height: 24),
                       ],
                       OnboardingPrimaryButton(
-                        text: 'Começar', // Will be changed based on step if needed
+                        text: _currentIndex == 0
+                            ? 'Começar'
+                            : _currentIndex == 1
+                                ? 'Próximo'
+                                : 'Entrar',
                         onPressed: _onNextPressed,
                       ),
                     ],
                   ),
                 ),
               ),
-              Positioned(
-                top: 16,
-                right: 24,
-                child: TextButton(
-                  onPressed: _onSkipPressed,
-                  child: Text(
-                    'Ignorar',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
+              if (_currentIndex < _steps.length - 1)
+                Positioned(
+                  top: 16,
+                  right: 24,
+                  child: TextButton(
+                    onPressed: _onSkipPressed,
+                    child: Text(
+                      'Ignorar',
+                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ),
                 ),
-              ),
+              if (_steps[_currentIndex].footerText != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 16,
+                  child: Text(
+                    _steps[_currentIndex].footerText!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
             ],
           ),
         ),

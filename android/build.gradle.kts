@@ -19,6 +19,20 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+subprojects {
+    val setNdk = {
+        val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+        android?.ndkVersion = "29.0.13113456"
+    }
+    if (project.state.executed) {
+        setNdk()
+    } else {
+        project.afterEvaluate {
+            setNdk()
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

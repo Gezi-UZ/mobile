@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'injection_container.dart' as di;
+import 'core/routes/app_router.dart';
+import 'core/theme/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await di.init();
+  
+  final prefs = di.sl<SharedPreferences>();
+  AppRouter.init(prefs);
   
   runApp(const MyApp());
 }
@@ -14,18 +20,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Gezi',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Gezi App'),
-        ),
-      ),
+      theme: AppTheme.themeData,
+      routerConfig: AppRouter.router,
     );
   }
 }

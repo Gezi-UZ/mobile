@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/theme.dart';
 
 class OnboardingPrimaryButton extends StatelessWidget {
   final String text;
@@ -18,11 +19,11 @@ class OnboardingPrimaryButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: ShapeDecoration(
-          color: Colors.white.withValues(alpha: 0.20),
+          color: AppTheme.white.withValues(alpha: 0.20),
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 1.11,
-              color: Colors.white.withValues(alpha: 0.25),
+              color: AppTheme.white.withValues(alpha: 0.25),
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -31,13 +32,7 @@ class OnboardingPrimaryButton extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-              height: 1.50,
-            ),
+            style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
       ),
