@@ -30,7 +30,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     const OnboardingStepEntity(
       title: 'Recarregue de onde estiver',
       subtitle:
-          'Pague via M-Pesa ou e-Mola e o crédito chega directamente ao contador —em qualquer lugar e a qualquer momento',
+          'Pague via M-Pesa ou e-Mola e o crédito chega directamente ao contador — em qualquer lugar e a qualquer momento',
       backgroundColors: [AppTheme.darkOrange, AppTheme.darkerOrange],
       footerText: 'ELECTRICIDADE DE MOÇAMBIQUE',
       imageUrl: 'assets/images/onboarding-content1.svg',
@@ -121,8 +121,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         text: _currentIndex == 0
                             ? 'Começar'
                             : _currentIndex == 1
-                                ? 'Próximo'
-                                : 'Entrar',
+                            ? 'Próximo'
+                            : 'Entrar',
                         onPressed: _onNextPressed,
                       ),
                     ],

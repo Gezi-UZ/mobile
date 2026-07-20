@@ -11,3 +11,10 @@ class NetworkException implements Exception {
   
   NetworkException([this.message = 'Network error']);
 }
+
+/// Exception thrown for local data/cache errors
+class CacheException implements Exception {
+  final String message;
+
+  CacheException([this.message = 'Cache error']);
+}

@@ -7,8 +7,8 @@ class UserProfileCard extends StatelessWidget {
 
   const UserProfileCard({
     super.key,
-    this.userName = 'Ana Machava',
-    this.phoneNumber = '+258 84 123 4567',
+    this.userName = 'Dai Wen Xuan',
+    this.phoneNumber = '+258 83 361 7829',
   });
 
   @override
@@ -48,19 +48,19 @@ class UserProfileCard extends StatelessWidget {
               Text(
                 userName,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.textColorDark,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
+                  color: AppTheme.textColorDark,
+                  fontWeight: FontWeight.w600,
+                  height: 1.0,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 phoneNumber,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textColorSecondary,
-                      fontSize: 12,
-                      height: 1.33,
-                    ),
+                  color: AppTheme.textColorSecondary,
+                  fontSize: 12,
+                  height: 1.33,
+                ),
               ),
             ],
           ),

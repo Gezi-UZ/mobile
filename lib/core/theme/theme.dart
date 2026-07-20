@@ -42,7 +42,7 @@ class AppTheme {
 
   static TextStyle displayMedium = GoogleFonts.inter(
     color: white,
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: FontWeight.w700,
     height: 1.25,
     letterSpacing: -0.75,

@@ -43,6 +43,17 @@ dependencies:
   go_router: ^17.3.0
   google_fonts: ^8.1.0
   shared_preferences: ^2.5.5
+  flutter_launcher_icons: ^0.14.4
+  local_auth: ^3.0.2
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/gezi-logo.png"
+  adaptive_icon_background: "#F97D1F"  # Cor de fundo do ícone adaptativo
+  adaptive_icon_foreground: "assets/images/gezi-logo.png"  # Imagem principal do ícone adaptativo
+  min_sdk_android: 21  # Requisito mínimo de SDK para ícones adaptativos
 
 dev_dependencies:
   flutter_test:

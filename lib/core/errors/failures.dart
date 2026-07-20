@@ -24,3 +24,8 @@ class NetworkFailure extends Failure {
 class ValidationFailure extends Failure {
   const ValidationFailure([super.message = 'Invalid data provided']);
 }
+
+/// Failure when local data/cache encounters an error
+class CacheFailure extends Failure {
+  const CacheFailure([super.message = 'Local cache error occurred']);
+}

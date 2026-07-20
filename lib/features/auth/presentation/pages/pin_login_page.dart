@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gezi/core/theme/theme.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/pin_input_field.dart';
@@ -30,17 +32,20 @@ class _PinLoginPageState extends State<PinLoginPage> {
   void _onLoginPressed() {
     if (_isPinComplete) {
       // Execute PIN authentication logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Autenticando PIN: ${_pinController.text}...'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Autenticando PIN: ${_pinController.text}...')),
+      // );
+      context.go('/home');
     }
   }
 
   void _onUseFingerprintPressed() {
     // Navigate or trigger biometric authentication
-    Navigator.of(context).pop();
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/login');
+    }
   }
 
   @override
@@ -66,28 +71,28 @@ class _PinLoginPageState extends State<PinLoginPage> {
               Text(
                 'Entrar com PIN',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: AppTheme.textColorDark,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      height: 1.33,
-                    ),
+                  color: AppTheme.textColorDark,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  height: 1.33,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Introduza o PIN de 6 dígitos que definiu quando criou a sua passkey.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textColorSecondary,
-                      fontSize: 14,
-                      height: 1.63,
-                    ),
+                  color: AppTheme.textColorSecondary,
+                  fontSize: 14,
+                  height: 1.63,
+                ),
               ),
               const SizedBox(height: 16),
 
               // User Profile Card
               const Center(
                 child: UserProfileCard(
-                  userName: 'Ana Machava',
-                  phoneNumber: '+258 84 123 4567',
+                  userName: 'Dai Wen Xuan',
+                  phoneNumber: '+258 83 361 7829',
                 ),
               ),
               const SizedBox(height: 40),
@@ -101,34 +106,6 @@ class _PinLoginPageState extends State<PinLoginPage> {
                 onCompleted: (pin) => _onLoginPressed(),
               ),
               const SizedBox(height: 12),
-
-              // Demo Text
-              Center(
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Demo: use ',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textColorSecondary,
-                              fontSize: 12,
-                              height: 1.33,
-                            ),
-                      ),
-                      TextSpan(
-                        text: '123456',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textColorDark,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              height: 1.33,
-                            ),
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
 
               const Spacer(),
 
@@ -157,17 +134,17 @@ class _PinLoginPageState extends State<PinLoginPage> {
                           : null,
                       color: _isPinComplete
                           ? null
-                          : const Color(0xFFCCCCCC).withValues(alpha: 0.5),
+                          : AppTheme.textColorDark.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       'Entrar',
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppTheme.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -186,10 +163,10 @@ class _PinLoginPageState extends State<PinLoginPage> {
                   label: Text(
                     'Usar impressão digital',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.primaryOrange,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: AppTheme.primaryOrange,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
