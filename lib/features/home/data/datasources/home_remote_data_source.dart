@@ -19,7 +19,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     // Stub — substituir pela chamada real à API.
     return MeterBalance(
       kwhBalance: 3.2,
-      meterId: 'CR...92',
+      meterId: '12345678901',
       isOnline: true,
       lastSyncAt: DateTime.now(),
       isLowBalance: true,

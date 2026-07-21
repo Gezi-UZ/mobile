@@ -28,6 +28,15 @@ import 'features/home/data/repositories/home_repository_impl.dart';
 import 'features/home/domain/usecases/get_meter_balance.dart';
 import 'features/home/domain/usecases/get_recent_recharges.dart';
 
+// Recharge
+import 'features/recharge/data/datasources/recharge_remote_data_source.dart';
+import 'features/recharge/data/repositories/recharge_repository_impl.dart';
+import 'features/recharge/domain/repositories/recharge_repository.dart';
+import 'features/recharge/domain/usecases/calculate_recharge_breakdown.dart';
+import 'features/recharge/domain/usecases/initiate_recharge.dart';
+import 'features/recharge/domain/usecases/apply_manual_code.dart';
+import 'features/recharge/presentation/bloc/recharge_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize all dependencies
@@ -49,6 +58,11 @@ Future<void> init() async {
       getMeterBalance: sl(),
       getRecentRecharges: sl(),
   ));
+  sl.registerFactory(() => RechargeBloc(
+        calculateRechargeBreakdown: sl(),
+        initiateRecharge: sl(),
+        applyManualCode: sl(),
+      ));
 
   // Use cases
   sl.registerLazySingleton(() => CheckBiometricsAvailability(sl()));
@@ -58,6 +72,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CreatePasskey(sl()));
   sl.registerLazySingleton(() => GetMeterBalance(sl()));
   sl.registerLazySingleton(() => GetRecentRecharges(sl()));
+  sl.registerLazySingleton(() => CalculateRechargeBreakdown(sl()));
+  sl.registerLazySingleton(() => InitiateRecharge(sl()));
+  sl.registerLazySingleton(() => ApplyManualCode(sl()));
 
   // Repository
   sl.registerLazySingleton<LocalAuthRepository>(
@@ -72,6 +89,13 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<HomeRepository>(
       () => HomeRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<RechargeRemoteDataSource>(
+      () => RechargeRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<RechargeRepository>(
+      () => RechargeRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Data sources

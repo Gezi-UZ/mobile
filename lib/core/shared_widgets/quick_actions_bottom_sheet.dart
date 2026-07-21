@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:go_router/go_router.dart';
 
 /// Abre o bottom sheet de acções rápidas via FAB do BottomNavBar.
 /// Uso: showModalBottomSheet(context: context, builder: (_) => const QuickActionsBottomSheet());
@@ -75,7 +76,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
             subtitle: 'Tenho um código de 20 dígitos para aplicar',
             onTap: () {
               Navigator.pop(context);
-              // TODO: context.push(AppRoutes.insertRechargeCode)
+              context.push('/recharge/code');
             },
           ),
           _QuickActionItem(
@@ -84,7 +85,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
             subtitle: 'Recarregar o contador de outra pessoa directamente',
             onTap: () {
               Navigator.pop(context);
-              // TODO: context.push(AppRoutes.rechargeForSomeone)
+              context.push('/recharge?someone=true');
             },
           ),
         ],

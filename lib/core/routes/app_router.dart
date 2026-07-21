@@ -11,6 +11,10 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/meter/presentation/pages/meter_list_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/recharge/presentation/pages/recharge_history_page.dart';
+import '../../features/recharge/presentation/pages/recharge_page.dart';
+import '../../features/recharge/presentation/pages/recharge_status_page.dart';
+import '../../features/recharge/presentation/pages/recharge_receipt_page.dart';
+import '../../features/recharge/presentation/pages/recharge_by_code_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
 
 class AppRouter {
@@ -43,7 +47,47 @@ class AppRouter {
           path: '/create-pin',
           builder: (context, state) => const CreatePinPage(),
         ),
-
+        GoRoute(
+          path: '/recharge',
+          builder: (context, state) {
+            final isForSomeone = state.uri.queryParameters['someone'] == 'true';
+            return RechargePage(isForSomeone: isForSomeone);
+          },
+        ),
+        GoRoute(
+          path: '/recharge/status',
+          builder: (context, state) {
+            final amount = state.uri.queryParameters['amount'] ?? '0';
+            final meterNumber = state.uri.queryParameters['meterNumber'] ?? '';
+            final isCodeRecharge = state.uri.queryParameters['isCodeRecharge'] == 'true';
+            final code = state.uri.queryParameters['code'];
+            return RechargeStatusPage(
+              amount: amount,
+              meterNumber: meterNumber,
+              isCodeRecharge: isCodeRecharge,
+              code: code,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/recharge/receipt',
+          builder: (context, state) {
+            final amount = state.uri.queryParameters['amount'] ?? '0';
+            final meterNumber = state.uri.queryParameters['meterNumber'] ?? '';
+            final isCodeRecharge = state.uri.queryParameters['isCodeRecharge'] == 'true';
+            final code = state.uri.queryParameters['code'];
+            return RechargeReceiptPage(
+              amount: amount,
+              meterNumber: meterNumber,
+              isCodeRecharge: isCodeRecharge,
+              code: code,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/recharge/code',
+          builder: (context, state) => const RechargeByCodePage(),
+        ),
         // ── Shell com bottom nav ──────────────────────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) =>

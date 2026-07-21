@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
 import 'package:gezi/features/home/presentation/bloc/home_event.dart';
 import 'package:gezi/features/home/presentation/bloc/home_state.dart';
@@ -44,7 +45,10 @@ class HomePage extends StatelessWidget {
                       MeterCardWidget(
                         balance: state.meterBalance,
                       ),
-                      const RechargeActionsWidget(),
+                      RechargeActionsWidget(
+                        onRecharge: () => context.push('/recharge'),
+                        onHistory: () => context.push('/recharge?someone=true'),
+                      ),
                       const QuickActionsWidget(),
                       RecentRechargesWidget(
                         recharges: state.recentRecharges,
