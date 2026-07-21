@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/theme.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/pin_input_field.dart';
 import '../widgets/user_profile_card.dart';

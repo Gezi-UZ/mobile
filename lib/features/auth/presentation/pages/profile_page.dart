@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 
-/// Placeholder para a tela de histórico de recargas.
-class RechargeHistoryPage extends StatelessWidget {
-  const RechargeHistoryPage({super.key});
+/// Placeholder para a tela de perfil do utilizador.
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +14,22 @@ class RechargeHistoryPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.history_rounded,
-                  size: 64, color: AppTheme.primaryOrange.withValues(alpha: 0.4)),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const ShapeDecoration(
+                  color: AppTheme.lightOrangeBackground,
+                  shape: CircleBorder(),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  size: 48,
+                  color: AppTheme.primaryOrange,
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
-                'Histórico de Recargas',
+                'Perfil',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   color: AppTheme.textColorDark,
                   fontSize: 20,

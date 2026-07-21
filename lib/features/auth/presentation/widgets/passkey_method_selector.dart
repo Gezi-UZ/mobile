@@ -19,11 +19,11 @@ class PasskeyMethodSelector extends StatelessWidget {
         Text(
           'MÉTODO DA PASSKEY',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.textColorSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
-              ),
+            color: AppTheme.textColorSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
+          ),
         ),
         const SizedBox(height: 12),
         Row(
@@ -90,10 +90,10 @@ class PasskeyMethodSelector extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppTheme.textColorDark,
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  ),
+                color: AppTheme.textColorDark,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              ),
             ),
           ],
         ),
