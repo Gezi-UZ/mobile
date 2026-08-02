@@ -144,7 +144,7 @@ class RechargeReceiptPage extends StatelessWidget {
                           if (isCodeRecharge)
                             _ReceiptRow(title: 'Código aplicado', value: '${code?.substring(0, 4)}...${code?.substring((code?.length ?? 4) - 4)}')
                           else ...[
-                            _ReceiptRow(title: 'Valor pago', value: '$amount MZN'),
+                            _ReceiptRow(title: 'Valor pago', value: '$amount MT'),
                             _ReceiptRow(title: 'Val Energia', value: '${valEnergia.toStringAsFixed(2)} MT'),
                             _ReceiptRow(title: 'IVA (16%)', value: '${iva.toStringAsFixed(2)} MT'),
                             _ReceiptRow(title: 'Dívida Paga', value: '${dividaPaga.toStringAsFixed(2)} MT'),

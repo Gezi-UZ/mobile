@@ -159,7 +159,7 @@ class RechargeStepConfirm extends StatelessWidget {
                         const SizedBox(height: 12),
                         _SummaryRow(title: 'Contador', value: meterNumber),
                         const SizedBox(height: 8),
-                        _SummaryRow(title: 'Valor total', value: '$amount MZN'),
+                        _SummaryRow(title: 'Valor total', value: '$amount MT'),
                         const SizedBox(height: 8),
                         _SummaryRow(
                           title: 'Val Energia',
@@ -213,7 +213,7 @@ class RechargeStepConfirm extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Confirmar pagamento · $amount MZN',
+                'Confirmar pagamento · $amount MT',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: Colors.white,

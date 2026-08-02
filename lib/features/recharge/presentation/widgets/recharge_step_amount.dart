@@ -47,11 +47,17 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
 
     // Cálculo conforme guião da EDM (Tarifa Doméstica = 7.64 MT/kWh)
     const double ratePerKwh = 7.64;
-    final double txLixo = (_isFirstPurchaseOfMonth && totalAmount >= 100) ? 100.0 : 0.0;
+    final double txLixo = (_isFirstPurchaseOfMonth && totalAmount >= 100)
+        ? 100.0
+        : 0.0;
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
-    
-    final double remainingAfterFees = (totalAmount - txLixo - txRadio - dividaPaga).clamp(0.0, double.infinity);
+
+    final double remainingAfterFees =
+        (totalAmount - txLixo - txRadio - dividaPaga).clamp(
+          0.0,
+          double.infinity,
+        );
     final double valEnergia = remainingAfterFees / 1.16; // Retirando IVA de 16%
     final double iva = remainingAfterFees - valEnergia;
     final double calculatedKwh = remainingAfterFees / ratePerKwh;
@@ -81,27 +87,18 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                     child: Column(
                       children: [
                         Text(
-                          'Valor em MZN',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.textColorSecondary,
-                            fontSize: 12,
-                          ),
+                          'Valor em MT',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: AppTheme.textColorSecondary,
+                                fontSize: 12,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              'MZN',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: AppTheme.textColorDark,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(width: 8),
                             IntrinsicWidth(
                               child: TextField(
                                 controller: _amountController,
@@ -125,9 +122,8 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                                       .textTheme
                                       .displayLarge
                                       ?.copyWith(
-                                        color: AppTheme.primaryOrange.withValues(
-                                          alpha: 0.5,
-                                        ),
+                                        color: AppTheme.primaryOrange
+                                            .withValues(alpha: 0.5),
                                         fontSize: 48,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -136,6 +132,16 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                                   contentPadding: EdgeInsets.zero,
                                 ),
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'MT',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: AppTheme.textColorDark,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                             ),
                           ],
                         ),
@@ -207,7 +213,9 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(
-                            color: AppTheme.primaryOrange.withValues(alpha: 0.2),
+                            color: AppTheme.primaryOrange.withValues(
+                              alpha: 0.2,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -225,7 +233,8 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                               const SizedBox(width: 8),
                               Text(
                                 'Detalhamento da recarga (EDM)',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(
                                       color: AppTheme.primaryOrange,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13,
@@ -236,7 +245,9 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                           const SizedBox(height: 12),
                           _DetailRow(
                             title: 'Contador',
-                            value: widget.meterNumber.isNotEmpty ? widget.meterNumber : 'Por selecionar',
+                            value: widget.meterNumber.isNotEmpty
+                                ? widget.meterNumber
+                                : 'Por selecionar',
                           ),
                           _DetailRow(
                             title: 'Val Energia',
@@ -255,10 +266,15 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                             value: '${txRadio.toStringAsFixed(2)} MT',
                           ),
                           _DetailRow(
-                            title: 'Tx Lixo (${_isFirstPurchaseOfMonth ? "1ª compra/mês" : "isento"})',
+                            title:
+                                'Tx Lixo (${_isFirstPurchaseOfMonth ? "1ª compra/mês" : "isento"})',
                             value: '${txLixo.toStringAsFixed(2)} MT',
                           ),
-                          const Divider(height: 16, thickness: 1, color: Color(0x1F000000)),
+                          const Divider(
+                            height: 16,
+                            thickness: 1,
+                            color: Color(0x1F000000),
+                          ),
                           _DetailRow(
                             title: 'Energia Líquida',
                             value: '${calculatedKwh.toStringAsFixed(2)} kWh',
@@ -331,17 +347,17 @@ class _DetailRow extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
-                  fontSize: 12,
-                ),
+              color: AppTheme.textColorSecondary,
+              fontSize: 12,
+            ),
           ),
           Text(
             value,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isBold ? AppTheme.primaryOrange : AppTheme.textColorDark,
-                  fontSize: 12,
-                  fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-                ),
+              color: isBold ? AppTheme.primaryOrange : AppTheme.textColorDark,
+              fontSize: 12,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ],
       ),

@@ -21,11 +21,17 @@ class RechargeStatusPage extends StatelessWidget {
     final double totalAmount = double.tryParse(amount) ?? 0.0;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
-    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100) ? 100.0 : 0.0;
+    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
+        ? 100.0
+        : 0.0;
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
-    
-    final double remainingAfterFees = (totalAmount - txLixo - txRadio - dividaPaga).clamp(0.0, double.infinity);
+
+    final double remainingAfterFees =
+        (totalAmount - txLixo - txRadio - dividaPaga).clamp(
+          0.0,
+          double.infinity,
+        );
     final double estimatedKwh = remainingAfterFees / ratePerKwh;
 
     return Scaffold(
@@ -35,38 +41,50 @@ class RechargeStatusPage extends StatelessWidget {
           children: [
             // Top Bar
             Padding(
-              padding: const EdgeInsets.only(top: 12, left: 24, right: 24, bottom: 4),
+              padding: const EdgeInsets.only(
+                top: 12,
+                left: 24,
+                right: 24,
+                bottom: 4,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(width: 24),
-                ],
+                children: [const SizedBox(width: 24)],
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 32),
+                padding: const EdgeInsets.only(
+                  top: 48,
+                  left: 24,
+                  right: 24,
+                  bottom: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Título e subtítulo
                     Text(
-                      isCodeRecharge ? 'Estado do código STS' : 'Estado da recarga',
+                      isCodeRecharge
+                          ? 'Estado do código STS'
+                          : 'Estado da recarga',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppTheme.textColorDark,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: AppTheme.textColorDark,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isCodeRecharge ? 'A aplicar código' : 'A processar pagamento',
+                      isCodeRecharge
+                          ? 'A aplicar código'
+                          : 'A processar pagamento',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.textColorSecondary,
-                            fontSize: 12,
-                          ),
+                        color: AppTheme.textColorSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 32),
 
@@ -88,13 +106,15 @@ class RechargeStatusPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isCodeRecharge ? 'Código Válido' : '+${estimatedKwh.toStringAsFixed(1)} kWh',
+                      isCodeRecharge
+                          ? 'Código Válido'
+                          : '+${estimatedKwh.toStringAsFixed(1)} kWh',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: const Color(0xFF008236),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: const Color(0xFF008236),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -103,9 +123,9 @@ class RechargeStatusPage extends StatelessWidget {
                           : 'adicionados ao contador $meterNumber',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.textColorSecondary,
-                            fontSize: 14,
-                          ),
+                        color: AppTheme.textColorSecondary,
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 32),
 
@@ -117,20 +137,24 @@ class RechargeStatusPage extends StatelessWidget {
                             ? const [
                                 _StatusStepItem(
                                   title: 'Código validado',
-                                  description: 'O código STS introduzido é válido.',
+                                  description:
+                                      'O código STS introduzido é válido.',
                                   isCompleted: true,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
                                   title: 'A comunicar com o contador',
-                                  description: 'A aguardar confirmação do dispositivo...',
+                                  description:
+                                      'A aguardar confirmação do dispositivo...',
                                   isCompleted: true,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
                                   title: 'Crédito aplicado!',
-                                  description: 'A operação foi concluída com sucesso.',
-                                  isCompleted: false, // Fica laranja conforme mockup
+                                  description:
+                                      'A operação foi concluída com sucesso.',
+                                  isCompleted:
+                                      false, // Fica laranja conforme mockup
                                   isLast: true,
                                 ),
                               ]
@@ -143,7 +167,8 @@ class RechargeStatusPage extends StatelessWidget {
                                 ),
                                 _StatusStepItem(
                                   title: 'A aguardar M-Pesa',
-                                  description: 'Confirme o PIN no seu telemóvel.',
+                                  description:
+                                      'Confirme o PIN no seu telemóvel.',
                                   isCompleted: true,
                                   isLast: false,
                                 ),
@@ -155,8 +180,10 @@ class RechargeStatusPage extends StatelessWidget {
                                 ),
                                 _StatusStepItem(
                                   title: 'Recarga concluída!',
-                                  description: 'Crédito adicionado com sucesso.',
-                                  isCompleted: false, // Fica laranja conforme mockup
+                                  description:
+                                      'Crédito adicionado com sucesso.',
+                                  isCompleted:
+                                      false, // Fica laranja conforme mockup
                                   isLast: true,
                                 ),
                               ],
@@ -173,10 +200,12 @@ class RechargeStatusPage extends StatelessWidget {
                         if (isCodeRecharge) params['isCodeRecharge'] = 'true';
                         if (code != null) params['code'] = code;
 
-                        context.go(Uri(
-                          path: '/recharge/receipt',
-                          queryParameters: params,
-                        ).toString());
+                        context.go(
+                          Uri(
+                            path: '/recharge/receipt',
+                            queryParameters: params,
+                          ).toString(),
+                        );
                       },
                       child: Container(
                         width: double.infinity,
@@ -188,12 +217,10 @@ class RechargeStatusPage extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Ver Comprovativo',
+                          'Ver comprovativo',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(color: Colors.white, fontSize: 16),
                         ),
                       ),
                     ),
@@ -223,9 +250,15 @@ class _StatusStepItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color iconColor = isCompleted ? const Color(0xFF00C950) : AppTheme.primaryOrange;
-    final Color titleColor = isCompleted ? const Color(0xFF008236) : AppTheme.primaryOrange;
-    final Color lineColor = isCompleted ? const Color(0xFF05DF72) : Colors.transparent;
+    final Color iconColor = isCompleted
+        ? const Color(0xFF00C950)
+        : AppTheme.primaryOrange;
+    final Color titleColor = isCompleted
+        ? const Color(0xFF008236)
+        : AppTheme.primaryOrange;
+    final Color lineColor = isCompleted
+        ? const Color(0xFF05DF72)
+        : Colors.transparent;
 
     return IntrinsicHeight(
       child: Row(
@@ -241,11 +274,7 @@ class _StatusStepItem extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                  child: Icon(Icons.check, color: Colors.white, size: 16),
                 ),
               ),
               if (!isLast)
@@ -268,18 +297,18 @@ class _StatusStepItem extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: titleColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
+                      color: titleColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textColorSecondary,
-                          fontSize: 12,
-                        ),
+                      color: AppTheme.textColorSecondary,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),

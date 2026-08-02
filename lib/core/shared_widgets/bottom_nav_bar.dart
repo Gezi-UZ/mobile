@@ -131,9 +131,7 @@ class _GezBottomNavBar extends StatelessWidget {
                 ),
               ),
               // Posição 2: FAB "+" central
-              _FabCenterButton(
-                onTap: () => _openQuickActions(context),
-              ),
+              _FabCenterButton(onTap: () => _openQuickActions(context)),
               // Posição 3: Documentos
               Expanded(
                 child: _NavBarItem(
@@ -184,16 +182,12 @@ class _FabCenterButton extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFFF6A00).withValues(alpha: 0.40),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
+                  // blurRadius: 16,
+                  // offset: const Offset(0, 6),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.add_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
           ),
         ),
       ),
@@ -239,7 +233,9 @@ class _NavBarItem extends StatelessWidget {
             Icon(
               isSelected ? item.activeIcon : item.icon,
               size: 24,
-              color: isSelected ? AppTheme.primaryOrange : const Color(0xFFAAAAAA),
+              color: isSelected
+                  ? AppTheme.primaryOrange
+                  : const Color(0xFFAAAAAA),
             ),
             const SizedBox(height: 2),
             AnimatedDefaultTextStyle(
@@ -247,7 +243,9 @@ class _NavBarItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppTheme.primaryOrange : const Color(0xFFAAAAAA),
+                color: isSelected
+                    ? AppTheme.primaryOrange
+                    : const Color(0xFFAAAAAA),
                 fontFamily: 'Inter',
               ),
               child: Text(item.label),
