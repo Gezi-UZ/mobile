@@ -9,6 +9,7 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/documents/presentation/pages/documents_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/meter/presentation/pages/meter_list_page.dart';
+import '../../features/meter/presentation/pages/register_meter_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/recharge/presentation/pages/recharge_history_page.dart';
 import '../../features/recharge/presentation/pages/recharge_page.dart';
@@ -114,6 +115,12 @@ class AppRouter {
                 GoRoute(
                   path: '/meters',
                   builder: (context, state) => const MeterListPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'register',
+                      builder: (context, state) => const RegisterMeterPage(),
+                    ),
+                  ],
                 ),
               ],
             ),
