@@ -19,6 +19,7 @@ import '../../features/recharge/presentation/pages/recharge_by_code_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
 
 class AppRouter {
+  
   static late final GoRouter router;
 
   static void init(SharedPreferences prefs) {
