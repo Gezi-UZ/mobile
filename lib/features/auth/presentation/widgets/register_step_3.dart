@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../bloc/register/register_bloc.dart';
 import '../bloc/register/register_event.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/shared_widgets/buttons/primary_button.dart';
+import '../../../../core/shared_widgets/buttons/text_action_button.dart';
 import 'passkey_benefits_card.dart';
 import 'passkey_method_selector.dart';
 import 'step_progress_indicator.dart';
@@ -121,29 +123,11 @@ class _RegisterStep3State extends State<RegisterStep3> {
                     const Spacer(),
 
                     // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: () => _createPasskey(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryOrange,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          _selectedMethod == 'fingerprint'
-                              ? 'Criar Passkey com Impressão digital'
-                              : 'Criar Passkey com PIN',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                      ),
+                    PrimaryButton(
+                      text: _selectedMethod == 'fingerprint'
+                          ? 'Criar Passkey com Impressão digital'
+                          : 'Criar Passkey com PIN',
+                      onPressed: () => _createPasskey(context),
                     ),
                     const SizedBox(height: 16),
 
@@ -151,20 +135,10 @@ class _RegisterStep3State extends State<RegisterStep3> {
                     SizedBox(
                       width: double.infinity,
                       height: 52,
-                      child: TextButton(
+                      child: TextActionButton(
+                        text: 'Fazer isto mais tarde',
+                        color: AppTheme.textColorSecondary,
                         onPressed: () => _skipPasskey(context),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.textColorSecondary,
-                        ),
-                        child: Text(
-                          'Fazer isto mais tarde',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: AppTheme.textColorSecondary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
                       ),
                     ),
                   ],

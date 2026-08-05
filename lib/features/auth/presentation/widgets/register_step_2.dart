@@ -4,6 +4,7 @@ import '../bloc/register/register_bloc.dart';
 import '../bloc/register/register_event.dart';
 import '../bloc/register/register_state.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/shared_widgets/buttons/primary_button.dart';
 import 'pin_input_field.dart';
 import 'step_progress_indicator.dart';
 
@@ -190,29 +191,9 @@ class _RegisterStep2State extends State<RegisterStep2> {
                         const Spacer(),
 
                         // Submit Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: _isOtpComplete ? _submit : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _isOtpComplete
-                                  ? AppTheme.primaryOrange
-                                  : const Color(0xFFCCCCCC),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Text(
-                              'Verificar código',
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                          ),
+                        PrimaryButton(
+                          text: 'Verificar código',
+                          onPressed: _isOtpComplete ? _submit : null,
                         ),
                       ],
                     ),

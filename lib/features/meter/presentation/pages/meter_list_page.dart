@@ -11,11 +11,11 @@ class MeterListPage extends StatelessWidget {
   const MeterListPage({super.key});
 
   // ── Dados mockados (substituir por BLoC/Cubit quando o backend estiver pronto) ──
-  static final List<Meter> _mockMeters = [
+  static final List<Meter> mockMeters = [
     const Meter(
       id: '1',
       alias: 'Casa principal',
-      serialNumber: 'CR...92',
+      serialNumber: '12345678901',
       isOnline: true,
       isPrimary: true,
       kwhBalance: 4.9,
@@ -24,7 +24,7 @@ class MeterListPage extends StatelessWidget {
     const Meter(
       id: '2',
       alias: 'Escritório',
-      serialNumber: 'CR...04',
+      serialNumber: '12345678902',
       isOnline: true,
       isPrimary: false,
       kwhBalance: 18.7,
@@ -33,7 +33,7 @@ class MeterListPage extends StatelessWidget {
     const Meter(
       id: '3',
       alias: 'Armazém',
-      serialNumber: 'CR...71',
+      serialNumber: '12345678903',
       isOnline: false,
       isPrimary: false,
       kwhBalance: 0,
@@ -62,10 +62,10 @@ class MeterListPage extends StatelessWidget {
               const SizedBox(height: 24),
               Expanded(
                 child: ListView.separated(
-                  itemCount: _mockMeters.length,
+                  itemCount: mockMeters.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final meter = _mockMeters[index];
+                    final meter = mockMeters[index];
                     return MeterCard(
                       meter: meter,
                       onOptionsTap: () => _showMeterOptions(context, meter),

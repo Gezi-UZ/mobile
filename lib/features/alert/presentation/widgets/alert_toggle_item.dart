@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AlertToggleItem extends StatelessWidget {
   final String title;
@@ -23,11 +22,9 @@ class AlertToggleItem extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppTheme.textColorDark,
-              fontSize: 14,
               fontWeight: FontWeight.w500,
-              height: 1.43,
             ),
           ),
           Switch(

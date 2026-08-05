@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class NotificationCard extends StatelessWidget {
   final String title;
@@ -56,21 +55,16 @@ class NotificationCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: AppTheme.textColorDark,
-                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    height: 1.43,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: GoogleFonts.poppins(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.textColorSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    height: 1.63,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -85,11 +79,9 @@ class NotificationCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       time,
-                      style: GoogleFonts.poppins(
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: AppTheme.textColorSecondary,
-                        fontSize: 10,
                         fontWeight: FontWeight.w400,
-                        height: 1.50,
                       ),
                     ),
                   ],

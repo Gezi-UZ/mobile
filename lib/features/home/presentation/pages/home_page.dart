@@ -12,6 +12,7 @@ import 'package:gezi/features/home/presentation/widgets/recharge_actions_widget.
 import 'package:gezi/features/home/presentation/widgets/recent_recharges_widget.dart';
 import 'package:gezi/injection_container.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../features/meter/presentation/pages/meter_list_page.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -42,8 +43,21 @@ class HomePage extends StatelessWidget {
                       ),
                       if (state.meterBalance.isLowBalance)
                         const LowBalanceAlertWidget(),
-                      MeterCardWidget(
-                        balance: state.meterBalance,
+                      GestureDetector(
+                        onTap: () {
+                          // Find corresponding meter from mock data based on meterId
+                          final meter = MeterListPage.mockMeters.firstWhere(
+                            (m) => m.serialNumber == state.meterBalance.meterId,
+                            orElse: () => MeterListPage.mockMeters.first,
+                          );
+                          context.push('/meters/detail', extra: {
+                            'meter': meter,
+                            'recharges': state.recentRecharges,
+                          });
+                        },
+                        child: MeterCardWidget(
+                          balance: state.meterBalance,
+                        ),
                       ),
                       RechargeActionsWidget(
                         onRecharge: () => context.push('/recharge'),

@@ -18,7 +18,7 @@ class DocumentsPage extends StatelessWidget {
                   size: 64, color: AppTheme.primaryOrange.withValues(alpha: 0.4)),
               const SizedBox(height: 16),
               Text(
-                'Documentos',
+                'Relatórios',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   color: AppTheme.textColorDark,
                   fontSize: 20,

@@ -1,97 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
+import 'app_typography.dart';
+
+// Exporting to not break existing imports
+export 'app_colors.dart';
+export 'app_typography.dart';
 
 class AppTheme {
-  // Brand Colors
-  static const Color primaryOrange = Color(0xFFFF6A00);
-  static const Color darkOrange = Color(0xFFE84300);
-  static const Color darkerOrange = Color(0xFF8A2E00);
-  static const Color lightOrange = Color(0xFFFFB300);
-  static const Color lightOrangeBackground = Color(0xFFFFF6ED);
-  static const Color white = Colors.white;
-  static const Color textColorDark = Color(0xFF1A1A1A);
-  static const Color textColorSecondary = Color(0xFF666666);
+  // Aliases to AppColors to not break existing references that use AppTheme.primaryOrange etc.
+  static const Color primaryOrange = AppColors.primaryOrange;
+  static const Color darkOrange = AppColors.darkOrange;
+  static const Color darkerOrange = AppColors.darkerOrange;
+  static const Color lightOrange = AppColors.lightOrange;
+  static const Color lightOrangeBackground = AppColors.lightOrangeBackground;
+  static const Color white = AppColors.white;
+  static const Color textColorDark = AppColors.textColorDark;
+  static const Color textColorSecondary = AppColors.textColorSecondary;
 
-  // Gradients
-  static const LinearGradient primaryGradient = LinearGradient(
-    begin: Alignment(0.32, 0.00),
-    end: Alignment(0.68, 1.00),
-    colors: [primaryOrange, darkOrange],
-  );
-
-  static const LinearGradient secondaryGradient = LinearGradient(
-    begin: Alignment(0.32, 0.00),
-    end: Alignment(0.68, 1.00),
-    colors: [darkOrange, darkerOrange],
-  );
-
-  static const LinearGradient tertiaryGradient = LinearGradient(
-    begin: Alignment(0.32, 0.00),
-    end: Alignment(0.68, 1.00),
-    colors: [primaryOrange, lightOrange],
-  );
-
-  // Typography - Titles (Inter)
-  static TextStyle displayLarge = GoogleFonts.inter(
-    color: white,
-    fontSize: 48,
-    fontWeight: FontWeight.w700,
-    height: 1.25,
-    letterSpacing: -1.20,
-  );
-
-  static TextStyle displayMedium = GoogleFonts.inter(
-    color: white,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    height: 1.25,
-    letterSpacing: -0.75,
-  );
-
-  // Typography - Body (Poppins)
-  static TextStyle bodyLarge = GoogleFonts.poppins(
-    color: white.withValues(alpha: 0.80),
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.63,
-  );
-
-  // Typography - Buttons & Labels (Inter)
-  static TextStyle labelLarge = GoogleFonts.inter(
-    color: white,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    height: 1.50,
-  );
-
-  static TextStyle labelMedium = GoogleFonts.inter(
-    color: white.withValues(alpha: 0.70),
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-  );
-
-  static TextStyle labelSmall = GoogleFonts.poppins(
-    color: white.withValues(alpha: 0.40),
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    height: 1.50,
-  );
+  static const LinearGradient primaryGradient = AppColors.primaryGradient;
+  static const LinearGradient secondaryGradient = AppColors.secondaryGradient;
+  static const LinearGradient tertiaryGradient = AppColors.tertiaryGradient;
 
   // ThemeData configuration
   static ThemeData get themeData {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryOrange,
-        primary: primaryOrange,
+        seedColor: AppColors.primaryOrange,
+        primary: AppColors.primaryOrange,
       ),
-      textTheme: TextTheme(
-        displayLarge: displayLarge,
-        displayMedium: displayMedium,
-        bodyLarge: bodyLarge,
-        labelLarge: labelLarge,
-        labelMedium: labelMedium,
-        labelSmall: labelSmall,
+      scaffoldBackgroundColor: AppColors.white,
+      textTheme: AppTypography.textTheme,
+      // Default Elevated Button Theme
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryOrange,
+          foregroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          textStyle: AppTypography.labelLarge,
+        ),
       ),
     );
   }

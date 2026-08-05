@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
-import 'package:gezi/injection_container.dart';
-import 'package:gezi/core/services/local_notification_service.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardHeaderWidget extends StatelessWidget {
   final String userName;
@@ -71,7 +70,7 @@ class _NotificationIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        sl<LocalNotificationService>().showLowBalanceNotification();
+        context.push('/alerts');
       },
       child: Stack(
         clipBehavior: Clip.none,

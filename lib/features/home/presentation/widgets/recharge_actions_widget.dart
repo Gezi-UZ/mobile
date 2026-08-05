@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/core/shared_widgets/buttons/primary_button.dart';
+import 'package:gezi/core/shared_widgets/buttons/secondary_button.dart';
 
 class RechargeActionsWidget extends StatelessWidget {
   final VoidCallback? onRecharge;
@@ -15,55 +17,23 @@ class RechargeActionsWidget extends StatelessWidget {
         spacing: 12,
         children: [
           // Botão primário
-          SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                gradient: AppTheme.primaryGradient,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: TextButton.icon(
-                onPressed: onRecharge,
-                icon: Image.asset(
-                  'assets/images/recharge_icon.png',
-                  height: 20,
-                  width: 20,
-                ),
-                label: Text(
-                  'Recarregar agora',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
+          PrimaryButton(
+            text: 'Recarregar agora',
+            onPressed: onRecharge,
+            icon: Image.asset(
+              'assets/images/recharge_icon.png',
+              height: 20,
+              width: 20,
+              color: AppTheme.white,
             ),
           ),
           // Botão secundário
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: OutlinedButton.icon(
-              onPressed: onHistory,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                  color: AppTheme.primaryOrange,
-                  width: 1.11,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon: const Icon(
-                Icons.share_outlined,
-                color: AppTheme.primaryOrange,
-              ),
-              label: Text(
-                'Recarregar para alguém',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge?.copyWith(color: AppTheme.primaryOrange),
-              ),
+          SecondaryButton(
+            text: 'Recarregar para alguém',
+            onPressed: onHistory,
+            icon: const Icon(
+              Icons.share_outlined,
+              color: AppTheme.primaryOrange,
             ),
           ),
         ],

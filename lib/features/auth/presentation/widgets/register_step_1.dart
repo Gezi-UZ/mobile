@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/register/register_bloc.dart';
 import '../bloc/register/register_event.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/shared_widgets/buttons/primary_button.dart';
 import 'step_progress_indicator.dart';
 
 class RegisterStep1 extends StatefulWidget {
@@ -206,28 +207,9 @@ class _RegisterStep1State extends State<RegisterStep1> {
                     const Spacer(),
 
                     // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isValid ? _submit : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _isValid
-                              ? AppTheme.primaryOrange
-                              : const Color(0xFFCCCCCC),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          'Receber código SMS',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                      ),
+                    PrimaryButton(
+                      text: 'Receber código SMS',
+                      onPressed: _isValid ? _submit : null,
                     ),
                   ],
                 ),

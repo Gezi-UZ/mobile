@@ -10,13 +10,17 @@ import '../../features/documents/presentation/pages/documents_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/meter/presentation/pages/meter_list_page.dart';
 import '../../features/meter/presentation/pages/register_meter_page.dart';
+import '../../features/meter/presentation/pages/meter_detail_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/recharge/presentation/pages/recharge_history_page.dart';
 import '../../features/recharge/presentation/pages/recharge_page.dart';
 import '../../features/recharge/presentation/pages/recharge_status_page.dart';
 import '../../features/recharge/presentation/pages/recharge_receipt_page.dart';
 import '../../features/recharge/presentation/pages/recharge_by_code_page.dart';
+import '../../features/alert/presentation/pages/alerts_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
+import '../../features/meter/domain/entities/meter.dart';
+import '../../features/home/domain/entities/recharge.dart';
 
 class AppRouter {
   static late final GoRouter router;
@@ -88,6 +92,19 @@ class AppRouter {
         GoRoute(
           path: '/recharge/code',
           builder: (context, state) => const RechargeByCodePage(),
+        ),
+        GoRoute(
+          path: '/alerts',
+          builder: (context, state) => const AlertsPage(),
+        ),
+        GoRoute(
+          path: '/meters/detail',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            final meter = extra['meter'] as Meter? ?? MeterListPage.mockMeters.first;
+            final recharges = extra['recharges'] as List<Recharge>? ?? [];
+            return MeterDetailPage(meter: meter, recentRecharges: recharges);
+          },
         ),
         // ── Shell com bottom nav ──────────────────────────────────────────
         StatefulShellRoute.indexedStack(

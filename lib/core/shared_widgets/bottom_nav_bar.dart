@@ -111,7 +111,7 @@ class _GezBottomNavBar extends StatelessWidget {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 64,
+          height: 72,
           child: Row(
             children: [
               // Posição 0: Início
@@ -218,18 +218,6 @@ class _NavBarItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Indicador pill quando activo
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              width: isSelected ? 32 : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 4),
             Icon(
               isSelected ? item.activeIcon : item.icon,
               size: 24,
@@ -249,6 +237,18 @@ class _NavBarItem extends StatelessWidget {
                 fontFamily: 'Inter',
               ),
               child: Text(item.label),
+            ),
+            const SizedBox(height: 4),
+            // Indicador pill quando activo
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              width: isSelected ? 6 : 0,
+              height: 6,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryOrange,
+                borderRadius: BorderRadius.circular(6),
+              ),
             ),
           ],
         ),

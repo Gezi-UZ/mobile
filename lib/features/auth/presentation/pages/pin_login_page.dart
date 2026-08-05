@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/pin_input_field.dart';
 import '../widgets/user_profile_card.dart';
+import '../../../../core/shared_widgets/buttons/primary_button.dart';
 
 class PinLoginPage extends StatefulWidget {
   const PinLoginPage({super.key});
@@ -109,44 +110,9 @@ class _PinLoginPageState extends State<PinLoginPage> {
               const Spacer(),
 
               // Primary Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                  onPressed: _isPinComplete ? _onLoginPressed : null,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: _isPinComplete
-                          ? AppTheme.primaryGradient
-                          : null,
-                      color: _isPinComplete
-                          ? null
-                          : AppTheme.textColorDark.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Entrar',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppTheme.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+              PrimaryButton(
+                text: 'Entrar',
+                onPressed: _isPinComplete ? _onLoginPressed : null,
               ),
               const SizedBox(height: 12),
 

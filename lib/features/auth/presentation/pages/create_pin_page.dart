@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/shared_widgets/buttons/primary_button.dart';
 import '../widgets/pin_input_field.dart';
 
 class CreatePinPage extends StatefulWidget {
@@ -266,33 +267,11 @@ class _CreatePinPageState extends State<CreatePinPage> {
                         const Spacer(),
 
                         // Primary Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: canSubmit
-                                ? (_isConfirmStep ? _submit : _advanceToConfirm)
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: canSubmit
-                                  ? AppTheme.primaryOrange
-                                  : const Color(0xFFCCCCCC),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Text(
-                              _isConfirmStep ? 'Guardar PIN' : 'Continuar',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                          ),
+                        PrimaryButton(
+                          text: _isConfirmStep ? 'Guardar PIN' : 'Continuar',
+                          onPressed: canSubmit
+                              ? (_isConfirmStep ? _submit : _advanceToConfirm)
+                              : null,
                         ),
                       ],
                     ),

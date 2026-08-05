@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/alert_toggle_item.dart';
 import '../widgets/notification_card.dart';
@@ -39,11 +38,8 @@ class _AlertsPageState extends State<AlertsPage> {
             children: [
               Text(
                 'Alertas',
-                style: GoogleFonts.inter(
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   color: AppTheme.textColorDark,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  height: 1.40,
                 ),
               ),
               const SizedBox(height: 24),
@@ -51,11 +47,8 @@ class _AlertsPageState extends State<AlertsPage> {
               // CONFIGURAR ALERTAS
               Text(
                 'CONFIGURAR ALERTAS',
-                style: GoogleFonts.inter(
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AppTheme.textColorSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  height: 1.33,
                   letterSpacing: 0.30,
                 ),
               ),
@@ -108,11 +101,8 @@ class _AlertsPageState extends State<AlertsPage> {
               // NOTIFICAÇÕES RECENTES
               Text(
                 'NOTIFICAÇÕES RECENTES',
-                style: GoogleFonts.inter(
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AppTheme.textColorSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  height: 1.33,
                   letterSpacing: 0.30,
                 ),
               ),

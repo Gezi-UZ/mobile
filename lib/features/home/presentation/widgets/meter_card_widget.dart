@@ -33,6 +33,15 @@ class MeterCardWidget extends StatelessWidget {
   }
 
   Widget _buildBalanceRow(BuildContext context) {
+    Color iconColor;
+    if (balance.kwhBalance > 20) {
+      iconColor = const Color(0xFF00C950); // Verde (Com crédito)
+    } else if (balance.kwhBalance > 0) {
+      iconColor = const Color(0xFFFFB300); // Amarelo (Crédito baixo/warning)
+    } else {
+      iconColor = const Color(0xFFFF3B30); // Vermelho (Sem crédito)
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -56,6 +65,7 @@ class MeterCardWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontSize: 48,
                     fontWeight: FontWeight.w700,
+                    color: AppTheme.white,
                   ),
                 ),
                 Padding(
@@ -65,6 +75,7 @@ class MeterCardWidget extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: AppTheme.white.withValues(alpha: 0.80),
                       fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -72,16 +83,21 @@ class MeterCardWidget extends StatelessWidget {
             ),
           ],
         ),
-        // Ícone do contador (substituir Stack vazia por ícone real)
+        // Ícone do contador
         Container(
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: const Color(0x30D32F2F),
+            color: AppTheme.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Image.asset(
-            'assets/images/recharge_icon.png',
+          child: Center(
+            child: Image.asset(
+              'assets/images/recharge_icon.png',
+              width: 32,
+              height: 32,
+              color: iconColor,
+            ),
           ),
         ),
       ],
@@ -104,9 +120,10 @@ class MeterCardWidget extends StatelessWidget {
             ),
             Text(
               balance.meterId,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(fontSize: 14),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontSize: 14,
+                color: AppTheme.white,
+              ),
             ),
           ],
         ),
@@ -166,7 +183,7 @@ class _MeterStatusBadge extends StatelessWidget {
           ),
           Text(
             isOnline ? 'Online' : 'Offline',
-            style: TextStyle(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: isOnline
                   ? const Color(0xFF008236)
                   : const Color(0xFF6B7280),
