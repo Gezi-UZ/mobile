@@ -18,7 +18,7 @@ class MeterListPage extends StatelessWidget {
       serialNumber: 'CR...92',
       isOnline: true,
       isPrimary: true,
-      kwhBalance: 3.2,
+      kwhBalance: 4.9,
       iconType: MeterIconType.home,
     ),
     const Meter(

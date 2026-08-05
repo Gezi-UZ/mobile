@@ -1,3 +1,4 @@
 {
-  "cmake.sourceDirectory": "/home/wenzino/Developer/Projects/Mobile/Gezi/mobile/linux"
+  "cmake.sourceDirectory": "/home/wenzino/Developer/Projects/Mobile/Gezi/mobile/linux",
+  "java.configuration.updateBuildConfiguration": "automatic"
 }

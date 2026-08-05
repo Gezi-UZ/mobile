@@ -36,7 +36,7 @@ const _navItems = [
   ),
   // índice 2 reservado para o FAB central
   _NavItem(
-    label: 'Documentos',
+    label: 'Relatórios',
     icon: Icons.description_outlined,
     activeIcon: Icons.description_rounded,
     branchIndex: 3,

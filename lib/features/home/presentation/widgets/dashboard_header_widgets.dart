@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/injection_container.dart';
+import 'package:gezi/core/services/local_notification_service.dart';
 
 class DashboardHeaderWidget extends StatelessWidget {
   final String userName;
@@ -67,46 +69,51 @@ class _NotificationIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: const ShapeDecoration(
-            color: AppTheme.lightOrangeBackground,
-            shape: CircleBorder(),
+    return GestureDetector(
+      onTap: () {
+        sl<LocalNotificationService>().showLowBalanceNotification();
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const ShapeDecoration(
+              color: AppTheme.lightOrangeBackground,
+              shape: CircleBorder(),
+            ),
+            child: const Icon(
+              Icons.notifications_outlined,
+              color: AppTheme.primaryOrange,
+              size: 20,
+            ),
           ),
-          child: const Icon(
-            Icons.notifications_outlined,
-            color: AppTheme.primaryOrange,
-            size: 20,
-          ),
-        ),
-        if (count > 0)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: const ShapeDecoration(
-                color: AppTheme.primaryOrange,
-                shape: CircleBorder(),
-              ),
-              child: Center(
-                child: Text(
-                  '$count',
-                  style: const TextStyle(
-                    color: AppTheme.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
+          if (count > 0)
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: const ShapeDecoration(
+                  color: AppTheme.primaryOrange,
+                  shape: CircleBorder(),
+                ),
+                child: Center(
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: AppTheme.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

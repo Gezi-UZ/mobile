@@ -18,7 +18,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   Future<MeterBalance> getMeterBalance() async {
     // Stub — substituir pela chamada real à API.
     return MeterBalance(
-      kwhBalance: 3.2,
+      kwhBalance: 4.9,
       meterId: '12345678901',
       isOnline: true,
       lastSyncAt: DateTime.now(),

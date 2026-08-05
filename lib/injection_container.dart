@@ -4,6 +4,7 @@ import 'package:gezi/features/home/domain/repositories/home_repository.dart';
 import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:gezi/core/services/local_notification_service.dart';
 
 // Auth
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -120,4 +121,9 @@ Future<void> init() async {
 
   // Local Auth
   sl.registerLazySingleton(() => LocalAuthentication());
+
+  // Notifications
+  final localNotificationService = LocalNotificationService();
+  await localNotificationService.init();
+  sl.registerLazySingleton(() => localNotificationService);
 }
