@@ -12,7 +12,7 @@ import '../../features/meter/presentation/pages/meter_list_page.dart';
 import '../../features/meter/presentation/pages/register_meter_page.dart';
 import '../../features/meter/presentation/pages/meter_detail_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
-import '../../features/recharge/presentation/pages/recharge_history_page.dart';
+import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/recharge/presentation/pages/recharge_page.dart';
 import '../../features/recharge/presentation/pages/recharge_status_page.dart';
 import '../../features/recharge/presentation/pages/recharge_receipt_page.dart';
@@ -123,7 +123,7 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/recharges',
-                  builder: (context, state) => const RechargeHistoryPage(),
+                  builder: (context, state) => const HistoryPage(),
                 ),
               ],
             ),

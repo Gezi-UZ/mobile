@@ -14,55 +14,63 @@ class UserProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: ShapeDecoration(
         color: AppTheme.lightOrangeBackground,
-        border: Border.all(
-          color: Colors.black.withValues(alpha: 0.08),
-          width: 1.11,
-        ),
-        borderRadius: BorderRadius.circular(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
+            width: 56,
+            height: 56,
+            decoration: ShapeDecoration(
               color: AppTheme.primaryOrange.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
             alignment: Alignment.center,
             child: const Icon(
               Icons.person,
               color: AppTheme.primaryOrange,
-              size: 20,
+              size: 28,
             ),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                userName,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppTheme.textColorDark,
-                  fontWeight: FontWeight.w600,
-                  height: 1.0,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userName,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppTheme.textColorDark,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    height: 1.50,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                phoneNumber,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
-                  fontSize: 12,
-                  height: 1.33,
+                Opacity(
+                  opacity: 0.61,
+                  child: Text(
+                    phoneNumber,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textColorSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.43,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

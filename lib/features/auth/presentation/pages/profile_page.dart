@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
+import '../../../../core/theme/theme.dart';
+import '../widgets/user_profile_card.dart';
+import '../widgets/profile_menu_item.dart';
+import '../widgets/profile_preferences_card.dart';
+import '../widgets/profile_logout_button.dart';
 
-/// Placeholder para a tela de perfil do utilizador.
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -10,38 +13,49 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.white,
       body: SafeArea(
-        child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(
+            top: 48,
+            left: 20,
+            right: 20,
+            bottom: 40,
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const ShapeDecoration(
-                  color: AppTheme.lightOrangeBackground,
-                  shape: CircleBorder(),
-                ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  size: 48,
-                  color: AppTheme.primaryOrange,
-                ),
-              ),
-              const SizedBox(height: 16),
               Text(
                 'Perfil',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: AppTheme.textColorDark,
+                  fontWeight: FontWeight.w700,
                   fontSize: 20,
+                  height: 1.40,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Em breve',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textColorSecondary,
-                  fontSize: 14,
-                ),
+              const SizedBox(height: 24),
+              const UserProfileCard(
+                userName: 'Dai Wen Xuan',
+                phoneNumber: '+258 83 361 7829',
+              ),
+              const SizedBox(height: 8), // To balance with the margin of menu items
+              ProfileMenuItem(
+                icon: Icons.people_outline,
+                title: 'Os meus contadores',
+                onTap: () {},
+              ),
+              ProfileMenuItem(
+                icon: Icons.support_agent,
+                title: 'Apoio ao cliente',
+                onTap: () {},
+              ),
+              ProfileMenuItem(
+                icon: Icons.analytics_outlined,
+                title: 'Estimativa de consumo',
+                onTap: () {},
+              ),
+              const ProfilePreferencesCard(),
+              ProfileLogoutButton(
+                onTap: () {},
               ),
             ],
           ),
