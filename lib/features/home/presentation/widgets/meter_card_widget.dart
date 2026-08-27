@@ -4,30 +4,76 @@ import 'package:gezi/features/home/domain/entities/meter_balance.dart';
 
 class MeterCardWidget extends StatelessWidget {
   final MeterBalance balance;
+  final bool isPrimary;
 
-  const MeterCardWidget({super.key, required this.balance});
+  const MeterCardWidget({
+    super.key,
+    required this.balance,
+    this.isPrimary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 26, right: 26, bottom: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: ShapeDecoration(
-          gradient: AppTheme.primaryGradient,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: ShapeDecoration(
+              gradient: AppTheme.primaryGradient,
+              shape: RoundedRectangleBorder(
+                side: isPrimary
+                    ? const BorderSide(width: 1.5, color: AppTheme.primaryOrange)
+                    : BorderSide.none,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBalanceRow(context),
+                const SizedBox(height: 16),
+                _buildMeterInfoRow(context),
+              ],
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBalanceRow(context),
-            const SizedBox(height: 16),
-            _buildMeterInfoRow(context),
-          ],
-        ),
+          if (isPrimary)
+            Positioned(
+              top: -10,
+              left: 24,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: AppTheme.white,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'PRINCIPAL',
+                      style: const TextStyle(
+                        color: AppTheme.white,
+                        fontSize: 10,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

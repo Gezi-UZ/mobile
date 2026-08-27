@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/home/domain/entities/recharge.dart';
 
@@ -49,33 +50,14 @@ class RecentRechargesWidget extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           // Lista de itens
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF0F0F0)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: recharges.length,
-              separatorBuilder: (_, _) => const Divider(
-                height: 1,
-                thickness: 1,
-                indent: 56,
-                color: Color(0xFFF5F5F5),
-              ),
-              itemBuilder: (context, index) {
-                return _RechargeItem(recharge: recharges[index]);
-              },
-            ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: recharges.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              return _RechargeItem(recharge: recharges[index]);
+            },
           ),
         ],
       ),
@@ -105,88 +87,140 @@ class _RechargeItem extends StatelessWidget {
         ? const Color(0xFFFFF8E1)
         : const Color(0xFFFFEDED);
 
-    final statusLabel = isSuccess
-        ? 'Sucesso'
-        : isPending
-        ? 'Pendente'
-        : 'Falhou';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          // Ícone
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppTheme.lightOrangeBackground,
-              borderRadius: BorderRadius.circular(20),
+    final isMyMeter = recharge.isMyMeter;
+    final badgeColor = isMyMeter ? const Color(0xFFFF6A00) : const Color(0xFF8A5500);
+    final badgeBgColor = isMyMeter ? const Color(0x11FF6A00) : const Color(0x17FFB300);
+    final badgeText = isMyMeter ? 'Meu' : 'Outro';
+
+    final meterText = isMyMeter
+        ? (recharge.meterAlias ?? recharge.meterSerialNumber)
+        : recharge.meterSerialNumber;
+    final dateText = _formatDate(recharge.rechargedAt);
+
+    return GestureDetector(
+      onTap: () {
+        context.push('/recharge_detail', extra: recharge);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 1,
+              color: Colors.black.withValues(alpha: 0.08),
             ),
-            child: Image.asset(
-              'assets/images/recharge_icon.png',
-              color: AppTheme.primaryOrange,
-              height: 12,
-              width: 12,
-            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 12),
-          // Dados da recarga
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${recharge.kwhAmount.toStringAsFixed(0)} kWh',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppTheme.textColorDark,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _formatDate(recharge.rechargedAt),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Valor + estado
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                '${_formatAmount(recharge.paidAmount)} ${recharge.currency}',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppTheme.textColorDark,
-                  fontSize: 13,
+              // Barra lateral de status
+              Container(
+                width: 4,
+                decoration: ShapeDecoration(
+                  color: statusColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(width: 12),
+              // Ícone
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: statusBg,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  statusLabel,
-                  style: TextStyle(
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/recharge_icon.png',
                     color: statusColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                    height: 16,
+                    width: 16,
                   ),
                 ),
               ),
+              const SizedBox(width: 12),
+              // Dados da recarga
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          '${recharge.kwhAmount.toStringAsFixed(1)} kWh',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: AppTheme.textColorDark,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeBgColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: TextStyle(
+                              color: badgeColor,
+                              fontSize: 10,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$meterText · $dateText',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFF666666),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Valor + pequeno icone de status
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${_formatAmount(recharge.paidAmount)} ${recharge.currency}',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppTheme.textColorDark,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF666666),
+                    size: 20,
+                  ),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
-  }
+}
 
   String _formatDate(DateTime dt) {
     final now = DateTime.now();

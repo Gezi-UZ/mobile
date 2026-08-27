@@ -55,7 +55,7 @@ Future<void> init() async {
         verifyOtp: sl(),
         createPasskey: sl(),
       ));
-  sl.registerFactory(() => HomeBloc(
+  sl.registerLazySingleton(() => HomeBloc(
       getMeterBalance: sl(),
       getRecentRecharges: sl(),
   ));

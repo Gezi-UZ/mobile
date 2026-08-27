@@ -17,7 +17,9 @@ class AppTheme {
   static const Color textColorDark = AppColors.textColorDark;
   static const Color textColorSecondary = AppColors.textColorSecondary;
   static const Color errorColor = AppColors.errorColor;
-
+  static const Color black = AppColors.black;
+  static const Color dividerColor = AppColors.dividerColor;
+  static const Color successColor = AppColors.successColor;
   static const LinearGradient primaryGradient = AppColors.primaryGradient;
   static const LinearGradient secondaryGradient = AppColors.secondaryGradient;
   static const LinearGradient tertiaryGradient = AppColors.tertiaryGradient;

@@ -51,4 +51,24 @@ class Meter extends Equatable {
         kwhBalance,
         iconType,
       ];
+
+  Meter copyWith({
+    String? id,
+    String? alias,
+    String? serialNumber,
+    bool? isOnline,
+    bool? isPrimary,
+    double? kwhBalance,
+    MeterIconType? iconType,
+  }) {
+    return Meter(
+      id: id ?? this.id,
+      alias: alias ?? this.alias,
+      serialNumber: serialNumber ?? this.serialNumber,
+      isOnline: isOnline ?? this.isOnline,
+      isPrimary: isPrimary ?? this.isPrimary,
+      kwhBalance: kwhBalance ?? this.kwhBalance,
+      iconType: iconType ?? this.iconType,
+    );
+  }
 }

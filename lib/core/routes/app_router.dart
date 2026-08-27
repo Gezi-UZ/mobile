@@ -6,12 +6,14 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/pin_login_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/documents/presentation/pages/documents_page.dart';
+import '../../features/report/presentation/pages/report_list_page.dart';
+import '../../features/report/presentation/pages/receipt_preview_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/meter/presentation/pages/meter_list_page.dart';
-import '../../features/meter/presentation/pages/register_meter_page.dart';
+import '../../features/meter/presentation/pages/meter_form_page.dart';
 import '../../features/meter/presentation/pages/meter_detail_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/home/presentation/pages/recharge_detail_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/recharge/presentation/pages/recharge_page.dart';
 import '../../features/recharge/presentation/pages/recharge_status_page.dart';
@@ -106,6 +108,17 @@ class AppRouter {
             return MeterDetailPage(meter: meter, recentRecharges: recharges);
           },
         ),
+        GoRoute(
+          path: '/recharge_detail',
+          builder: (context, state) {
+            final recharge = state.extra as Recharge;
+            return RechargeDetailPage(recharge: recharge);
+          },
+        ),
+        GoRoute(
+          path: '/receipt_preview',
+          builder: (context, state) => const ReceiptPreviewPage(),
+        ),
         // ── Shell com bottom nav ──────────────────────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) =>
@@ -135,7 +148,15 @@ class AppRouter {
                   routes: [
                     GoRoute(
                       path: 'register',
-                      builder: (context, state) => const RegisterMeterPage(),
+                      builder: (context, state) => const MeterFormPage(),
+                    ),
+                    GoRoute(
+                      path: 'edit',
+                      builder: (context, state) {
+                        final extra = state.extra as Map<String, dynamic>? ?? {};
+                        final meter = extra['meter'] as Meter?;
+                        return MeterFormPage(meter: meter);
+                      },
                     ),
                   ],
                 ),
@@ -144,8 +165,8 @@ class AppRouter {
             StatefulShellBranch(
               routes: [
                 GoRoute(
-                  path: '/documents',
-                  builder: (context, state) => const DocumentsPage(),
+                  path: '/reports',
+                  builder: (context, state) => const ReportListPage(),
                 ),
               ],
             ),

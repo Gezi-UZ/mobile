@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
+import 'package:gezi/features/home/presentation/bloc/home_event.dart';
 import 'package:gezi/features/meter/domain/entities/meter.dart';
 import 'package:gezi/features/meter/presentation/widgets/meter_card.dart';
+import 'package:gezi/injection_container.dart';
+import 'package:go_router/go_router.dart';
 
 /// Tela de listagem de contadores do utilizador.
 ///
 /// Exibe todos os contadores associados à conta, com destaque para o contador
 /// principal. Permite adicionar um novo contador através do botão de ação.
-class MeterListPage extends StatelessWidget {
+class MeterListPage extends StatefulWidget {
   const MeterListPage({super.key});
 
-  // ── Dados mockados (substituir por BLoC/Cubit quando o backend estiver pronto) ──
-  static final List<Meter> mockMeters = [
+  @override
+  State<MeterListPage> createState() => _MeterListPageState();
+
+  // ── Dados mockados ──
+  static List<Meter> mockMeters = [
     const Meter(
       id: '1',
       alias: 'Casa principal',
@@ -40,7 +47,9 @@ class MeterListPage extends StatelessWidget {
       iconType: MeterIconType.store,
     ),
   ];
+}
 
+class _MeterListPageState extends State<MeterListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,18 +66,35 @@ class MeterListPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _MeterListHeader(onAddTap: () {
-                // TODO: navegar para /meters/register
+                context.push('/meters/register');
               }),
               const SizedBox(height: 24),
               Expanded(
                 child: ListView.separated(
-                  itemCount: mockMeters.length,
+                  itemCount: MeterListPage.mockMeters.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final meter = mockMeters[index];
+                    final meter = MeterListPage.mockMeters[index];
                     return MeterCard(
                       meter: meter,
-                      onOptionsTap: () => _showMeterOptions(context, meter),
+                      onSetPrimary: () {
+                        setState(() {
+                          // Update all meters
+                          MeterListPage.mockMeters = MeterListPage.mockMeters.map((m) {
+                            if (m.id == meter.id) {
+                              return m.copyWith(isPrimary: true);
+                            }
+                            return m.copyWith(isPrimary: false);
+                          }).toList();
+                        });
+                        
+                        // Notify HomeBloc to reload with the new primary meter
+                        sl<HomeBloc>().add(const HomeDashboardLoadRequested());
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${meter.alias} definido como principal')),
+                        );
+                      },
                     );
                   },
                 ),
@@ -80,15 +106,6 @@ class MeterListPage extends StatelessWidget {
     );
   }
 
-  void _showMeterOptions(BuildContext context, Meter meter) {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _MeterOptionsSheet(meter: meter),
-    );
-  }
 }
 
 // ──────────────────────────────────────────────
@@ -152,119 +169,6 @@ class _MeterListHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Bottom sheet com opções do contador (definir como principal, editar, remover).
-class _MeterOptionsSheet extends StatelessWidget {
-  final Meter meter;
-
-  const _MeterOptionsSheet({required this.meter});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              meter.alias,
-              style: const TextStyle(
-                color: AppTheme.textColorDark,
-                fontSize: 16,
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              meter.serialNumber,
-              style: const TextStyle(
-                color: AppTheme.textColorSecondary,
-                fontSize: 13,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            if (!meter.isPrimary)
-              _OptionTile(
-                icon: Icons.star_outline,
-                label: 'Definir como principal',
-                onTap: () => Navigator.pop(context),
-              ),
-            _OptionTile(
-              icon: Icons.edit_outlined,
-              label: 'Editar nome',
-              onTap: () => Navigator.pop(context),
-            ),
-            _OptionTile(
-              icon: Icons.delete_outline,
-              label: 'Remover contador',
-              color: const Color(0xFFD32F2F),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OptionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color? color;
-  final VoidCallback onTap;
-
-  const _OptionTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppTheme.textColorDark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-        child: Row(
-          spacing: 12,
-          children: [
-            Icon(icon, color: effectiveColor, size: 22),
-            Text(
-              label,
-              style: TextStyle(
-                color: effectiveColor,
-                fontSize: 15,
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

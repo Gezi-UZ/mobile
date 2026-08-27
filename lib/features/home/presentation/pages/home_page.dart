@@ -13,14 +13,27 @@ import 'package:gezi/features/home/presentation/widgets/recent_recharges_widget.
 import 'package:gezi/injection_container.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../features/meter/presentation/pages/meter_list_page.dart';
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Inicia o carregamento se ainda não tiver dados
+    if (sl<HomeBloc>().state is HomeInitial) {
+      sl<HomeBloc>().add(const HomeDashboardLoadRequested());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<HomeBloc>()
-        ..add(const HomeDashboardLoadRequested()),
+    return BlocProvider.value(
+      value: sl<HomeBloc>(),
       child: Scaffold(
         backgroundColor: AppTheme.white,
         body: SafeArea(
@@ -43,27 +56,33 @@ class HomePage extends StatelessWidget {
                       ),
                       if (state.meterBalance.isLowBalance)
                         const LowBalanceAlertWidget(),
-                      GestureDetector(
-                        onTap: () {
-                          // Find corresponding meter from mock data based on meterId
+                      Builder(
+                        builder: (context) {
                           final meter = MeterListPage.mockMeters.firstWhere(
                             (m) => m.serialNumber == state.meterBalance.meterId,
                             orElse: () => MeterListPage.mockMeters.first,
                           );
-                          context.push('/meters/detail', extra: {
-                            'meter': meter,
-                            'recharges': state.recentRecharges,
-                          });
-                        },
-                        child: MeterCardWidget(
-                          balance: state.meterBalance,
-                        ),
+                          return GestureDetector(
+                            onTap: () {
+                              context.push('/meters/detail', extra: {
+                                'meter': meter,
+                                'recharges': state.recentRecharges,
+                              });
+                            },
+                            child: MeterCardWidget(
+                              balance: state.meterBalance,
+                              isPrimary: meter.isPrimary,
+                            ),
+                          );
+                        }
                       ),
                       RechargeActionsWidget(
                         onRecharge: () => context.push('/recharge'),
                         onHistory: () => context.push('/recharge?someone=true'),
                       ),
-                      const QuickActionsWidget(),
+                      QuickActionsWidget(
+                        onMeters: () => context.go('/meters'),
+                      ),
                       RecentRechargesWidget(
                         recharges: state.recentRecharges,
                       ),

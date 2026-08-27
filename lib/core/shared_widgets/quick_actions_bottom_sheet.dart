@@ -67,7 +67,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
             subtitle: 'Associar um novo contador à minha conta',
             onTap: () {
               Navigator.pop(context);
-              // TODO: context.push(AppRoutes.addMeter)
+              context.push('/meters/register');
             },
           ),
           _QuickActionItem(

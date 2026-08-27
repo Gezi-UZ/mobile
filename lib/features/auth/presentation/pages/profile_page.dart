@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
 import '../widgets/user_profile_card.dart';
 import '../widgets/profile_menu_item.dart';
 import '../widgets/profile_preferences_card.dart';
 import '../widgets/profile_logout_button.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatelessWidget { 
   const ProfilePage({super.key});
 
   @override
@@ -39,9 +40,9 @@ class ProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 8), // To balance with the margin of menu items
               ProfileMenuItem(
-                icon: Icons.people_outline,
+                icon: Icons.electric_meter_outlined,
                 title: 'Os meus contadores',
-                onTap: () {},
+                onTap: () => context.go('/meters'),
               ),
               ProfileMenuItem(
                 icon: Icons.support_agent,

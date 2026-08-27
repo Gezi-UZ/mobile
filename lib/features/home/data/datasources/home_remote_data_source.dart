@@ -1,6 +1,7 @@
 import '../models/recharge_model.dart';
 import '../../domain/entities/meter_balance.dart';
 import '../../domain/entities/recharge.dart';
+import '../../../meter/presentation/pages/meter_list_page.dart';
 
 abstract class HomeRemoteDataSource {
   /// Obtém o saldo do contador a partir do servidor remoto.
@@ -17,12 +18,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   @override
   Future<MeterBalance> getMeterBalance() async {
     // Stub — substituir pela chamada real à API.
+    final primaryMeter = MeterListPage.mockMeters.firstWhere(
+      (m) => m.isPrimary,
+      orElse: () => MeterListPage.mockMeters.first,
+    );
+
     return MeterBalance(
-      kwhBalance: 4.9,
-      meterId: '12345678901',
-      isOnline: true,
+      kwhBalance: primaryMeter.kwhBalance,
+      meterId: primaryMeter.serialNumber,
+      isOnline: primaryMeter.isOnline,
       lastSyncAt: DateTime.now(),
-      isLowBalance: true,
+      isLowBalance: primaryMeter.kwhBalance < 5.0,
     );
   }
 
@@ -38,6 +44,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         currency: 'MT',
         rechargedAt: now.subtract(const Duration(hours: 2)),
         status: RechargeStatus.success,
+        meterAlias: 'Casa principal',
+        meterSerialNumber: 'CR123456792',
+        isMyMeter: true,
+        paymentMethod: 'M-Pesa',
       ),
       RechargeModel(
         id: 'RCH-002',
@@ -46,6 +56,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         currency: 'MT',
         rechargedAt: now.subtract(const Duration(days: 1)),
         status: RechargeStatus.success,
+        meterSerialNumber: 'CR987654342',
+        isMyMeter: false,
+        paymentMethod: 'e-Mola',
       ),
       RechargeModel(
         id: 'RCH-003',
@@ -54,6 +67,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         currency: 'MT',
         rechargedAt: now.subtract(const Duration(days: 3)),
         status: RechargeStatus.success,
+        meterAlias: 'Escritório',
+        meterSerialNumber: 'CR111222333',
+        isMyMeter: true,
+        paymentMethod: 'Conta Bancária',
       ),
       RechargeModel(
         id: 'RCH-004',
@@ -62,6 +79,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         currency: 'MT',
         rechargedAt: now.subtract(const Duration(days: 7)),
         status: RechargeStatus.failed,
+        meterSerialNumber: 'CR444555666',
+        isMyMeter: false,
+        paymentMethod: 'M-Pesa',
       ),
       RechargeModel(
         id: 'RCH-005',
@@ -70,6 +90,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         currency: 'MT',
         rechargedAt: now.subtract(const Duration(days: 14)),
         status: RechargeStatus.success,
+        meterAlias: 'Casa de Férias',
+        meterSerialNumber: 'CR777888999',
+        isMyMeter: true,
+        paymentMethod: 'M-Pesa',
       ),
     ];
     return stubs.take(limit).toList();

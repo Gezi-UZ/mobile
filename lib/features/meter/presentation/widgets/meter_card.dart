@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/meter/domain/entities/meter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gezi/features/meter/presentation/widgets/meter_status_badge.dart';
 
 /// Card que representa um contador na lista de contadores.
@@ -10,12 +11,12 @@ import 'package:gezi/features/meter/presentation/widgets/meter_status_badge.dart
 /// borda laranja e label "⭐ PRINCIPAL".
 class MeterCard extends StatelessWidget {
   final Meter meter;
-  final VoidCallback? onOptionsTap;
+  final VoidCallback? onSetPrimary;
 
   const MeterCard({
     super.key,
     required this.meter,
-    this.onOptionsTap,
+    this.onSetPrimary,
   });
 
   @override
@@ -35,43 +36,49 @@ class MeterCard extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.only(
-          left: 17,
-          right: 17,
-          top: meter.isPrimary ? 40 : 17,
-          bottom: 17,
-        ),
-        child: Stack(
+        padding: const EdgeInsets.all(17),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Label "⭐ PRINCIPAL" posicionada no topo do card principal
+            // Label "PRINCIPAL" dentro do card
             if (meter.isPrimary)
-              Positioned(
-                top: -23,
-                left: 0,
-                child: Text(
-                  '⭐ PRINCIPAL',
-                  style: TextStyle(
-                    color: AppTheme.primaryOrange,
-                    fontSize: 10,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    height: 1.5,
-                    letterSpacing: 0.25,
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: AppTheme.primaryOrange,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'PRINCIPAL',
+                      style: TextStyle(
+                        color: AppTheme.primaryOrange,
+                        fontSize: 10,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                        height: 1.5,
+                        letterSpacing: 0.25,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 12,
               children: [
                 // Avatar com ícone
-                _MeterAvatar(iconType: meter.iconType),
-
+                _MeterAvatar(meter: meter),
+                const SizedBox(width: 12),
                 // Informações do contador
                 Expanded(child: _MeterInfo(meter: meter)),
-
+                const SizedBox(width: 12),
                 // Botão de opções
-                _OptionsButton(onTap: onOptionsTap),
+                _OptionsButton(meter: meter, onSetPrimary: onSetPrimary),
               ],
             ),
           ],
@@ -86,9 +93,16 @@ class MeterCard extends StatelessWidget {
 // ──────────────────────────────────────────────
 
 class _MeterAvatar extends StatelessWidget {
-  final MeterIconType iconType;
+  final Meter meter;
 
-  const _MeterAvatar({required this.iconType});
+  const _MeterAvatar({required this.meter});
+
+  Color get _statusColor {
+    if (!meter.isOnline) return const Color(0xFFD32F2F);
+    if (meter.kwhBalance >= 5) return const Color(0xFF00C950);
+    if (meter.kwhBalance > 0) return const Color(0xFFFFB300);
+    return const Color(0xFFD32F2F);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,45 +110,19 @@ class _MeterAvatar extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _avatarBackgroundColor,
+        color: _statusColor.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Icon(
         _avatarIcon,
-        color: _avatarIconColor,
+        color: _statusColor,
         size: 24,
       ),
     );
   }
 
-  Color get _avatarBackgroundColor {
-    switch (iconType) {
-      case MeterIconType.home:
-        return const Color(0x17D32F2F);
-      case MeterIconType.office:
-        return const Color(0x17FFB300);
-      case MeterIconType.store:
-        return const Color(0x17D32F2F);
-      case MeterIconType.generic:
-        return const Color(0x17FF6A00);
-    }
-  }
-
-  Color get _avatarIconColor {
-    switch (iconType) {
-      case MeterIconType.home:
-        return const Color(0xFFD32F2F);
-      case MeterIconType.office:
-        return const Color(0xFFFFB300);
-      case MeterIconType.store:
-        return const Color(0xFFD32F2F);
-      case MeterIconType.generic:
-        return AppTheme.primaryOrange;
-    }
-  }
-
   IconData get _avatarIcon {
-    switch (iconType) {
+    switch (meter.iconType) {
       case MeterIconType.home:
         return Icons.home_outlined;
       case MeterIconType.office:
@@ -207,32 +195,85 @@ class _MeterInfo extends StatelessWidget {
 
   Color get _kwhColor {
     if (!meter.isOnline) return const Color(0xFFD32F2F);
-    if (meter.kwhBalance > 10) return const Color(0xFFFFB300);
+    if (meter.kwhBalance >= 5) return const Color(0xFF00C950);
+    if (meter.kwhBalance > 0) return const Color(0xFFFFB300);
     return const Color(0xFFD32F2F);
   }
 }
 
 class _OptionsButton extends StatelessWidget {
-  final VoidCallback? onTap;
+  final Meter meter;
+  final VoidCallback? onSetPrimary;
 
-  const _OptionsButton({this.onTap});
+  const _OptionsButton({required this.meter, this.onSetPrimary});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Icon(
-          Icons.more_vert,
-          color: AppTheme.textColorSecondary,
-          size: 20,
-        ),
+    return PopupMenuButton<String>(
+      icon: const Icon(
+        Icons.more_vert,
+        color: AppTheme.textColorSecondary,
+        size: 20,
       ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: AppTheme.white,
+      onSelected: (value) {
+        if (value == 'primary') {
+          onSetPrimary?.call();
+        } else if (value == 'details') {
+          context.push('/meters/detail', extra: {'meter': meter});
+        } else if (value == 'edit') {
+          context.push('/meters/edit', extra: {'meter': meter});
+        } else if (value == 'remove') {
+          // TODO: Implementar lógica de remoção com confirmação
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Remover contador: Em breve')),
+          );
+        }
+      },
+      itemBuilder: (context) => [
+        if (!meter.isPrimary)
+          const PopupMenuItem(
+            value: 'primary',
+            child: Row(
+              spacing: 12,
+              children: [
+                Icon(Icons.star_outline, size: 20, color: AppTheme.textColorDark),
+                Text('Definir como principal', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+              ],
+            ),
+          ),
+        const PopupMenuItem(
+          value: 'details',
+          child: Row(
+            spacing: 12,
+            children: [
+              Icon(Icons.visibility_outlined, size: 20, color: AppTheme.textColorDark),
+              Text('Ver detalhes', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            spacing: 12,
+            children: [
+              Icon(Icons.edit_outlined, size: 20, color: AppTheme.textColorDark),
+              Text('Editar', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'remove',
+          child: Row(
+            spacing: 12,
+            children: [
+              Icon(Icons.delete_outline, size: 20, color: Color(0xFFD32F2F)),
+              Text('Remover', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFFD32F2F))),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

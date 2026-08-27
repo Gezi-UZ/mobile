@@ -39,7 +39,7 @@ class QuickActionsWidget extends StatelessWidget {
               onTap: onHistory,
             ),
               _QuickActionItem(
-                icon: Icons.bolt_rounded,
+                icon: Icons.electric_meter_outlined,
                 label: 'Contadores',
                 onTap: onMeters,
               ),

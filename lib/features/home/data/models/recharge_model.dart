@@ -8,6 +8,10 @@ class RechargeModel extends Recharge {
     required super.currency,
     required super.rechargedAt,
     required super.status,
+    super.meterAlias,
+    required super.meterSerialNumber,
+    required super.isMyMeter,
+    required super.paymentMethod,
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +22,10 @@ class RechargeModel extends Recharge {
       currency: json['currency'] as String,
       rechargedAt: DateTime.parse(json['recharged_at'] as String),
       status: _parseStatus(json['status'] as String),
+      meterAlias: json['meter_alias'] as String?,
+      meterSerialNumber: json['meter_serial_number'] as String,
+      isMyMeter: json['is_my_meter'] as bool? ?? false,
+      paymentMethod: json['payment_method'] as String? ?? 'M-Pesa',
     );
   }
 
@@ -28,6 +36,10 @@ class RechargeModel extends Recharge {
         'currency': currency,
         'recharged_at': rechargedAt.toIso8601String(),
         'status': status.name,
+        'meter_alias': meterAlias,
+        'meter_serial_number': meterSerialNumber,
+        'is_my_meter': isMyMeter,
+        'payment_method': paymentMethod,
       };
 
   static RechargeStatus _parseStatus(String raw) {
