@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.gezi"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = "29.0.13113456"
 
     compileOptions {

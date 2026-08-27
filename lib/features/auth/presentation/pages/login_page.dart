@@ -79,60 +79,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Account Selection Container
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.lightOrangeBackground,
-                        border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          width: 1.11,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange.withValues(
-                                alpha: 0.2,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            alignment: Alignment.center,
-                            child: Icon(
-                              Icons.person,
-                              color: AppTheme.primaryOrange,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Dai Wen Xuan',
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(color: AppTheme.textColorDark),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '+258 83 361 7829',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: AppTheme.textColorSecondary,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+
 
                   const Spacer(),
 

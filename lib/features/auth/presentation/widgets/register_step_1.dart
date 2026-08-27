@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/register/register_bloc.dart';
 import '../bloc/register/register_event.dart';
 import '../../../../core/theme/theme.dart';
@@ -205,6 +206,21 @@ class _RegisterStep1State extends State<RegisterStep1> {
                     ),
 
                     const Spacer(),
+
+                    // Login Link
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => context.push('/login'),
+                        child: Text(
+                          'Já tem conta? Entrar',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: AppTheme.primaryOrange,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
                     // Submit Button
                     PrimaryButton(
