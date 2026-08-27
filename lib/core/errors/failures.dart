@@ -29,3 +29,13 @@ class ValidationFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure([super.message = 'Local cache error occurred']);
 }
+
+/// Failure specific to Supabase Auth operations
+class AuthFailure extends Failure {
+  const AuthFailure([super.message = 'Authentication error']);
+}
+
+/// Failure when biometric/local_auth operations fail
+class BiometricFailure extends Failure {
+  const BiometricFailure([super.message = 'Biometric authentication failed']);
+}

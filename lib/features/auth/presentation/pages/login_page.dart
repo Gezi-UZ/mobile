@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gezi/core/theme/theme.dart';
 import '../../../../injection_container.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 import '../bloc/local_auth_bloc.dart';
 import '../bloc/local_auth_event.dart';
 import '../bloc/local_auth_state.dart';
@@ -18,20 +21,34 @@ class LoginPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.white,
         body: SafeArea(
-          child: BlocListener<LocalAuthBloc, LocalAuthState>(
-            listener: (context, state) {
-              if (state is LocalAuthError) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
-              } else if (state is LocalAuthenticated) {
-                // Navigate to home or dashboard
-                // For now, just show a success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Autenticado com sucesso!')),
-                );
-              }
-            },
+          child: MultiBlocListener(
+            listeners: [
+              // LocalAuthBloc: handles the device biometric prompt result
+              BlocListener<LocalAuthBloc, LocalAuthState>(
+                listener: (context, state) {
+                  if (state is LocalAuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  } else if (state is LocalAuthenticated) {
+                    // Biometric prompt passed — now restore Supabase session
+                    context.read<AuthBloc>().add(const BiometricLoginRequested());
+                  }
+                },
+              ),
+              // AuthBloc: handles session restoration result
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    context.go('/home');
+                  } else if (state is AuthError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message)),
+                    );
+                  }
+                },
+              ),
+            ],
             child: Padding(
               padding: const EdgeInsets.only(
                 top: 56,

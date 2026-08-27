@@ -1,6 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_event.dart';
+import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/create_pin_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/pin_login_page.dart';
@@ -23,17 +28,42 @@ import '../../features/alert/presentation/pages/alerts_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
 import '../../features/meter/domain/entities/meter.dart';
 import '../../features/home/domain/entities/recharge.dart';
+import '../../injection_container.dart';
+
+/// Routes that do NOT require authentication
+const _publicRoutes = ['/onboarding', '/login', '/pin-login', '/register', '/create-pin'];
 
 class AppRouter {
   static late final GoRouter router;
+  static late final AuthBloc _authBloc;
 
   static void init(SharedPreferences prefs) {
     final bool hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
 
+    // Singleton AuthBloc — drives reactive auth-based routing
+    _authBloc = sl<AuthBloc>()..add(const AppStarted());
+
     router = GoRouter(
       initialLocation: hasSeenOnboarding ? '/login' : '/onboarding',
+      refreshListenable: _GoRouterAuthNotifier(_authBloc),
+      redirect: (context, state) {
+        final authState = _authBloc.state;
+        final isPublic = _publicRoutes.contains(state.matchedLocation);
+
+        if (authState is AuthAuthenticated && isPublic) {
+          // Already authenticated — skip login/register and go to home
+          return '/home';
+        }
+
+        if (authState is AuthUnauthenticated && !isPublic) {
+          // Not authenticated — redirect to login
+          return '/login';
+        }
+
+        return null; // No redirect needed
+      },
       routes: [
-        // ── Rotas fora do shell (sem bottom nav) ──────────────────────────
+        // ── Public routes (no bottom nav) ────────────────────────────
         GoRoute(
           path: '/onboarding',
           builder: (context, state) => const OnboardingPage(),
@@ -66,7 +96,8 @@ class AppRouter {
           builder: (context, state) {
             final amount = state.uri.queryParameters['amount'] ?? '0';
             final meterNumber = state.uri.queryParameters['meterNumber'] ?? '';
-            final isCodeRecharge = state.uri.queryParameters['isCodeRecharge'] == 'true';
+            final isCodeRecharge =
+                state.uri.queryParameters['isCodeRecharge'] == 'true';
             final code = state.uri.queryParameters['code'];
             return RechargeStatusPage(
               amount: amount,
@@ -81,7 +112,8 @@ class AppRouter {
           builder: (context, state) {
             final amount = state.uri.queryParameters['amount'] ?? '0';
             final meterNumber = state.uri.queryParameters['meterNumber'] ?? '';
-            final isCodeRecharge = state.uri.queryParameters['isCodeRecharge'] == 'true';
+            final isCodeRecharge =
+                state.uri.queryParameters['isCodeRecharge'] == 'true';
             final code = state.uri.queryParameters['code'];
             return RechargeReceiptPage(
               amount: amount,
@@ -103,7 +135,8 @@ class AppRouter {
           path: '/meters/detail',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>? ?? {};
-            final meter = extra['meter'] as Meter? ?? MeterListPage.mockMeters.first;
+            final meter =
+                extra['meter'] as Meter? ?? MeterListPage.mockMeters.first;
             final recharges = extra['recharges'] as List<Recharge>? ?? [];
             return MeterDetailPage(meter: meter, recentRecharges: recharges);
           },
@@ -119,7 +152,7 @@ class AppRouter {
           path: '/receipt_preview',
           builder: (context, state) => const ReceiptPreviewPage(),
         ),
-        // ── Shell com bottom nav ──────────────────────────────────────────
+        // ── Shell with bottom nav (protected) ─────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) =>
               AppShell(navigationShell: navigationShell),
@@ -153,7 +186,8 @@ class AppRouter {
                     GoRoute(
                       path: 'edit',
                       builder: (context, state) {
-                        final extra = state.extra as Map<String, dynamic>? ?? {};
+                        final extra =
+                            state.extra as Map<String, dynamic>? ?? {};
                         final meter = extra['meter'] as Meter?;
                         return MeterFormPage(meter: meter);
                       },
@@ -185,3 +219,27 @@ class AppRouter {
   }
 }
 
+/// Bridges AuthBloc state changes to GoRouter's [refreshListenable].
+/// Notifies GoRouter to re-evaluate the redirect whenever auth state changes.
+class _GoRouterAuthNotifier extends ChangeNotifier {
+  _GoRouterAuthNotifier(AuthBloc authBloc) {
+    authBloc.stream.listen((_) => notifyListeners());
+  }
+}
+
+/// Root widget that provides the global [AuthBloc] to the entire widget tree.
+class GeziApp extends StatelessWidget {
+  const GeziApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider<AuthBloc>.value(
+      value: sl<AuthBloc>(),
+      child: MaterialApp.router(
+        title: 'Gezi',
+        debugShowCheckedModeBanner: false,
+        routerConfig: AppRouter.router,
+      ),
+    );
+  }
+}

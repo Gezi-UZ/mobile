@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../injection_container.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../bloc/register/register_bloc.dart';
 import '../bloc/register/register_state.dart';
 import '../widgets/register_step_1.dart';
-import '../widgets/register_step_2.dart';
 import '../widgets/register_step_3.dart';
 import '../../../../core/theme/theme.dart';
 
+/// Registration flow (2 steps):
+///   Step 1 — Phone number → Supabase signUp
+///   Step 2 — Passkey setup (fingerprint / PIN / skip)
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -47,13 +51,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   SnackBar(content: Text(state.message)),
                 );
               } else if (state is RegisterStep1Success) {
+                // Account created — advance to passkey setup
                 _nextPage(1);
-              } else if (state is RegisterStep2Success) {
-                _nextPage(2);
               } else if (state is RegisterSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Conta criada com sucesso!')),
-                );
+                // Propagate the new session to the global AuthBloc
+                context.read<AuthBloc>().add(SessionObtained(state.session));
                 context.go('/home');
               }
             },
@@ -62,18 +64,19 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   PageView(
                     controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(), // Disable swipe to force flow
-                    children: [
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: const [
                       RegisterStep1(),
-                      RegisterStep2(),
-                      RegisterStep3(),
+                      RegisterStep3(), // Passkey setup (formerly step 3)
                     ],
                   ),
                   if (state is RegisterLoading)
                     Container(
                       color: Colors.black.withValues(alpha: 0.3),
                       child: Center(
-                        child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primaryOrange,
+                        ),
                       ),
                     ),
                 ],

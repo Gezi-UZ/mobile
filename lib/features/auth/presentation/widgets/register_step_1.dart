@@ -119,7 +119,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Introduza o seu número de telefone para criar a sua conta Gezi. Enviaremos um código de verificação por SMS.',
+                      'Introduza o seu número de telefone Moçambicano para criar a sua conta Gezi.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: AppTheme.textColorSecondary,
                             fontSize: 14,
@@ -197,7 +197,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
 
                     const SizedBox(height: 12),
                     Text(
-                      'O código chega por SMS em até 30 segundos.',
+                      'A sua conta será criada imediatamente após confirmar o número.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.textColorSecondary,
                             fontSize: 12,
@@ -208,7 +208,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
 
                     // Submit Button
                     PrimaryButton(
-                      text: 'Receber código SMS',
+                      text: 'Criar conta',
                       onPressed: _isValid ? _submit : null,
                     ),
                   ],

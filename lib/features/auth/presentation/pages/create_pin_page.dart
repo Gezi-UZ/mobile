@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/shared_widgets/buttons/primary_button.dart';
+import '../../../../injection_container.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_state.dart';
 import '../widgets/pin_input_field.dart';
 
 class CreatePinPage extends StatefulWidget {
@@ -71,14 +76,31 @@ class _CreatePinPageState extends State<CreatePinPage> {
     });
   }
 
-  void _submit() {
+  void _submit() async {
     if (_isConfirmStep &&
         _isConfirmPinComplete &&
         _confirmPinController.text == _pinController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PIN configurado com sucesso!')),
-      );
-      context.go('/home');
+      final pin = _confirmPinController.text;
+      final authState = context.read<AuthBloc>().state;
+
+      if (authState is AuthAuthenticated) {
+        final result = await sl<AuthRepository>().savePin(pin, authState.session);
+        result.fold(
+          (failure) {
+            setState(() {
+              _errorMessage = failure.message;
+            });
+          },
+          (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('PIN configurado com sucesso!')),
+            );
+            context.go('/home');
+          },
+        );
+      } else {
+        context.go('/home');
+      }
     }
   }
 

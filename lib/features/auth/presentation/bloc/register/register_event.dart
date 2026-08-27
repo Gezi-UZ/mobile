@@ -7,6 +7,7 @@ abstract class RegisterEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+/// Step 1 — User submits their phone number and we sign them up directly.
 class PhoneNumberSubmitted extends RegisterEvent {
   final String phoneNumber;
 
@@ -16,15 +17,7 @@ class PhoneNumberSubmitted extends RegisterEvent {
   List<Object?> get props => [phoneNumber];
 }
 
-class OtpSubmitted extends RegisterEvent {
-  final String code;
-
-  const OtpSubmitted(this.code);
-
-  @override
-  List<Object?> get props => [code];
-}
-
+/// Step 2 — User chooses their passkey method (fingerprint or PIN).
 class PasskeyCreationRequested extends RegisterEvent {
   final String method;
 
@@ -34,4 +27,5 @@ class PasskeyCreationRequested extends RegisterEvent {
   List<Object?> get props => [method];
 }
 
+/// Step 2 alt — User skips passkey setup for now.
 class PasskeyCreationSkipped extends RegisterEvent {}

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../widgets/user_profile_card.dart';
 import '../widgets/profile_menu_item.dart';
 import '../widgets/profile_preferences_card.dart';
@@ -56,7 +59,9 @@ class ProfilePage extends StatelessWidget {
               ),
               const ProfilePreferencesCard(),
               ProfileLogoutButton(
-                onTap: () {},
+                onTap: () {
+                  context.read<AuthBloc>().add(const SignOutRequested());
+                },
               ),
             ],
           ),

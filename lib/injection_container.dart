@@ -1,33 +1,43 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:gezi/features/home/domain/repositories/home_repository.dart';
-import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gezi/core/services/local_notification_service.dart';
+import 'package:gezi/core/network/dio_client.dart';
 
-// Auth
+// Core
+import 'core/supabase/supabase_client.dart';
+
+// Auth — domain
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/domain/repositories/local_auth_repository.dart';
 import 'features/auth/domain/usecases/check_biometrics_availability.dart';
 import 'features/auth/domain/usecases/authenticate_with_biometrics.dart';
-import 'features/auth/domain/usecases/request_otp.dart';
-import 'features/auth/domain/usecases/verify_otp.dart';
-import 'features/auth/domain/usecases/create_passkey.dart';
+import 'features/auth/domain/usecases/sign_up.dart';
+import 'features/auth/domain/usecases/sign_in_with_biometric.dart';
+import 'features/auth/domain/usecases/get_current_session.dart';
+import 'features/auth/domain/usecases/sign_out.dart';
 
-
+// Auth — data
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/datasources/local_auth_local_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/data/repositories/local_auth_repository_impl.dart';
+
+// Auth — presentation
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/local_auth_bloc.dart';
 import 'features/auth/presentation/bloc/register/register_bloc.dart';
 
 // Home
 import 'features/home/data/datasources/home_remote_data_source.dart';
 import 'features/home/data/repositories/home_repository_impl.dart';
+import 'features/home/domain/repositories/home_repository.dart';
 import 'features/home/domain/usecases/get_meter_balance.dart';
 import 'features/home/domain/usecases/get_recent_recharges.dart';
+import 'features/home/presentation/bloc/home_bloc.dart';
 
 // Recharge
 import 'features/recharge/data/datasources/recharge_remote_data_source.dart';
@@ -42,88 +52,114 @@ final sl = GetIt.instance;
 
 /// Initialize all dependencies
 Future<void> init() async {
-  // Features - Auth
-  // Bloc
-  sl.registerFactory(() =>
-      LocalAuthBloc(
-        checkBiometricsAvailability: sl(),
-        authenticateWithBiometrics: sl(),
-      ));
-  sl.registerFactory(() =>
-      RegisterBloc(
-        requestOtp: sl(),
-        verifyOtp: sl(),
-        createPasskey: sl(),
-      ));
-  sl.registerLazySingleton(() => HomeBloc(
-      getMeterBalance: sl(),
-      getRecentRecharges: sl(),
-  ));
-  sl.registerFactory(() => RechargeBloc(
-        calculateRechargeBreakdown: sl(),
-        initiateRecharge: sl(),
-        applyManualCode: sl(),
-      ));
+  // ── External ────────────────────────────────────────────────────
 
-  // Use cases
-  sl.registerLazySingleton(() => CheckBiometricsAvailability(sl()));
-  sl.registerLazySingleton(() => AuthenticateWithBiometrics(sl()));
-  sl.registerLazySingleton(() => RequestOtp(sl()));
-  sl.registerLazySingleton(() => VerifyOtp(sl()));
-  sl.registerLazySingleton(() => CreatePasskey(sl()));
-  sl.registerLazySingleton(() => GetMeterBalance(sl()));
-  sl.registerLazySingleton(() => GetRecentRecharges(sl()));
-  sl.registerLazySingleton(() => CalculateRechargeBreakdown(sl()));
-  sl.registerLazySingleton(() => InitiateRecharge(sl()));
-  sl.registerLazySingleton(() => ApplyManualCode(sl()));
+  // Supabase client (already initialized in main.dart via initSupabase())
+  sl.registerLazySingleton<SupabaseClient>(() => supabase);
 
-  // Repository
-  sl.registerLazySingleton<LocalAuthRepository>(
-        () => LocalAuthRepositoryImpl(localDataSource: sl()),
-  );
-  sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(remoteDataSource: sl()),
+  // Secure Storage (hardware-backed on Android/iOS)
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(
+      aOptions: AndroidOptions(),
+    ),
   );
 
-  sl.registerLazySingleton<HomeRemoteDataSource>(
-      () => HomeRemoteDataSourceImpl(),
-  );
-  sl.registerLazySingleton<HomeRepository>(
-      () => HomeRepositoryImpl(remoteDataSource: sl()),
-  );
-
-  sl.registerLazySingleton<RechargeRemoteDataSource>(
-      () => RechargeRemoteDataSourceImpl(),
-  );
-  sl.registerLazySingleton<RechargeRepository>(
-      () => RechargeRepositoryImpl(remoteDataSource: sl()),
-  );
-
-  // Data sources
-  sl.registerLazySingleton<LocalAuthLocalDataSource>(
-        () => LocalAuthLocalDataSourceImpl(localAuth: sl()),
-  );
-  sl.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSourceImpl(),
-  );
-
-  // External
+  // Shared Preferences
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
 
-  // External - Dio HTTP Client
-  sl.registerLazySingleton(() {
-    final dio = Dio();
-    dio.options.connectTimeout = const Duration(seconds: 5);
-    dio.options.receiveTimeout = const Duration(seconds: 5);
-    return dio;
-  });
-
-  // Local Auth
+  // Local Authentication (biometrics)
   sl.registerLazySingleton(() => LocalAuthentication());
+
+  // Dio HTTP Client (with JWT interceptor — for FastAPI endpoints)
+  sl.registerLazySingleton<DioClient>(() => DioClient());
+  sl.registerLazySingleton<Dio>(() => sl<DioClient>().dio);
 
   // Notifications
   final localNotificationService = LocalNotificationService();
   await localNotificationService.init();
   sl.registerLazySingleton(() => localNotificationService);
+
+  // ── Auth ─────────────────────────────────────────────────────────
+
+  // Data sources
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(secureStorage: sl()),
+  );
+  sl.registerLazySingleton<LocalAuthLocalDataSource>(
+    () => LocalAuthLocalDataSourceImpl(localAuth: sl()),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<LocalAuthRepository>(
+    () => LocalAuthRepositoryImpl(localDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => SignUp(sl()));
+  sl.registerLazySingleton(() => SignInWithBiometric(sl()));
+  sl.registerLazySingleton(() => GetCurrentSession(sl()));
+  sl.registerLazySingleton(() => SignOut(sl()));
+  sl.registerLazySingleton(() => CheckBiometricsAvailability(sl()));
+  sl.registerLazySingleton(() => AuthenticateWithBiometrics(sl()));
+
+  // Blocs
+  // AuthBloc is a lazy singleton — lives for the entire app lifetime
+  sl.registerLazySingleton(
+    () => AuthBloc(
+      getCurrentSession: sl(),
+      signInWithBiometric: sl(),
+      signOut: sl(),
+      authRepository: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => LocalAuthBloc(
+      checkBiometricsAvailability: sl(),
+      authenticateWithBiometrics: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => RegisterBloc(
+      signUp: sl(),
+      authenticateWithBiometrics: sl(),
+      authRepository: sl(),
+    ),
+  );
+
+  // ── Home ─────────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => GetMeterBalance(sl()));
+  sl.registerLazySingleton(() => GetRecentRecharges(sl()));
+  sl.registerLazySingleton(
+    () => HomeBloc(getMeterBalance: sl(), getRecentRecharges: sl()),
+  );
+
+  // ── Recharge ─────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<RechargeRemoteDataSource>(
+    () => RechargeRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<RechargeRepository>(
+    () => RechargeRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => CalculateRechargeBreakdown(sl()));
+  sl.registerLazySingleton(() => InitiateRecharge(sl()));
+  sl.registerLazySingleton(() => ApplyManualCode(sl()));
+  sl.registerFactory(
+    () => RechargeBloc(
+      calculateRechargeBreakdown: sl(),
+      initiateRecharge: sl(),
+      applyManualCode: sl(),
+    ),
+  );
 }

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:go_router/go_router.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
+import '../bloc/local_auth_bloc.dart';
+import '../bloc/local_auth_event.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/pin_input_field.dart';
 import '../widgets/user_profile_card.dart';
@@ -31,29 +37,32 @@ class _PinLoginPageState extends State<PinLoginPage> {
 
   void _onLoginPressed() {
     if (_isPinComplete) {
-      // Execute PIN authentication logic
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('Autenticando PIN: ${_pinController.text}...')),
-      // );
-      context.go('/home');
+      final pin = _pinController.text.trim();
+      context.read<AuthBloc>().add(PinLoginRequested(pin));
     }
   }
 
   void _onUseFingerprintPressed() {
-    // Navigate or trigger biometric authentication
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go('/login');
-    }
+    // Trigger device biometric prompt via LocalAuthBloc
+    context.read<LocalAuthBloc>().add(const AuthenticateWithBiometricsEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.white,
-      body: SafeArea(
-        child: Padding(
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          context.go('/home');
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.white,
+        body: SafeArea(
+          child: Padding(
           padding: const EdgeInsets.only(
             top: 56,
             left: 24,
@@ -139,6 +148,8 @@ class _PinLoginPageState extends State<PinLoginPage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
+}
+
