@@ -15,7 +15,8 @@ import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/domain/repositories/local_auth_repository.dart';
 import 'features/auth/domain/usecases/check_biometrics_availability.dart';
 import 'features/auth/domain/usecases/authenticate_with_biometrics.dart';
-import 'features/auth/domain/usecases/sign_up.dart';
+import 'features/auth/domain/usecases/sign_up_with_email.dart';
+import 'features/auth/domain/usecases/sign_in_with_email.dart';
 import 'features/auth/domain/usecases/sign_in_with_biometric.dart';
 import 'features/auth/domain/usecases/get_current_session.dart';
 import 'features/auth/domain/usecases/sign_out.dart';
@@ -29,6 +30,8 @@ import 'features/auth/data/repositories/local_auth_repository_impl.dart';
 // Auth — presentation
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/local_auth_bloc.dart';
+import 'features/auth/presentation/bloc/email_auth/login_bloc.dart';
+import 'features/auth/presentation/bloc/email_auth/signup_bloc.dart';
 import 'features/auth/presentation/bloc/register/register_bloc.dart';
 
 // Home
@@ -47,6 +50,14 @@ import 'features/recharge/domain/usecases/calculate_recharge_breakdown.dart';
 import 'features/recharge/domain/usecases/initiate_recharge.dart';
 import 'features/recharge/domain/usecases/apply_manual_code.dart';
 import 'features/recharge/presentation/bloc/recharge_bloc.dart';
+
+// Profile
+import 'features/profile/data/datasources/profile_remote_data_source.dart';
+import 'features/profile/data/repositories/profile_repository_impl.dart';
+import 'features/profile/domain/repositories/profile_repository.dart';
+import 'features/profile/domain/usecases/get_user_profile.dart';
+import 'features/profile/domain/usecases/update_user_profile.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -99,7 +110,8 @@ Future<void> init() async {
   );
 
   // Use cases
-  sl.registerLazySingleton(() => SignUp(sl()));
+  sl.registerLazySingleton(() => SignUpWithEmail(sl()));
+  sl.registerLazySingleton(() => SignInWithEmail(sl()));
   sl.registerLazySingleton(() => SignInWithBiometric(sl()));
   sl.registerLazySingleton(() => GetCurrentSession(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
@@ -123,8 +135,17 @@ Future<void> init() async {
     ),
   );
   sl.registerFactory(
+    () => LoginBloc(
+      signInWithEmail: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => SignupBloc(
+      signUpWithEmail: sl(),
+    ),
+  );
+  sl.registerFactory(
     () => RegisterBloc(
-      signUp: sl(),
       authenticateWithBiometrics: sl(),
       authRepository: sl(),
     ),
@@ -160,6 +181,25 @@ Future<void> init() async {
       calculateRechargeBreakdown: sl(),
       initiateRecharge: sl(),
       applyManualCode: sl(),
+    ),
+  );
+
+  // ── Profile ───────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => GetUserProfile(sl()));
+  sl.registerLazySingleton(() => UpdateUserProfile(sl()));
+
+  // ProfileBloc is a lazy singleton — shared between HomePage header and ProfilePage
+  sl.registerLazySingleton(
+    () => ProfileBloc(
+      getUserProfile: sl(),
+      updateUserProfile: sl(),
     ),
   );
 }

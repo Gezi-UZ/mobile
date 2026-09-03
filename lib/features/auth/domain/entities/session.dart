@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 class UserSession extends Equatable {
   final String userId;
   final String? phone;
+  final String? email;
   final String accessToken;
   final String refreshToken;
   final DateTime expiresAt;
@@ -12,6 +13,7 @@ class UserSession extends Equatable {
   const UserSession({
     required this.userId,
     this.phone,
+    this.email,
     required this.accessToken,
     required this.refreshToken,
     required this.expiresAt,
@@ -24,6 +26,7 @@ class UserSession extends Equatable {
   List<Object?> get props => [
         userId,
         phone,
+        email,
         accessToken,
         refreshToken,
         expiresAt,

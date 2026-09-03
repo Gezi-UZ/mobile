@@ -6,6 +6,7 @@ class SessionModel extends UserSession {
   const SessionModel({
     required super.userId,
     super.phone,
+    super.email,
     required super.accessToken,
     required super.refreshToken,
     required super.expiresAt,
@@ -20,6 +21,7 @@ class SessionModel extends UserSession {
     return SessionModel(
       userId: user.id,
       phone: user.phone,
+      email: user.email,
       accessToken: session.accessToken,
       refreshToken: session.refreshToken ?? '',
       expiresAt: DateTime.fromMillisecondsSinceEpoch(

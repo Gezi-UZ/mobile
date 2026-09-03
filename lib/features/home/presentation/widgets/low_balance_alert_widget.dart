@@ -1,10 +1,10 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 
 class LowBalanceAlertWidget extends StatelessWidget {
-  const LowBalanceAlertWidget({super.key});
+  final double balance;
+
+  const LowBalanceAlertWidget({super.key, required this.balance});
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +22,15 @@ class LowBalanceAlertWidget extends StatelessWidget {
         child: Row(
           spacing: 12,
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppTheme.textColorDark),
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: AppTheme.textColorDark,
+            ),
             Expanded(
               child: Text(
-                'Saldo baixo — recarregue para evitar interrupção.',
+                balance <= 0
+                    ? 'Saldo zero — recarregue.'
+                    : 'Saldo baixo — recarregue para evitar interrupção.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppTheme.textColorDark,
                   fontSize: 14,

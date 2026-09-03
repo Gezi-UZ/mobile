@@ -13,6 +13,10 @@ import 'package:gezi/features/home/presentation/widgets/recent_recharges_widget.
 import 'package:gezi/injection_container.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../features/meter/presentation/pages/meter_list_page.dart';
+import '../../../../features/profile/presentation/bloc/profile_bloc.dart';
+import '../../../../features/profile/presentation/bloc/profile_event.dart';
+import '../../../../features/profile/presentation/bloc/profile_state.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -24,16 +28,20 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Inicia o carregamento se ainda não tiver dados
     if (sl<HomeBloc>().state is HomeInitial) {
       sl<HomeBloc>().add(const HomeDashboardLoadRequested());
     }
+    // Load profile for the header name
+    sl<ProfileBloc>().add(const ProfileLoadRequested());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: sl<HomeBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<HomeBloc>()),
+        BlocProvider.value(value: sl<ProfileBloc>()),
+      ],
       child: Scaffold(
         backgroundColor: AppTheme.white,
         body: SafeArea(
@@ -50,12 +58,21 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      DashboardHeaderWidget(
-                        userName: 'Dai Wen Xuan',
-                        notificationCount: state.notificationCount,
+                      BlocBuilder<ProfileBloc, ProfileState>(
+                        builder: (context, profileState) {
+                          final name = profileState is ProfileLoaded
+                              ? profileState.profile.nome
+                              : profileState is ProfileUpdateSuccess
+                                  ? profileState.profile.nome
+                                  : 'Bem-vindo';
+                          return DashboardHeaderWidget(
+                            userName: name,
+                            notificationCount: state.notificationCount,
+                          );
+                        },
                       ),
                       if (state.meterBalance.isLowBalance)
-                        const LowBalanceAlertWidget(),
+                        LowBalanceAlertWidget(balance: state.meterBalance.kwhBalance),
                       Builder(
                         builder: (context) {
                           final meter = MeterListPage.mockMeters.firstWhere(

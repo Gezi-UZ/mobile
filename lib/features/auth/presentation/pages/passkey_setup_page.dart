@@ -1,46 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 import '../bloc/register/register_bloc.dart';
+import '../bloc/register/register_event.dart';
 import '../bloc/register/register_state.dart';
-import '../widgets/register_step_1.dart';
 import '../widgets/register_step_3.dart';
-import '../../../../core/theme/theme.dart';
 
-/// Registration flow (2 steps):
-///   Step 1 — Phone number → Supabase signUp
-///   Step 2 — Passkey setup (fingerprint / PIN / skip)
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+/// Passkey setup (formerly step 3 of registration).
+/// This page is reached after a NEW user successfully signs up.
+class PasskeySetupPage extends StatefulWidget {
+  const PasskeySetupPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<PasskeySetupPage> createState() => _PasskeySetupPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final PageController _pageController = PageController();
+class _PasskeySetupPageState extends State<PasskeySetupPage> {
+  late final RegisterBloc _registerBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _registerBloc = sl<RegisterBloc>();
+    
+    // We already have the session propagated to AuthBloc, so we can just trigger passkey setup.
+    // However, RegisterBloc still expects OtpVerifiedForRegister to hold the session if we wanted
+    // to pass it, but since AuthBloc handles it, we might just use AuthBloc's current session.
+    final session = sl<AuthBloc>().state is AuthAuthenticated 
+        ? (sl<AuthBloc>().state as AuthAuthenticated).session 
+        : null;
+        
+    if (session != null) {
+      _registerBloc.add(OtpVerifiedForRegister(
+        phoneNumber: session.email ?? session.phone ?? '',
+        session: session,
+      ));
+    }
+  }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _registerBloc.close();
     super.dispose();
-  }
-
-  void _nextPage(int pageIndex) {
-    _pageController.animateToPage(
-      pageIndex,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<RegisterBloc>(),
+    return BlocProvider.value(
+      value: _registerBloc,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
@@ -50,9 +62,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
-              } else if (state is RegisterStep1Success) {
-                // Account created — advance to passkey setup
-                _nextPage(1);
               } else if (state is RegisterSuccess) {
                 // Propagate the new session to the global AuthBloc
                 context.read<AuthBloc>().add(SessionObtained(state.session));
@@ -62,14 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
             builder: (context, state) {
               return Stack(
                 children: [
-                  PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: const [
-                      RegisterStep1(),
-                      RegisterStep3(), // Passkey setup (formerly step 3)
-                    ],
-                  ),
+                  const RegisterStep3(),
                   if (state is RegisterLoading)
                     Container(
                       color: Colors.black.withValues(alpha: 0.3),

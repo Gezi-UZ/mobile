@@ -27,7 +27,8 @@ class PinLoginRequested extends AuthEvent {
   List<Object?> get props => [pin];
 }
 
-/// Fired after successful sign-up / sign-in with a fresh session.
+/// Fired after OTP verification succeeds — provides the fresh session
+/// directly so AuthBloc doesn't need to re-fetch it.
 class SessionObtained extends AuthEvent {
   final UserSession session;
   const SessionObtained(this.session);

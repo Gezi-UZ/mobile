@@ -10,6 +10,8 @@ import 'auth_event.dart';
 import 'auth_state.dart';
 
 /// Global auth bloc that lives for the lifetime of the app.
+/// Handles session checks, biometric login, PIN login, and sign-out.
+/// OTP send/verify is handled separately by OtpBloc.
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetCurrentSession getCurrentSession;
   final SignInWithBiometric signInWithBiometric;
@@ -89,6 +91,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+  /// Session obtained externally (e.g., after OTP verification in OtpBloc).
   void _onSessionObtained(
     SessionObtained event,
     Emitter<AuthState> emit,

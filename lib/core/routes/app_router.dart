@@ -10,7 +10,8 @@ import '../../features/auth/presentation/pages/create_pin_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/pin_login_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
-import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/passkey_setup_page.dart';
+import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/report/presentation/pages/report_list_page.dart';
 import '../../features/report/presentation/pages/receipt_preview_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -31,7 +32,7 @@ import '../../features/home/domain/entities/recharge.dart';
 import '../../injection_container.dart';
 
 /// Routes that do NOT require authentication
-const _publicRoutes = ['/onboarding', '/login', '/pin-login', '/register', '/create-pin'];
+const _publicRoutes = ['/onboarding', '/login', '/pin-login', '/signup', '/passkey-setup', '/create-pin'];
 
 class AppRouter {
   static late final GoRouter router;
@@ -77,8 +78,12 @@ class AppRouter {
           builder: (context, state) => const PinLoginPage(),
         ),
         GoRoute(
-          path: '/register',
-          builder: (context, state) => const RegisterPage(),
+          path: '/signup',
+          builder: (context, state) => const SignupPage(),
+        ),
+        GoRoute(
+          path: '/passkey-setup',
+          builder: (context, state) => const PasskeySetupPage(),
         ),
         GoRoute(
           path: '/create-pin',
@@ -127,6 +132,7 @@ class AppRouter {
           path: '/recharge/code',
           builder: (context, state) => const RechargeByCodePage(),
         ),
+
         GoRoute(
           path: '/alerts',
           builder: (context, state) => const AlertsPage(),

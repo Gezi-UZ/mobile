@@ -1,50 +1,44 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/repositories/auth_repository.dart';
-import '../../../domain/usecases/sign_up.dart';
 import '../../../domain/usecases/authenticate_with_biometrics.dart';
 import 'register_event.dart';
 import 'register_state.dart';
 
-/// Manages the multi-step registration flow:
+/// Manages the passkey setup step after OTP authentication.
 ///
-/// Step 1 — Phone number → Supabase signUp (no OTP)
-/// Step 2 — Passkey setup (fingerprint or PIN via local_auth)
+/// Flow:
+///   OtpVerifiedForRegister → RegisterStep1Success (session available)
+///   PasskeyCreationRequested → biometric prompt → RegisterSuccess
+///   PasskeyCreationSkipped   → RegisterSuccess (no passkey)
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  final SignUp signUp;
   final AuthenticateWithBiometrics authenticateWithBiometrics;
   final AuthRepository authRepository;
 
   RegisterBloc({
-    required this.signUp,
     required this.authenticateWithBiometrics,
     required this.authRepository,
   }) : super(RegisterInitial()) {
-    on<PhoneNumberSubmitted>(_onPhoneNumberSubmitted);
+    on<OtpVerifiedForRegister>(_onOtpVerified);
     on<PasskeyCreationRequested>(_onPasskeyCreationRequested);
     on<PasskeyCreationSkipped>(_onPasskeyCreationSkipped);
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Step 1 — Sign up with phone
+  // OTP Verified — session received, ready for passkey setup
   // ─────────────────────────────────────────────────────────────────
 
-  Future<void> _onPhoneNumberSubmitted(
-    PhoneNumberSubmitted event,
+  void _onOtpVerified(
+    OtpVerifiedForRegister event,
     Emitter<RegisterState> emit,
-  ) async {
-    emit(RegisterLoading(phoneNumber: event.phoneNumber));
-
-    final result = await signUp(event.phoneNumber);
-    result.fold(
-      (failure) => emit(RegisterError(failure.message, phoneNumber: event.phoneNumber)),
-      (session) => emit(
-        RegisterStep1Success(phoneNumber: event.phoneNumber, session: session),
-      ),
-    );
+  ) {
+    emit(RegisterStep1Success(
+      phoneNumber: event.phoneNumber,
+      session: event.session,
+    ));
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Step 2 — Enable biometric passkey
+  // Passkey — Enable biometric
   // ─────────────────────────────────────────────────────────────────
 
   Future<void> _onPasskeyCreationRequested(
@@ -56,7 +50,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
     emit(RegisterLoading(phoneNumber: currentState.phoneNumber));
 
-    // Trigger device biometric prompt
     final bioResult = await authenticateWithBiometrics(
       localizedReason: 'Confirme a sua identidade para criar a sua Passkey Gezi',
     );
@@ -68,13 +61,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       (authenticated) async {
         if (!authenticated) {
           emit(RegisterError(
-            'Autenticação biométrica falhou. Tente novamente.',
+            'Autenticacao biometrica falhou. Tente novamente.',
             phoneNumber: currentState.phoneNumber,
           ));
           return;
         }
 
-        // Store refresh token in secure storage + update Supabase user_metadata
         final enableResult =
             await authRepository.enableBiometric(currentState.session);
 
@@ -94,7 +86,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Step 2 skipped
+  // Passkey skipped
   // ─────────────────────────────────────────────────────────────────
 
   void _onPasskeyCreationSkipped(

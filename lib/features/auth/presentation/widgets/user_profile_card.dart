@@ -1,18 +1,31 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/profile/presentation/bloc/profile_bloc.dart';
+import '../../../../features/profile/domain/entities/user_profile.dart';
+import '../pages/edit_profile_page.dart';
 
 class UserProfileCard extends StatelessWidget {
-  final String userName;
-  final String phoneNumber;
+  final UserProfile? profile;
+
+  // Legacy params kept for fallback during transition
+  final String? userName;
+  final String? phoneNumber;
 
   const UserProfileCard({
     super.key,
-    this.userName = 'Dai Wen Xuan',
-    this.phoneNumber = '+258 83 361 7829',
+    this.profile,
+    this.userName,
+    this.phoneNumber,
   });
 
   @override
   Widget build(BuildContext context) {
+    final name = profile?.nome ?? userName ?? '—';
+    final phone = profile?.telefone != null
+        ? '+258 ${profile!.telefone}'
+        : phoneNumber ?? 'Sem telefone';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -21,9 +34,6 @@ class UserProfileCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             width: 56,
@@ -45,11 +55,10 @@ class UserProfileCard extends StatelessWidget {
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userName,
+                  name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppTheme.textColorDark,
                     fontWeight: FontWeight.w700,
@@ -60,7 +69,7 @@ class UserProfileCard extends StatelessWidget {
                 Opacity(
                   opacity: 0.61,
                   child: Text(
-                    phoneNumber,
+                    phone,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppTheme.textColorSecondary,
                       fontSize: 14,
@@ -72,6 +81,25 @@ class UserProfileCard extends StatelessWidget {
               ],
             ),
           ),
+          if (profile != null)
+            IconButton(
+              icon: const Icon(
+                Icons.edit_outlined,
+                color: AppTheme.primaryOrange,
+                size: 20,
+              ),
+              tooltip: 'Editar Perfil',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<ProfileBloc>(),
+                      child: EditProfilePage(profile: profile!),
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

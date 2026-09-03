@@ -7,17 +7,23 @@ import '../../../../core/supabase/supabase_client.dart';
 import '../models/session_model.dart';
 
 // Keys used in Secure Storage
-const _kPasswordKey = 'gezi_auth_password';
 const _kRefreshTokenKey = 'gezi_auth_refresh_token';
 const _kBiometricEnabledKey = 'gezi_biometric_enabled';
 const _kPinHashKey = 'gezi_pin_hash';
 
 abstract class AuthRemoteDataSource {
-  /// Creates a new Supabase account via phone + auto-generated password.
-  Future<SessionModel> signUp(String phone);
+  /// Creates a new user with [email] and [pin], storing [fullName] in user metadata.
+  Future<SessionModel> signUpWithEmail({
+    required String fullName,
+    required String email,
+    required String pin,
+  });
 
-  /// Signs in with phone + password from secure storage.
-  Future<SessionModel> signInWithPassword(String phone, String password);
+  /// Authenticates an existing user using [email] and [pin].
+  Future<SessionModel> signInWithEmail({
+    required String email,
+    required String pin,
+  });
 
   /// Returns the current active session, or null.
   Future<SessionModel?> getCurrentSession();
@@ -50,53 +56,60 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.secureStorage});
 
   // ─────────────────────────────────────────────────────────────────
-  // Sign Up
+  // Email & PIN — Sign Up
   // ─────────────────────────────────────────────────────────────────
 
   @override
-  Future<SessionModel> signUp(String phone) async {
-    final password = _generateSecurePassword();
-    final phoneE164 = _toE164(phone);
-
+  Future<SessionModel> signUpWithEmail({
+    required String fullName,
+    required String email,
+    required String pin,
+  }) async {
     final response = await supabase.auth.signUp(
-      phone: phoneE164,
-      password: password,
+      email: email,
+      password: pin,
+      data: {'full_name': fullName},
     );
 
     final session = response.session;
     if (session == null) {
-      throw const AuthException('Sign-up failed: no session returned');
+      throw const AuthException('Registo falhou: Nenhuma sessão retornada. Verifique se a confirmação de e-mail está ligada no Supabase.');
     }
 
-    await secureStorage.write(key: _kPasswordKey, value: password);
+    // Persist the refresh token for biometric / PIN restore
     await secureStorage.write(
       key: _kRefreshTokenKey,
       value: session.refreshToken,
     );
 
-    return SessionModel.fromSupabase(session);
+    final biometricEnabled = await isBiometricEnabled();
+    return SessionModel.fromSupabase(session, isBiometricEnabled: biometricEnabled);
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Sign In with Password
+  // Email & PIN — Sign In
   // ─────────────────────────────────────────────────────────────────
 
   @override
-  Future<SessionModel> signInWithPassword(
-    String phone,
-    String password,
-  ) async {
-    final phoneE164 = _toE164(phone);
-
+  Future<SessionModel> signInWithEmail({
+    required String email,
+    required String pin,
+  }) async {
     final response = await supabase.auth.signInWithPassword(
-      phone: phoneE164,
-      password: password,
+      email: email,
+      password: pin,
     );
 
     final session = response.session;
     if (session == null) {
-      throw const AuthException('Sign-in failed: no session returned');
+      throw const AuthException('Login falhou: Nenhuma sessão retornada.');
     }
+
+    // Persist the refresh token for biometric / PIN restore
+    await secureStorage.write(
+      key: _kRefreshTokenKey,
+      value: session.refreshToken,
+    );
 
     final biometricEnabled = await isBiometricEnabled();
     return SessionModel.fromSupabase(session, isBiometricEnabled: biometricEnabled);
@@ -135,12 +148,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       key: _kRefreshTokenKey,
       value: session.refreshToken,
     );
-
     await secureStorage.write(key: _kBiometricEnabledKey, value: 'true');
 
     await supabase.auth.updateUser(
       UserAttributes(
-        data: {'biometric_enabled': true, 'biometric_setup_at': DateTime.now().toIso8601String()},
+        data: {
+          'biometric_enabled': true,
+          'biometric_setup_at': DateTime.now().toIso8601String(),
+        },
       ),
     );
   }
@@ -160,7 +175,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     await supabase.auth.updateUser(
       UserAttributes(
-        data: {'pin_enabled': true, 'pin_setup_at': DateTime.now().toIso8601String()},
+        data: {
+          'pin_enabled': true,
+          'pin_setup_at': DateTime.now().toIso8601String(),
+        },
       ),
     );
   }
@@ -177,7 +195,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw const AuthException('PIN incorreto. Tente novamente.');
     }
 
-    // PIN is correct — restore Supabase session
     return restoreSessionFromSecureStorage();
   }
 
@@ -195,13 +212,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<SessionModel> restoreSessionFromSecureStorage() async {
     final refreshToken = await secureStorage.read(key: _kRefreshTokenKey);
     if (refreshToken == null) {
-      throw const AuthException('Nenhuma sessão encontrada para este dispositivo');
+      throw const AuthException('Nenhuma sessao encontrada para este dispositivo.');
     }
 
     final response = await supabase.auth.setSession(refreshToken);
     final session = response.session;
     if (session == null) {
-      throw const AuthException('Falha ao restaurar sessão no Supabase');
+      throw const AuthException('Falha ao restaurar sessao no Supabase.');
     }
 
     await secureStorage.write(
@@ -219,7 +236,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Helpers
+  // Private Helpers
   // ─────────────────────────────────────────────────────────────────
 
   String _hashPin(String pin) {
@@ -227,6 +244,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return sha256.convert(bytes).toString();
   }
 
+  // ignore: unused_element
   String _toE164(String phone) {
     final digits = phone.replaceAll(RegExp(r'\D'), '');
     if (digits.startsWith('258')) return '+$digits';
@@ -234,6 +252,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return '+$digits';
   }
 
+  // ignore: unused_element
   String _generateSecurePassword() {
     const chars =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#\$%^&*';

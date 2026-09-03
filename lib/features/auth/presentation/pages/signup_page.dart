@@ -6,23 +6,20 @@ import 'package:gezi/core/theme/theme.dart';
 import '../../../../injection_container.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
-import '../bloc/local_auth_bloc.dart';
-import '../bloc/local_auth_event.dart';
-import '../bloc/local_auth_state.dart';
-import '../bloc/email_auth/login_bloc.dart';
-import '../bloc/email_auth/login_event.dart';
-import '../bloc/email_auth/login_state.dart';
+import '../bloc/email_auth/signup_bloc.dart';
+import '../bloc/email_auth/signup_event.dart';
+import '../bloc/email_auth/signup_state.dart';
 import '../widgets/auth_header.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignupPageState extends State<SignupPage> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
   
@@ -32,35 +29,41 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_validateForm);
     _emailController.addListener(_validateForm);
     _pinController.addListener(_validateForm);
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_validateForm);
     _emailController.removeListener(_validateForm);
     _pinController.removeListener(_validateForm);
+    _nameController.dispose();
     _emailController.dispose();
     _pinController.dispose();
     super.dispose();
   }
 
   void _validateForm() {
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final pin = _pinController.text.trim();
     
+    final nameValid = name.isNotEmpty;
     final emailValid = RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
     final pinValid = pin.length == 6 && RegExp(r'^\d{6}$').hasMatch(pin);
     
-    final valid = emailValid && pinValid;
+    final valid = nameValid && emailValid && pinValid;
     if (valid != _isFormValid) {
       setState(() => _isFormValid = valid);
     }
   }
 
-  void _onLoginPressed(BuildContext context) {
+  void _onSignupPressed(BuildContext context) {
     if (_isFormValid) {
-      context.read<LoginBloc>().add(LoginRequested(
+      context.read<SignupBloc>().add(SignupRequested(
+        fullName: _nameController.text.trim(),
         email: _emailController.text.trim(),
         pin: _pinController.text.trim(),
       ));
@@ -69,62 +72,44 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => sl<LocalAuthBloc>()),
-        BlocProvider(create: (_) => sl<LoginBloc>()),
-      ],
+    return BlocProvider(
+      create: (_) => sl<SignupBloc>(),
       child: Scaffold(
         backgroundColor: AppTheme.white,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppTheme.textColorDark),
+            onPressed: () => context.pop(),
+          ),
+        ),
         body: SafeArea(
           child: MultiBlocListener(
             listeners: [
-              // LocalAuthBloc: handles the device biometric prompt result
-              BlocListener<LocalAuthBloc, LocalAuthState>(
+              // SignupBloc: handles account creation
+              BlocListener<SignupBloc, SignupState>(
                 listener: (context, state) {
-                  if (state is LocalAuthError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  } else if (state is LocalAuthenticated) {
-                    // Biometric prompt passed — now restore Supabase session
-                    context.read<AuthBloc>().add(const BiometricLoginRequested());
-                  }
-                },
-              ),
-              // LoginBloc: handles email+pin sign in
-              BlocListener<LoginBloc, LoginState>(
-                listener: (context, state) {
-                  if (state is LoginSuccess) {
+                  if (state is SignupSuccess) {
+                    // Update global auth session
                     context.read<AuthBloc>().add(SessionObtained(state.session));
-                  } else if (state is LoginFailure) {
+                    // Go to passkey setup page to ask for biometric enable
+                    context.go('/passkey-setup');
+                  } else if (state is SignupFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(state.message), backgroundColor: Colors.red.shade700),
                     );
                   }
                 },
               ),
-              // AuthBloc: handles session availability
-              BlocListener<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is AuthAuthenticated) {
-                    context.go('/home');
-                  } else if (state is AuthError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  }
-                },
-              ),
             ],
-            child: BlocBuilder<LoginBloc, LoginState>(
-              builder: (context, loginState) {
-                final isLoading = loginState is LoginLoading;
+            child: BlocBuilder<SignupBloc, SignupState>(
+              builder: (context, signupState) {
+                final isLoading = signupState is SignupLoading;
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.only(
-                    top: 56,
                     left: 32,
                     right: 24,
                     bottom: 40,
@@ -132,25 +117,60 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header Row (Logo + Gezi)
-                      const AuthHeader(),
-                      const SizedBox(height: 48),
+                      const AuthHeader(title: 'Nova Conta'),
+                      const SizedBox(height: 32),
 
-                      // Title and Subtitle
                       Text(
-                        'Bem-vindo ao Gezi',
+                        'Criar conta',
                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: AppTheme.textColorDark,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Introduza o seu email e PIN para entrar.',
+                        'Preencha os seus dados para aderir ao Gezi.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppTheme.textColorSecondary,
                         ),
                       ),
                       const SizedBox(height: 24),
+
+                      // ── Full Name Input ────────────────────────────────
+                      Text(
+                        'Nome Completo',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: AppTheme.textColorDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: TextField(
+                          controller: _nameController,
+                          keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppTheme.textColorDark,
+                            fontSize: 16,
+                          ),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'O seu nome',
+                            hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppTheme.textColorSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
                       // ── Email Input ────────────────────────────────
                       Text(
@@ -163,15 +183,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F5),
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.08),
-                          ),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: TextField(
@@ -191,11 +206,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       
                       // ── PIN Input ────────────────────────────────
                       Text(
-                        'PIN (6 dígitos)',
+                        'Crie um PIN',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: AppTheme.textColorDark,
                           fontSize: 14,
@@ -204,15 +219,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F5),
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.08),
-                          ),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: TextField(
@@ -244,12 +254,12 @@ class _LoginPageState extends State<LoginPage> {
                               },
                             ),
                           ),
-                          onSubmitted: (_) => _onLoginPressed(context),
+                          onSubmitted: (_) => _onSignupPressed(context),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
-                      // ── Primary Login Button ──────────────────────────────
+                      // ── Primary Signup Button ──────────────────────────────
                       SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -264,7 +274,7 @@ class _LoginPageState extends State<LoginPage> {
                             elevation: 0,
                           ),
                           onPressed: (_isFormValid && !isLoading)
-                              ? () => _onLoginPressed(context)
+                              ? () => _onSignupPressed(context)
                               : null,
                           child: isLoading
                               ? const SizedBox(
@@ -278,7 +288,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 )
                               : Text(
-                                  'Entrar',
+                                  'Criar Conta',
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelLarge
@@ -289,115 +299,12 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      
-                      Center(
-                        child: TextButton(
-                          onPressed: () => context.push('/signup'),
-                          child: Text(
-                            'Ainda não tem conta? Criar agora',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.primaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // ── Passkey / Biometric quick-access ─────────────────
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Ou entre com',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppTheme.textColorSecondary),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Passkey (Biometrics)
-                                _buildQuickOption(
-                                  context,
-                                  label: 'Biometria',
-                                  icon: Icons.fingerprint,
-                                  color: AppTheme.primaryOrange,
-                                  onTap: () {
-                                    context.read<LocalAuthBloc>().add(
-                                      const AuthenticateWithBiometricsEvent(),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 12),
-                                // PIN
-                                _buildQuickOption(
-                                  context,
-                                  label: 'PIN Offline',
-                                  icon: Icons.pin,
-                                  color: AppTheme.primaryOrange,
-                                  onTap: () => context.push('/pin-login'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Terms
-                      Text(
-                        'Ao continuar, aceita os nossos Termos de Serviço e Política de Privacidade.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textColorSecondary,
-                        ),
-                      ),
                     ],
                   ),
                 );
               },
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickOption(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppTheme.white,
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.08),
-            width: 1.11,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppTheme.textColorDark,
-              ),
-            ),
-          ],
         ),
       ),
     );

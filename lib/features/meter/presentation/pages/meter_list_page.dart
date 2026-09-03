@@ -40,7 +40,7 @@ class MeterListPage extends StatefulWidget {
     const Meter(
       id: '3',
       alias: 'Armazém',
-      serialNumber: '12345678903',
+      serialNumber: '53765534772',
       isOnline: false,
       isPrimary: false,
       kwhBalance: 0,

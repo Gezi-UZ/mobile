@@ -11,8 +11,8 @@ class MeterBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color iconColor;
-    if (meter.kwhBalance > 20) {
-      iconColor = const Color(0xFF00C950); // Verde (Com crédito)
+    if (meter.kwhBalance >= 5) {
+      iconColor = const Color(0xFF008236); // Verde (Com crédito - Sutil)
     } else if (meter.kwhBalance > 0) {
       iconColor = const Color(0xFFFFB300); // Amarelo (Crédito baixo/warning)
     } else {

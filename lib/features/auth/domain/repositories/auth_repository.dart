@@ -3,14 +3,18 @@ import '../../../../core/errors/failures.dart';
 import '../entities/session.dart';
 
 abstract class AuthRepository {
-  /// Creates a new account with [phone] + auto-generated password.
-  Future<Either<Failure, UserSession>> signUp(String phone);
+  /// Creates a new user with [email] and [pin], storing [fullName].
+  Future<Either<Failure, UserSession>> signUpWithEmail({
+    required String fullName,
+    required String email,
+    required String pin,
+  });
 
-  /// Signs in using [phone] + [password].
-  Future<Either<Failure, UserSession>> signInWithPassword(
-    String phone,
-    String password,
-  );
+  /// Authenticates an existing user using [email] and [pin].
+  Future<Either<Failure, UserSession>> signInWithEmail({
+    required String email,
+    required String pin,
+  });
 
   /// Returns the current active session, if any.
   Future<Either<Failure, UserSession?>> getCurrentSession();

@@ -36,14 +36,14 @@ class _PinLoginPageState extends State<PinLoginPage> {
     });
   }
 
-  void _onLoginPressed() {
+  void _onLoginPressed(BuildContext context) {
     if (_isPinComplete) {
       final pin = _pinController.text.trim();
       context.read<AuthBloc>().add(PinLoginRequested(pin));
     }
   }
 
-  void _onUseFingerprintPressed() {
+  void _onUseFingerprintPressed(BuildContext context) {
     // Trigger device biometric prompt via LocalAuthBloc
     context.read<LocalAuthBloc>().add(const AuthenticateWithBiometricsEvent());
   }
@@ -78,10 +78,12 @@ class _PinLoginPageState extends State<PinLoginPage> {
             },
           ),
         ],
-        child: Scaffold(
-          backgroundColor: AppTheme.white,
-          body: SafeArea(
-            child: Padding(
+        child: Builder(
+          builder: (context) {
+            return Scaffold(
+              backgroundColor: AppTheme.white,
+              body: SafeArea(
+                child: Padding(
               padding: const EdgeInsets.only(
                 top: 56,
                 left: 24,
@@ -122,7 +124,6 @@ class _PinLoginPageState extends State<PinLoginPage> {
                     length: 6,
                     autofocus: true,
                     onChanged: _onPinChanged,
-                    onCompleted: (pin) => _onLoginPressed(),
                   ),
                   const SizedBox(height: 12),
 
@@ -131,14 +132,14 @@ class _PinLoginPageState extends State<PinLoginPage> {
                   // Primary Login Button
                   PrimaryButton(
                     text: 'Entrar',
-                    onPressed: _isPinComplete ? _onLoginPressed : null,
+                    onPressed: _isPinComplete ? () => _onLoginPressed(context) : null,
                   ),
                   const SizedBox(height: 12),
 
                   // Secondary Fingerprint Option Button
                   Center(
                     child: TextButton.icon(
-                      onPressed: _onUseFingerprintPressed,
+                      onPressed: () => _onUseFingerprintPressed(context),
                       icon: const Icon(
                         Icons.fingerprint,
                         size: 16,
@@ -159,6 +160,8 @@ class _PinLoginPageState extends State<PinLoginPage> {
               ),
             ),
           ),
+            );
+          },
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../domain/entities/session.dart';
 
 abstract class RegisterEvent extends Equatable {
   const RegisterEvent();
@@ -7,14 +8,18 @@ abstract class RegisterEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Step 1 — User submits their phone number and we sign them up directly.
-class PhoneNumberSubmitted extends RegisterEvent {
+/// OTP was verified — provides the session so passkey setup can proceed.
+class OtpVerifiedForRegister extends RegisterEvent {
   final String phoneNumber;
+  final UserSession session;
 
-  const PhoneNumberSubmitted(this.phoneNumber);
+  const OtpVerifiedForRegister({
+    required this.phoneNumber,
+    required this.session,
+  });
 
   @override
-  List<Object?> get props => [phoneNumber];
+  List<Object?> get props => [phoneNumber, session];
 }
 
 /// Step 2 — User chooses their passkey method (fingerprint or PIN).
