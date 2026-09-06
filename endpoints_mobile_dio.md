@@ -1,65 +1,62 @@
-# Integração Mobile ↔ Backend (Gezi API via Dio)
+# Integração Mobile ↔ Backend (Gezi API v1)
 
-Este documento foi elaborado especificamente para a equipa de Front-end (Flutter) para consumir os endpoints da **Gezi API (v1)**. Todos os endpoints já estão implementados no backend FastAPI.
+Este documento detalha **todos os endpoints** do backend Gezi para consumo pelo Flutter via Dio, incluindo os novos endpoints de **SSE (Server-Sent Events)**, **comandos IoT**, e **callback de pagamento**.
 
-A base URL (exemplo em desenvolvimento) será algo como: `http://10.0.2.2:8000/v1` (para Android Emulator) ou o respetivo URL de Stage/Produção.
+**Base URL (desenvolvimento):** `http://10.0.2.2:8000/v1` (Android Emulator)  
+**Base URL (produção):** `https://gezi-backend.up.railway.app/v1`
 
-## 1. Configuração do Dio & Interceptors (JWT)
+---
 
-Como o login é feito diretamente com o Supabase no Mobile, o backend Gezi atua como um *Resource Server* protegido. **Todos os pedidos (exceto rotas públicas, se existirem) exigem um JWT Access Token.**
+## 1. Autenticação (JWT)
+
+**Todos os endpoints protegidos exigem o header:**
+```
+Authorization: Bearer <access_token_do_supabase>
+```
 
 > [!IMPORTANT]
-> No vosso `Dio` cliente no Flutter, garantam que têm um interceptor que injeta sempre o `access_token` do Supabase no *header* `Authorization`.
-> 
+> Configurar um interceptor no Dio que injete automaticamente o token:
 > ```dart
-> dio.options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+> dio.interceptors.add(InterceptorsWrapper(
+>   onRequest: (options, handler) async {
+>     final session = supabase.auth.currentSession;
+>     if (session != null) {
+>       options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+>     }
+>     handler.next(options);
+>   },
+> ));
 > ```
 
 ---
 
-## 2. Endpoints de Utilizadores (`/v1/users`)
+## 2. Endpoints de Utilizadores (`/v1/users`) — Web Admin
 
-Estes endpoints gerem o perfil do utilizador na nossa base de dados relacional.
+> [!NOTE]
+> No mobile, os dados do utilizador são geridos **diretamente via Supabase** (`supabase_flutter`).
+> Estes endpoints existem para o **painel web administrativo** e para sincronizar dados internos.
 
 ### 2.1. Sincronizar Registo (Signup Sync)
 **POST** `/users/`
-> Deve ser chamado **imediatamente após o sucesso** de `supabase.auth.signUp()`. Serve para espelhar a conta na nossa Base de Dados para que ele possa ter contadores e faturas.
 
-**Body (JSON):**
+**Body:**
 ```json
 {
   "telefone": "+258840000000",
   "nome": "João Silva",
   "papel": "cliente",
   "biometria_activa": false,
-  "id": "uuid-do-supabase-aqui"
+  "id": "uuid-do-supabase"
 }
 ```
-
-**Response (200 OK):**
-Retorna o perfil recém-criado.
 
 ### 2.2. Obter Perfil
 **GET** `/users/me`
-> Obtém os dados do utilizador atualmente autenticado.
-
-**Response (200 OK):**
-```json
-{
-  "id": "uuid-do-supabase-aqui",
-  "telefone": "+258840000000",
-  "nome": "João Silva",
-  "papel": "cliente",
-  "biometria_activa": true,
-  "created_at": "2026-09-02T12:00:00",
-  "updated_at": null
-}
-```
 
 ### 2.3. Atualizar Perfil
 **PUT** `/users/me`
 
-**Body (JSON - Campos Opcionais):**
+**Body (campos opcionais):**
 ```json
 {
   "nome": "João Silva Editado",
@@ -73,9 +70,8 @@ Retorna o perfil recém-criado.
 
 ### 3.1. Listar Meus Contadores
 **GET** `/meters/me`
-> Retorna a lista de contadores (IoT) associados ao utilizador atual.
 
-**Response (200 OK):**
+**Response `200`:**
 ```json
 [
   {
@@ -87,7 +83,7 @@ Retorna o perfil recém-criado.
       "longitude": 32.5732,
       "address": "Matola Rio"
     },
-    "estado": "ACTIVO",
+    "estado": "ONLINE",
     "kwh_saldo": 45.2,
     "estado_rele": true,
     "ultima_recarga": "2026-09-01T14:30:00"
@@ -95,10 +91,23 @@ Retorna o perfil recém-criado.
 ]
 ```
 
+> [!TIP]
+> Para **atualizações em tempo real** do estado do contador (kWh, relé, online/offline), o Flutter deve usar **Supabase Realtime** diretamente:
+> ```dart
+> supabase
+>   .from('contador')
+>   .stream(primaryKey: ['id'])
+>   .eq('utilizador_id', userId)
+>   .listen((data) {
+>     // Atualizar UI com novos dados
+>   });
+> ```
+> Isto evita overhead HTTP e garante latência mínima.
+
 ### 3.2. Adicionar Novo Contador
 **POST** `/meters/`
 
-**Body (JSON):**
+**Body:**
 ```json
 {
   "serial_number": "GEZI-00124",
@@ -110,23 +119,23 @@ Retorna o perfil recém-criado.
   }
 }
 ```
-*(Response retorna o objeto Contador criado).*
 
 ### 3.3. Detalhes do Contador
 **GET** `/meters/{meter_id}`
-> Retorna os detalhes de um contador específico. Substituir `{meter_id}` pelo UUID do contador.
 
-### 3.4. Estado em Tempo Real (Dashboard Hardware)
+### 3.4. Atualizar Contador
+**PATCH** `/meters/{meter_id}`
+
+### 3.5. Estado em Tempo Real (One-Shot)
 **GET** `/meters/{meter_id}/status`
-> Útil para ecrãs de "Live View", onde mostramos o saldo atual, o estado do relé (ligado/desligado) e a última sincronização.
 
-**Response (200 OK):**
+**Response `200`:**
 ```json
 {
-  "estado": "ACTIVO",
+  "estado": "ONLINE",
   "kwh_saldo": 12.5,
   "estado_rele": true,
-  "ultima_sincronizacao": "2026-09-02T14:30:00"
+  "ultima_sincronizacao": "2026-09-03T14:30:00"
 }
 ```
 
@@ -134,11 +143,10 @@ Retorna o perfil recém-criado.
 
 ## 4. Endpoints de Recargas (`/v1/recharges`)
 
-### 4.1. Iniciar Recarga (M-Pesa / Integração Automática)
+### 4.1. Iniciar Recarga
 **POST** `/recharges/initiate`
-> Inicia o processo de compra de energia para um contador específico (vai disparar o flow de pagamento, ex: Prompt do M-Pesa).
 
-**Body (JSON):**
+**Body:**
 ```json
 {
   "meter_id": "uuid-do-contador",
@@ -146,46 +154,103 @@ Retorna o perfil recém-criado.
 }
 ```
 
-**Response (201 Created):**
+**Response `201`:**
 ```json
 {
-  "recharge_id": "uuid-da-recarga",
-  "status": "PENDENTE_PAGAMENTO",
-  "amount_mzn": 150.0,
-  "estimated_kwh": 20.5,
-  "breakdown": {
-    "montante_total": 150.0,
-    "val_energia": 115.0,
-    "iva": 19.5,
-    "divida_paga": 0.0,
-    "tx_radio": 8.0,
-    "tx_lixo": 7.5,
-    "kwh_calculado": 20.5
+  "success": true,
+  "data": {
+    "recharge_id": "uuid-da-recarga",
+    "status": "PENDENTE_PAGAMENTO",
+    "amount_mzn": 150.0,
+    "estimated_kwh": 20.5,
+    "breakdown": {
+      "montante_total": 150.0,
+      "val_energia": 115.0,
+      "iva": 19.5,
+      "divida_paga": 0.0,
+      "tx_radio": 8.0,
+      "tx_lixo": 7.5,
+      "kwh_calculado": 20.5
+    }
   }
 }
 ```
-> [!TIP]
-> A App deve usar o `recharge_id` devolvido para fazer *polling* (ou via WebSockets, se implementarmos) para saber quando o pagamento foi confirmado.
 
-### 4.2. Verificar Estado da Recarga (Polling)
-**GET** `/recharges/{recharge_id}/status`
-> Usado após iniciar uma recarga. A app móvel deve chamar este endpoint de X em X segundos até o `status` mudar para `"CONCLUIDA"`.
+### 4.2. Acompanhar Recarga em Tempo Real (SSE)
+**GET** `/recharges/{recharge_id}/stream`
 
-**Response (200 OK):**
-```json
-{
-  "recharge_id": "uuid-da-recarga",
-  "status": "CONCLUIDA",
-  "token": "1234-5678-9012-3456",
-  "applied_at": "2026-09-02T14:35:00"
+> [!IMPORTANT]
+> **Este endpoint substitui o polling!** O Flutter abre uma conexão SSE e recebe eventos automaticamente sempre que o estado da recarga muda.
+
+**Fluxo de eventos recebidos:**
+```
+data: {"event":"status_update","data":{"recharge_id":"...","status":"PENDENTE_PAGAMENTO",...}}
+
+data: {"event":"status_update","data":{"recharge_id":"...","status":"MQTT_SENT","kwh":20.5}}
+
+data: {"event":"status_update","data":{"recharge_id":"...","status":"CONCLUIDA","token":"1234-5678","kwh_applied":20.5}}
+
+data: {"event":"stream_end"}
+```
+
+**Implementação no Flutter (Dio):**
+```dart
+Future<void> streamRechargeStatus(String rechargeId) async {
+  final response = await dio.get(
+    '/recharges/$rechargeId/stream',
+    options: Options(
+      responseType: ResponseType.stream,
+      headers: {
+        'Accept': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+      },
+    ),
+  );
+
+  final stream = response.data.stream as Stream<List<int>>;
+  
+  await for (final chunk in stream) {
+    final lines = utf8.decode(chunk).split('\n');
+    for (final line in lines) {
+      if (line.startsWith('data: ')) {
+        final jsonStr = line.substring(6);
+        final event = jsonDecode(jsonStr);
+        
+        if (event['event'] == 'stream_end') {
+          return; // Recarga terminou
+        }
+        
+        // Atualizar estado no BLoC/Provider
+        final status = event['data']['status'];
+        emit(RechargeStatusChanged(status: status, data: event['data']));
+      }
+    }
+  }
 }
 ```
 
-### 4.3. Inserir Código Manualmente (Falha de IoT ou Legacy)
-**POST** `/recharges/manual-code`
-> Se o utilizador comprou energia no banco e tem o talão, pode introduzir o código na App.
+### 4.3. Consultar Estado (One-Shot, Fallback)
+**GET** `/recharges/{recharge_id}/status`
 
-**Body (JSON):**
+> Mantido como fallback caso o SSE não esteja disponível. Retorna o estado actual da recarga num único pedido.
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "data": {
+    "recharge_id": "uuid",
+    "status": "CONCLUIDA",
+    "token": "1234-5678-9012",
+    "applied_at": "2026-09-03T14:35:00"
+  }
+}
+```
+
+### 4.4. Inserir Código Manualmente
+**POST** `/recharges/manual-code`
+
+**Body:**
 ```json
 {
   "meter_id": "uuid-do-contador",
@@ -193,55 +258,201 @@ Retorna o perfil recém-criado.
 }
 ```
 
-**Response (200 OK):**
+**Response `200`:**
 ```json
 {
-  "recharge_id": "uuid-da-recarga-criada",
-  "status": "CONCLUIDA",
-  "credit_kwh": 40.0
-}
-```
-
-### 4.4. Histórico de Recargas
-**GET** `/recharges/history`
-> Pode aceitar *query params* (ex: `?page=1&page_size=20`) se suportado.
-
-**Response (200 OK):**
-```json
-{
-  "recharges": [
-    {
-      "recharge_id": "uuid-aqui",
-      "meter_id": "uuid-contador",
-      "amount_mzn": 150.0,
-      "credit_kwh": 20.5,
-      "status": "CONCLUIDA",
-      "created_at": "2026-09-02T10:00:00"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "page_size": 20,
-    "total": 47
+  "success": true,
+  "data": {
+    "recharge_id": "uuid",
+    "status": "CONCLUIDA",
+    "credit_kwh": 40.0
   }
 }
 ```
 
-### 4.5. Dashboard (Estatísticas de Consumo)
-**GET** `/recharges/dashboard`
-> Fornece os agregados para desenhar gráficos e *cards* de sumário. Pode aceitar `meter_id` ou `period` por query string.
+### 4.5. Histórico de Recargas
+**GET** `/recharges/history`
 
-**Response (200 OK):**
+**Query params:** `meter_id`, `from`, `to`, `page`, `page_size`
+
+**Response `200`:**
 ```json
 {
-  "total_spent_mzn": 1840.00,
-  "total_kwh_purchased": 254.3,
-  "average_consumption_kwh_day": 8.4,
-  "recharge_count": 12
+  "success": true,
+  "data": {
+    "recharges": [
+      {
+        "recharge_id": "uuid",
+        "meter_id": "uuid",
+        "amount_mzn": 150.0,
+        "credit_kwh": 20.5,
+        "status": "CONCLUIDA",
+        "created_at": "2026-09-02T10:00:00"
+      }
+    ],
+    "pagination": { "page": 1, "page_size": 20, "total": 47 }
+  }
+}
+```
+
+### 4.6. Dashboard (Estatísticas)
+**GET** `/recharges/dashboard`
+
+**Query params:** `meter_id`, `period` (`week` | `month` | `year`)
+
+**Response `200`:**
+```json
+{
+  "success": true,
+  "data": {
+    "total_spent_mzn": 1840.00,
+    "total_kwh_purchased": 254.3,
+    "average_consumption_kwh_day": 8.4,
+    "recharge_count": 12
+  }
 }
 ```
 
 ---
 
-## 5. Endpoints Administrativos (Role: "admin")
-Existem também endpoints sob o prefixo `/v1/admin/` (`/admin/users` e `/admin/meters`), mas a App Móvel normal do cliente não consumirá estas rotas (apenas dashboards web internos ou uma App de administração), pois irão ser bloqueadas por *Guards* de Role-Based Access Control (RBAC).
+## 5. Endpoints IoT (`/v1/iot`)
+
+### 5.1. Enviar Comando ao ESP32
+**POST** `/iot/meters/{meter_id}/command`
+
+> Envia um comando ao dispositivo ESP32 associado ao contador via MQTT (HiveMQ Cloud).
+
+**Tipos de comando disponíveis:**
+| `command_type` | Descrição |
+|---|---|
+| `APPLY_CREDITS` | Aplica um token STS gerado por recarga (usado internamente, mas disponível para testes) |
+| `CUT_SUPPLY` | Corta o fornecimento de energia (desliga o relé) |
+| `RESTORE_SUPPLY` | Restaura o fornecimento de energia (liga o relé) |
+| `STATUS_REQUEST` | Solicita telemetria imediata |
+
+**Body:**
+```json
+{
+  "command_type": "CUT_SUPPLY",
+  "payload": {
+    "reason": "MANUAL_ADMIN"
+  }
+}
+```
+
+**Response `201`:**
+```json
+{
+  "command_id": "uuid-do-comando",
+  "meter_id": "uuid-do-contador",
+  "command_type": "CUT_SUPPLY",
+  "status": "ENVIADO",
+  "sent_at": "2026-09-03T14:30:00"
+}
+```
+
+### 5.2. Callback M-Pesa (Server-to-Server)
+**POST** `/iot/payments/callback`
+
+> [!CAUTION]
+> Este endpoint **NÃO requer JWT**. É chamado diretamente pelo servidor M-Pesa quando um pagamento é confirmado. Em produção, validar IP/assinatura do M-Pesa.
+
+**Body:**
+```json
+{
+  "referencia_mpesa": "MP240903143000",
+  "montante": 150.00,
+  "estado": "SUCCESS"
+}
+```
+
+**O que acontece internamente (pipeline automático):**
+1. `Pagamento.estado` → `SUCCESS`
+2. `Recarga.estado` → `CONFIRMED` → `MQTT_SENT`
+3. Cálculo do desdobramento tarifário
+4. `ComandoIoT` gravado na BD com `estado = "ENVIADO"`
+5. Comando MQTT publicado no HiveMQ → ESP32
+6. Evento SSE emitido → Flutter recebe atualização
+7. Notifica localmente o user que a recarga foi efetuada
+
+---
+
+## 6. MQTT Tópicos e Formatos (Integração Hardware)
+
+O backend comunica com o hardware via HiveMQ Cloud usando os seguintes tópicos e formatos.
+
+### 6.1 Backend → ESP32 (Comandos)
+**Tópico:** `credelec/meter/{meter_id}/cmd`
+
+```json
+{
+  "command": "APPLY_CREDITS",
+  "token": "1234-5678-9012-3456",
+  "kwh": 18.2,
+  "issued_at": "2026-06-25T14:31:00Z"
+}
+```
+
+### 6.2 ESP32 → Backend (Telemetria e ACK)
+**Telemetria:** `credelec/meter/{meter_id}/telemetry`
+```json
+{
+  "kwh": 12.45,
+  "relay": true,
+  "voltage": 220.4,
+  "current": 2.31,
+  "power_w": 509.0,
+  "frequency": 50.0,
+  "timestamp": "2026-06-25T14:32:00Z"
+}
+```
+
+**Confirmação (ACK):** `credelec/meter/{meter_id}/ack`
+```json
+{
+  "command_id": "uuid-do-comando",
+  "status": "ACK",
+  "applied_kwh": 18.2,
+  "timestamp": "2026-06-25T14:31:05Z"
+}
+```
+
+---
+
+## 7. Supabase Realtime (Direto — Sem FastAPI)
+
+Para operações de baixa latência, o Flutter lê **diretamente** do Supabase Realtime:
+
+| Dados | Canal Supabase |
+|---|---|
+| Estado do contador (kWh, relé, online) | `supabase.from('contador').stream(primaryKey: ['id'])` |
+| Alertas de saldo baixo | `supabase.from('alerta').stream(primaryKey: ['id'])` |
+
+> [!NOTE]
+> 
+> **Database → Replication → Enable** para as tabelas desejadas.
+
+---
+
+## 7. Endpoints Administrativos (`/v1/admin/`)
+
+| Endpoint | Descrição |
+|---|---|
+| `GET /admin/users` | Listar todos os utilizadores (role: admin) |
+| `GET /admin/meters` | Listar todos os contadores (role: admin) |
+
+> Protegidos por RBAC — apenas utilizadores com `papel = "admin"`.
+
+---
+
+## 8. Health Check
+
+**GET** `/health`
+
+```json
+{
+  "status": "healthy",
+  "environment": "production",
+  "service": "Gezi API"
+}
+```

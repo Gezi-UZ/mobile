@@ -1,40 +1,38 @@
-import 'package:equatable/equatable.dart';
-import '../../domain/entities/recharge_breakdown.dart';
-import '../../domain/entities/recharge_result.dart';
+part of 'recharge_bloc.dart';
 
 abstract class RechargeState extends Equatable {
   const RechargeState();
-
+  
   @override
   List<Object?> get props => [];
 }
 
-class RechargeInitialState extends RechargeState {}
+class RechargeInitial extends RechargeState {}
 
-class RechargeBreakdownLoadedState extends RechargeState {
+class RechargeLoading extends RechargeState {}
+
+class RechargeBreakdownLoaded extends RechargeState {
   final RechargeBreakdown breakdown;
 
-  const RechargeBreakdownLoadedState(this.breakdown);
+  const RechargeBreakdownLoaded(this.breakdown);
 
   @override
   List<Object?> get props => [breakdown];
 }
 
-class RechargeProcessingState extends RechargeState {}
+class RechargeSuccess extends RechargeState {
+  final Recharge recharge;
 
-class RechargeSuccessState extends RechargeState {
-  final RechargeResult result;
-
-  const RechargeSuccessState(this.result);
+  const RechargeSuccess(this.recharge);
 
   @override
-  List<Object?> get props => [result];
+  List<Object?> get props => [recharge];
 }
 
-class RechargeErrorState extends RechargeState {
+class RechargeError extends RechargeState {
   final String message;
 
-  const RechargeErrorState(this.message);
+  const RechargeError(this.message);
 
   @override
   List<Object?> get props => [message];

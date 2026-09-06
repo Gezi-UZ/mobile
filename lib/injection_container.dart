@@ -51,6 +51,17 @@ import 'features/recharge/domain/usecases/initiate_recharge.dart';
 import 'features/recharge/domain/usecases/apply_manual_code.dart';
 import 'features/recharge/presentation/bloc/recharge_bloc.dart';
 
+// Meter
+import 'features/meter/data/datasources/meter_remote_data_source.dart';
+import 'features/meter/data/datasources/meter_realtime_data_source.dart';
+import 'features/meter/data/repositories/meter_repository_impl.dart';
+import 'features/meter/domain/repositories/meter_repository.dart';
+
+// IoT
+import 'features/iot/data/datasources/iot_remote_data_source.dart';
+import 'features/iot/data/repositories/iot_repository_impl.dart';
+import 'features/iot/domain/repositories/iot_repository.dart';
+
 // Profile
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
 import 'features/profile/data/repositories/profile_repository_impl.dart';
@@ -165,10 +176,25 @@ Future<void> init() async {
     () => HomeBloc(getMeterBalance: sl(), getRecentRecharges: sl()),
   );
 
+  // ── Meter ────────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<MeterRealtimeDataSource>(
+    () => MeterRealtimeDataSourceImpl(),
+  );
+  sl.registerLazySingleton<MeterRemoteDataSource>(
+    () => MeterRemoteDataSourceImpl(dioClient: sl()),
+  );
+  sl.registerLazySingleton<MeterRepository>(
+    () => MeterRepositoryImpl(
+      remoteDataSource: sl(),
+      realtimeDataSource: sl(),
+    ),
+  );
+
   // ── Recharge ─────────────────────────────────────────────────────
 
   sl.registerLazySingleton<RechargeRemoteDataSource>(
-    () => RechargeRemoteDataSourceImpl(),
+    () => RechargeRemoteDataSourceImpl(dioClient: sl()),
   );
   sl.registerLazySingleton<RechargeRepository>(
     () => RechargeRepositoryImpl(remoteDataSource: sl()),
@@ -182,6 +208,15 @@ Future<void> init() async {
       initiateRecharge: sl(),
       applyManualCode: sl(),
     ),
+  );
+
+  // ── IoT ──────────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<IotRemoteDataSource>(
+    () => IotRemoteDataSourceImpl(dioClient: sl()),
+  );
+  sl.registerLazySingleton<IotRepository>(
+    () => IotRepositoryImpl(remoteDataSource: sl()),
   );
 
   // ── Profile ───────────────────────────────────────────────────────

@@ -1,9 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+
+import '../../domain/entities/recharge_breakdown.dart';
+import '../../domain/entities/recharge.dart';
+import '../../domain/usecases/apply_manual_code.dart';
 import '../../domain/usecases/calculate_recharge_breakdown.dart';
 import '../../domain/usecases/initiate_recharge.dart';
-import '../../domain/usecases/apply_manual_code.dart';
-import 'recharge_event.dart';
-import 'recharge_state.dart';
+
+part 'recharge_event.dart';
+part 'recharge_state.dart';
 
 class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
   final CalculateRechargeBreakdown calculateRechargeBreakdown;
@@ -14,70 +19,61 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
     required this.calculateRechargeBreakdown,
     required this.initiateRecharge,
     required this.applyManualCode,
-  }) : super(RechargeInitialState()) {
-    on<AmountInputChanged>(_onAmountInputChanged);
-    on<SubmitRechargePayment>(_onSubmitRechargePayment);
-    on<SubmitSTSCodeRecharge>(_onSubmitSTSCodeRecharge);
+  }) : super(RechargeInitial()) {
+    on<CalculateBreakdownEvent>(_onCalculateBreakdown);
+    on<InitiateRechargeEvent>(_onInitiateRecharge);
+    on<ApplyCodeEvent>(_onApplyCode);
   }
 
-  Future<void> _onAmountInputChanged(
-    AmountInputChanged event,
+  Future<void> _onCalculateBreakdown(
+    CalculateBreakdownEvent event,
     Emitter<RechargeState> emit,
   ) async {
-    if (event.amount <= 0) {
-      emit(RechargeInitialState());
-      return;
-    }
-
+    emit(RechargeLoading());
     final result = await calculateRechargeBreakdown(
       CalculateRechargeBreakdownParams(
         amount: event.amount,
-        meterNumber: event.meterNumber,
+        meterId: event.meterId,
       ),
     );
-
     result.fold(
-      (failure) => emit(RechargeErrorState(failure.message)),
-      (breakdown) => emit(RechargeBreakdownLoadedState(breakdown)),
+      (failure) => emit(RechargeError(failure.message)),
+      (breakdown) => emit(RechargeBreakdownLoaded(breakdown)),
     );
   }
 
-  Future<void> _onSubmitRechargePayment(
-    SubmitRechargePayment event,
+  Future<void> _onInitiateRecharge(
+    InitiateRechargeEvent event,
     Emitter<RechargeState> emit,
   ) async {
-    emit(RechargeProcessingState());
-
+    emit(RechargeLoading());
     final result = await initiateRecharge(
       InitiateRechargeParams(
         amount: event.amount,
-        meterNumber: event.meterNumber,
+        meterId: event.meterId,
         method: event.method,
       ),
     );
-
     result.fold(
-      (failure) => emit(RechargeErrorState(failure.message)),
-      (rechargeResult) => emit(RechargeSuccessState(rechargeResult)),
+      (failure) => emit(RechargeError(failure.message)),
+      (rechargeResult) => emit(RechargeSuccess(rechargeResult)),
     );
   }
 
-  Future<void> _onSubmitSTSCodeRecharge(
-    SubmitSTSCodeRecharge event,
+  Future<void> _onApplyCode(
+    ApplyCodeEvent event,
     Emitter<RechargeState> emit,
   ) async {
-    emit(RechargeProcessingState());
-
+    emit(RechargeLoading());
     final result = await applyManualCode(
       ApplyManualCodeParams(
         code: event.code,
-        meterNumber: event.meterNumber,
+        meterId: event.meterId,
       ),
     );
-
     result.fold(
-      (failure) => emit(RechargeErrorState(failure.message)),
-      (rechargeResult) => emit(RechargeSuccessState(rechargeResult)),
+      (failure) => emit(RechargeError(failure.message)),
+      (rechargeResult) => emit(RechargeSuccess(rechargeResult)),
     );
   }
 }

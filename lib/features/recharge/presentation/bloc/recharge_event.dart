@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'recharge_bloc.dart';
 
 abstract class RechargeEvent extends Equatable {
   const RechargeEvent();
@@ -7,52 +7,43 @@ abstract class RechargeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class AmountInputChanged extends RechargeEvent {
+class CalculateBreakdownEvent extends RechargeEvent {
   final double amount;
-  final String meterNumber;
+  final String meterId;
 
-  const AmountInputChanged({
+  const CalculateBreakdownEvent({
     required this.amount,
-    required this.meterNumber,
+    required this.meterId,
   });
 
   @override
-  List<Object?> get props => [amount, meterNumber];
+  List<Object?> get props => [amount, meterId];
 }
 
-class TargetMeterSelected extends RechargeEvent {
-  final String meterNumber;
-
-  const TargetMeterSelected(this.meterNumber);
-
-  @override
-  List<Object?> get props => [meterNumber];
-}
-
-class SubmitRechargePayment extends RechargeEvent {
+class InitiateRechargeEvent extends RechargeEvent {
   final double amount;
-  final String meterNumber;
+  final String meterId;
   final String method;
 
-  const SubmitRechargePayment({
+  const InitiateRechargeEvent({
     required this.amount,
-    required this.meterNumber,
+    required this.meterId,
     required this.method,
   });
 
   @override
-  List<Object?> get props => [amount, meterNumber, method];
+  List<Object?> get props => [amount, meterId, method];
 }
 
-class SubmitSTSCodeRecharge extends RechargeEvent {
+class ApplyCodeEvent extends RechargeEvent {
   final String code;
-  final String meterNumber;
+  final String meterId;
 
-  const SubmitSTSCodeRecharge({
+  const ApplyCodeEvent({
     required this.code,
-    required this.meterNumber,
+    required this.meterId,
   });
 
   @override
-  List<Object?> get props => [code, meterNumber];
+  List<Object?> get props => [code, meterId];
 }
