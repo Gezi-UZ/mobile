@@ -22,9 +22,9 @@ class LowBalanceAlertWidget extends StatelessWidget {
         child: Row(
           spacing: 12,
           children: [
-            const Icon(
+            Icon(
               Icons.warning_amber_rounded,
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             Expanded(
               child: Text(
@@ -32,7 +32,7 @@ class LowBalanceAlertWidget extends StatelessWidget {
                     ? 'Saldo zero — recarregue.'
                     : 'Saldo baixo — recarregue para evitar interrupção.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),

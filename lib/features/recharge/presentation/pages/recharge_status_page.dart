@@ -2,23 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:go_router/go_router.dart';
 
-class RechargeStatusPage extends StatelessWidget {
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../injection_container.dart';
+import '../../domain/entities/recharge.dart';
+import '../bloc/recharge_bloc.dart';
+
+class RechargeStatusPage extends StatefulWidget {
   final String amount;
   final String meterNumber;
   final bool isCodeRecharge;
   final String? code;
+  final String rechargeId;
 
   const RechargeStatusPage({
     super.key,
     required this.amount,
     required this.meterNumber,
+    required this.rechargeId,
     this.isCodeRecharge = true,
     this.code,
   });
 
   @override
+  State<RechargeStatusPage> createState() => _RechargeStatusPageState();
+}
+
+class _RechargeStatusPageState extends State<RechargeStatusPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double totalAmount = double.tryParse(amount) ?? 0.0;
+    final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
     final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
@@ -34,55 +51,105 @@ class RechargeStatusPage extends StatelessWidget {
         );
     final double estimatedKwh = remainingAfterFees / ratePerKwh;
 
-    return Scaffold(
-      backgroundColor: AppTheme.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top Bar
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 12,
-                left: 24,
-                right: 24,
-                bottom: 4,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [const SizedBox(width: 24)],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 48,
-                  left: 24,
-                  right: 24,
-                  bottom: 32,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Título e subtítulo
-                    Text(
-                      isCodeRecharge
-                          ? 'Estado do código STS'
-                          : 'Estado da recarga',
+    return BlocProvider(
+      create: (_) {
+        final bloc = sl<RechargeBloc>();
+        if (!widget.isCodeRecharge && widget.rechargeId.isNotEmpty) {
+          bloc.add(StreamRechargeStatusEvent(widget.rechargeId));
+        } else if (widget.isCodeRecharge && widget.code != null && widget.code!.isNotEmpty) {
+          bloc.add(ApplyCodeEvent(
+            code: widget.code!,
+            meterId: widget.meterNumber,
+          ));
+        }
+        return bloc;
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: SafeArea(
+          child: BlocConsumer<RechargeBloc, RechargeState>(
+            listener: (context, state) {
+              if (state is RechargeSuccess) {
+                // Navega para comprovativo logo após sucesso?
+                // O mockup tem um botão, então vamos apenas atualizar o estado visualmente
+              }
+            },
+            builder: (context, state) {
+              String status = 'PENDING';
+              Recharge? currentRecharge;
+
+              if (state is RechargeStatusUpdated) {
+                status = state.recharge.status.toUpperCase();
+                currentRecharge = state.recharge;
+              } else if (state is RechargeSuccess) {
+                status = 'SUCCESS'; // Forçado quando é sucesso
+                currentRecharge = state.recharge;
+              } else if (state is RechargeError) {
+                status = 'FAILED';
+              }
+
+              bool isProcessing = status == 'PENDING';
+              bool isConcluida = status == 'SUCCESS';
+              bool isConfirmed = isConcluida; // Supabase só retorna pending ou success (mock para outros passos)
+
+              return Column(
+                children: [
+                  // Top Bar
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 24,
+                      right: 24,
+                      bottom: 4,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/home');
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                        ),
+                        const SizedBox(width: 24),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: 24,
+                        left: 24,
+                        right: 24,
+                        bottom: 32,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Título e subtítulo
+                          Text(
+                            widget.isCodeRecharge
+                                ? 'Estado do código STS'
+                                : 'Estado da recarga',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isCodeRecharge
+                      widget.isCodeRecharge
                           ? 'A aplicar código'
                           : 'A processar pagamento',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -106,24 +173,24 @@ class RechargeStatusPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isCodeRecharge
+                      widget.isCodeRecharge
                           ? 'Código Válido'
                           : '+${estimatedKwh.toStringAsFixed(1)} kWh',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: const Color(0xFF008236),
+                        color: isConcluida ? const Color(0xFF008236) : AppTheme.primaryOrange,
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isCodeRecharge
-                          ? 'A ser aplicado ao contador $meterNumber'
-                          : 'adicionados ao contador $meterNumber',
+                      widget.isCodeRecharge
+                          ? 'A ser aplicado ao contador ${widget.meterNumber}'
+                          : 'adicionados ao contador ${widget.meterNumber}',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -133,7 +200,7 @@ class RechargeStatusPage extends StatelessWidget {
                     Expanded(
                       child: ListView(
                         physics: const BouncingScrollPhysics(),
-                        children: isCodeRecharge
+                        children: widget.isCodeRecharge
                             ? const [
                                 _StatusStepItem(
                                   title: 'Código validado',
@@ -154,12 +221,12 @@ class RechargeStatusPage extends StatelessWidget {
                                   description:
                                       'A operação foi concluída com sucesso.',
                                   isCompleted:
-                                      false, // Fica laranja conforme mockup
+                                      false,
                                   isLast: true,
                                 ),
                               ]
-                            : const [
-                                _StatusStepItem(
+                            : [
+                                const _StatusStepItem(
                                   title: 'Pagamento solicitado',
                                   description: 'O seu pedido foi recebido.',
                                   isCompleted: true,
@@ -169,13 +236,13 @@ class RechargeStatusPage extends StatelessWidget {
                                   title: 'A aguardar M-Pesa',
                                   description:
                                       'Confirme o PIN no seu telemóvel.',
-                                  isCompleted: true,
+                                  isCompleted: isConfirmed || isProcessing,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
                                   title: 'A aplicar crédito',
                                   description: 'Comunicando com o contador...',
-                                  isCompleted: true,
+                                  isCompleted: isConcluida,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
@@ -183,7 +250,7 @@ class RechargeStatusPage extends StatelessWidget {
                                   description:
                                       'Crédito adicionado com sucesso.',
                                   isCompleted:
-                                      false, // Fica laranja conforme mockup
+                                      isConcluida, 
                                   isLast: true,
                                 ),
                               ],
@@ -191,44 +258,43 @@ class RechargeStatusPage extends StatelessWidget {
                     ),
 
                     // Botão para ver Comprovativo (Simulação do fim do processo)
-                    GestureDetector(
-                      onTap: () {
-                        final Map<String, dynamic> params = {
-                          'amount': amount,
-                          'meterNumber': meterNumber,
-                        };
-                        if (isCodeRecharge) params['isCodeRecharge'] = 'true';
-                        if (code != null) params['code'] = code;
-
-                        context.go(
-                          Uri(
-                            path: '/recharge/receipt',
-                            queryParameters: params,
-                          ).toString(),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: ShapeDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    if (isConcluida && currentRecharge != null)
+                      GestureDetector(
+                        onTap: () {
+                          context.go(
+                            '/recharge/receipt',
+                            extra: {
+                              'recharge': currentRecharge,
+                              'isCodeRecharge': widget.isCodeRecharge,
+                              'code': widget.code,
+                            },
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: ShapeDecoration(
+                            gradient: AppTheme.primaryGradient,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Ver comprovativo',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(color: Colors.white, fontSize: 16),
                           ),
                         ),
-                        child: Text(
-                          'Ver comprovativo',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(color: Colors.white, fontSize: 16),
-                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
             ),
           ],
+        );
+      },
+          ),
         ),
       ),
     );
@@ -306,7 +372,7 @@ class _StatusStepItem extends StatelessWidget {
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textColorSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),

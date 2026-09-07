@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 
+import 'package:go_router/go_router.dart';
+
 import 'package:gezi/features/meter/domain/entities/meter.dart';
 import 'package:gezi/features/home/domain/entities/recharge.dart';
 import 'package:gezi/core/shared_widgets/buttons/primary_button.dart';
@@ -22,13 +24,45 @@ class MeterDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final thisMonthRecharges = recentRecharges
+        .where((r) => r.rechargedAt.isAfter(monthStart))
+        .toList();
+    final double monthlyKwh = thisMonthRecharges.fold(
+      0.0,
+      (acc, r) => acc + r.kwhAmount,
+    );
+
+    // Estimate daily average and autonomy based on recharge intervals
+    double dailyAvgKwh = 2.1;
+    int daysBetweenRecharges = 15;
+    if (recentRecharges.length >= 2) {
+      final sorted = List<Recharge>.from(recentRecharges)
+        ..sort((a, b) => a.rechargedAt.compareTo(b.rechargedAt));
+      final totalIntervalDays =
+          sorted.last.rechargedAt.difference(sorted.first.rechargedAt).inDays;
+      if (totalIntervalDays > 0) {
+        final totalKwh = sorted.fold(0.0, (acc, r) => acc + r.kwhAmount);
+        dailyAvgKwh = double.parse(
+          (totalKwh / totalIntervalDays).toStringAsFixed(1),
+        ).clamp(0.5, 50.0);
+        daysBetweenRecharges =
+            (totalIntervalDays / (sorted.length - 1)).round().clamp(1, 90);
+      }
+    } else if (recentRecharges.length == 1) {
+      dailyAvgKwh = (recentRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
+    }
+    final int estimatedDaysRemaining =
+        (dailyAvgKwh > 0) ? (meter.kwhBalance / dailyAvgKwh).round() : 0;
+
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textColorDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -37,7 +71,17 @@ class MeterDetailPage extends StatelessWidget {
             children: [
               _buildMeterHeader(context),
               MeterBalanceCard(meter: meter),
-              const MeterStatsRow(),
+              MeterStatsRow(
+                monthlyKwh: monthlyKwh > 0 ? monthlyKwh : 64.7,
+                dailyAvgKwh: dailyAvgKwh,
+                rechargeCount: recentRecharges.length,
+              ),
+              _buildEstimationCard(
+                context,
+                dailyAvgKwh,
+                daysBetweenRecharges,
+                estimatedDaysRemaining,
+              ),
               const MeterConsumptionChart(),
               MeterRecentTransactions(recharges: recentRecharges),
             ],
@@ -54,13 +98,93 @@ class MeterDetailPage extends StatelessWidget {
                 'assets/images/recharge_icon.png',
                 width: 24,
                 height: 24,
-                color: AppTheme.white,
+                color: Theme.of(context).colorScheme.surface,
               ),
               onPressed: () {
-                // TODO: Navigate to recharge with this specific meter
+                context.push('/recharge');
               },
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEstimationCard(
+    BuildContext context,
+    double dailyAvgKwh,
+    int daysBetweenRecharges,
+    int estimatedDaysRemaining,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.primaryOrange.withValues(alpha: 0.2),
+            width: 1.11,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.insights_rounded,
+                  color: AppTheme.darkerOrange,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Estimativa de Autonomia',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppTheme.darkerOrange,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Com base na frequência das recargas (média a cada $daysBetweenRecharges dias), o seu consumo estimado é de ${dailyAvgKwh.toStringAsFixed(1)} kWh/dia.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 12,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Autonomia prevista:',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                  Text(
+                    '~$estimatedDaysRemaining dias restantes',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: estimatedDaysRemaining <= 3
+                              ? Colors.red
+                              : AppTheme.darkerOrange,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -88,7 +212,7 @@ class MeterDetailPage extends StatelessWidget {
                 Text(
                   meter.alias,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -96,7 +220,7 @@ class MeterDetailPage extends StatelessWidget {
                 Text(
                   meter.serialNumber,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

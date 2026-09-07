@@ -166,7 +166,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
                                   .textTheme
                                   .titleLarge
                                   ?.copyWith(
-                                    color: AppTheme.textColorDark,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -183,7 +183,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
                               .textTheme
                               .displayMedium
                               ?.copyWith(
-                                color: AppTheme.textColorDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -195,7 +195,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
                               : 'Defina um PIN de 6 dígitos que utilizará para aceder à sua conta com facilidade e segurança.',
                           style:
                               Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: AppTheme.textColorSecondary,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontSize: 14,
                                   ),
                         ),
@@ -238,7 +238,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
                                 _showPin
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppTheme.textColorSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 size: 18,
                               ),
                               label: Text(
@@ -247,7 +247,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
                                     .textTheme
                                     .labelMedium
                                     ?.copyWith(
-                                      color: AppTheme.textColorSecondary,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                     ),

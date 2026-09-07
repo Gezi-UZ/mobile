@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/meter/domain/entities/meter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_event.dart';
 
 class MeterFormPage extends StatefulWidget {
   final Meter? meter; // Se for null, é registo. Se não, é edição.
@@ -19,6 +23,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
   late final TextEditingController _numberController;
   late final TextEditingController _aliasController;
   MeterIconType _selectedIcon = MeterIconType.home;
+  bool _isLoading = false;
 
   bool get isEdit => widget.meter != null;
 
@@ -39,21 +44,45 @@ class _MeterFormPageState extends State<MeterFormPage> {
     super.dispose();
   }
 
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Os serviços de localização estão desativados.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('As permissões de localização foram negadas.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('As permissões de localização estão permanentemente negadas.');
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textColorDark),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
         title: Text(
           isEdit ? 'Editar contador' : 'Adicionar contador',
-          style: const TextStyle(
-            color: AppTheme.textColorDark,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
             fontFamily: 'Inter',
             fontWeight: FontWeight.w700,
@@ -72,7 +101,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
                 controller: _numberController,
                 hintText: '11 dígitos',
                 keyboardType: TextInputType.number,
-                enabled: !isEdit, // Número de contador normalmente não é editável
+                enabled: !isEdit && !_isLoading, // Número de contador normalmente não é editável
               ),
               const SizedBox(height: 24),
               _buildLabel('Nome / etiqueta'),
@@ -81,6 +110,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
                 controller: _aliasController,
                 hintText: 'Ex: Casa principal',
                 keyboardType: TextInputType.text,
+                enabled: !_isLoading,
               ),
               const SizedBox(height: 24),
               _buildLabel('Localização'),
@@ -90,16 +120,70 @@ class _MeterFormPageState extends State<MeterFormPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implementar lógica de salvar
-                    context.pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(isEdit ? 'Contador atualizado' : 'Contador associado')),
-                    );
+                  onPressed: _isLoading ? null : () async {
+                    final serial = _numberController.text;
+                    final alias = _aliasController.text;
+                    if (serial.isEmpty || alias.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios')),
+                      );
+                      return;
+                    }
+
+                    if (isEdit) {
+                      // Dispara a edição do contador (apenas envia a etiqueta)
+                      context.read<MeterBloc>().add(
+                        MeterUpdateRequested(
+                          meterId: widget.meter!.id,
+                          alias: alias,
+                        ),
+                      );
+                      if (context.mounted) {
+                        context.pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Atualização solicitada')),
+                        );
+                      }
+                    } else {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      try {
+                        final position = await _determinePosition();
+                        if (context.mounted) {
+                          context.read<MeterBloc>().add(
+                            MeterAddRequested(
+                              serialNumber: serial,
+                              alias: alias,
+                              latitude: position.latitude,
+                              longitude: position.longitude,
+                              address: _selectedIcon == MeterIconType.home ? 'Casa' 
+                                  : _selectedIcon == MeterIconType.office ? 'Escritório' : 'Armazém',
+                            ),
+                          );
+                          context.pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Associação solicitada')),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erro: $e')),
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryOrange,
-                    foregroundColor: AppTheme.white,
+                    foregroundColor: Theme.of(context).colorScheme.surface,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
@@ -127,8 +211,8 @@ class _MeterFormPageState extends State<MeterFormPage> {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        color: AppTheme.textColorDark,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
         fontSize: 13,
         fontFamily: 'Inter',
         fontWeight: FontWeight.w500,
@@ -145,7 +229,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: enabled ? AppTheme.white : const Color(0xFFF5F5F5),
+        color: enabled ? Theme.of(context).colorScheme.surface : Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE0E0E0),
@@ -156,15 +240,15 @@ class _MeterFormPageState extends State<MeterFormPage> {
         controller: controller,
         keyboardType: keyboardType,
         enabled: enabled,
-        style: const TextStyle(
-          color: AppTheme.textColorDark,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 15,
           fontFamily: 'Inter',
         ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: AppTheme.textColorSecondary,
+          hintStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 15,
             fontFamily: 'Inter',
           ),
@@ -179,7 +263,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE0E0E0),
@@ -190,7 +274,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
         child: DropdownButton<MeterIconType>(
           value: _selectedIcon,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppTheme.textColorSecondary),
+          icon: Icon(Icons.keyboard_arrow_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
           items: const [
             DropdownMenuItem(
               value: MeterIconType.home,

@@ -69,7 +69,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                           'Quase pronto!',
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
-                                color: AppTheme.textColorDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -89,7 +89,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                       'Criar a sua Passkey',
                       style: Theme.of(context).textTheme.displayMedium
                           ?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
                           ),
@@ -98,7 +98,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                     Text(
                       'Uma passkey substitui a password. Usa a impressão digital do seu telemóvel ou crie um PIN para entrar de forma segura e rápida, sem precisar de lembrar passwords.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -137,7 +137,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                       height: 52,
                       child: TextActionButton(
                         text: 'Fazer isto mais tarde',
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         onPressed: () => _skipPasskey(context),
                       ),
                     ),

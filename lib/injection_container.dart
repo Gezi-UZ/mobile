@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gezi/features/recharge/domain/usecases/stream_recharge_status.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gezi/core/services/local_notification_service.dart';
 import 'package:gezi/core/network/dio_client.dart';
+import 'package:gezi/core/theme/theme_cubit.dart';
 
 // Core
 import 'core/supabase/supabase_client.dart';
@@ -49,13 +51,26 @@ import 'features/recharge/domain/repositories/recharge_repository.dart';
 import 'features/recharge/domain/usecases/calculate_recharge_breakdown.dart';
 import 'features/recharge/domain/usecases/initiate_recharge.dart';
 import 'features/recharge/domain/usecases/apply_manual_code.dart';
+import 'features/recharge/domain/usecases/get_recharge_history.dart';
+import 'features/recharge/domain/usecases/get_dashboard_stats.dart';
 import 'features/recharge/presentation/bloc/recharge_bloc.dart';
+
+// History
+import 'features/history/presentation/bloc/history_cubit.dart';
 
 // Meter
 import 'features/meter/data/datasources/meter_remote_data_source.dart';
 import 'features/meter/data/datasources/meter_realtime_data_source.dart';
 import 'features/meter/data/repositories/meter_repository_impl.dart';
 import 'features/meter/domain/repositories/meter_repository.dart';
+import 'features/meter/domain/usecases/get_my_meters.dart';
+import 'features/meter/domain/usecases/get_meter_status.dart';
+import 'features/meter/domain/usecases/register_meter.dart';
+import 'features/meter/domain/usecases/edit_meter.dart';
+import 'features/meter/domain/usecases/validate_meter_by_serial.dart';
+import 'features/meter/domain/usecases/watch_meter_realtime.dart';
+import 'features/meter/domain/usecases/watch_user_meters.dart';
+import 'features/meter/presentation/bloc/meter_bloc.dart';
 
 // IoT
 import 'features/iot/data/datasources/iot_remote_data_source.dart';
@@ -101,6 +116,9 @@ Future<void> init() async {
   final localNotificationService = LocalNotificationService();
   await localNotificationService.init();
   sl.registerLazySingleton(() => localNotificationService);
+
+  // Theme
+  sl.registerLazySingleton(() => ThemeCubit(sharedPreferences: sl()));
 
   // ── Auth ─────────────────────────────────────────────────────────
 
@@ -165,7 +183,7 @@ Future<void> init() async {
   // ── Home ─────────────────────────────────────────────────────────
 
   sl.registerLazySingleton<HomeRemoteDataSource>(
-    () => HomeRemoteDataSourceImpl(),
+    () => HomeRemoteDataSourceImpl(dioClient: sl()),
   );
   sl.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(remoteDataSource: sl()),
@@ -191,6 +209,26 @@ Future<void> init() async {
     ),
   );
 
+  // Meter Use cases
+  sl.registerLazySingleton(() => GetMyMeters(sl()));
+  sl.registerLazySingleton(() => GetMeterStatus(sl()));
+  sl.registerLazySingleton(() => RegisterMeter(sl()));
+  sl.registerLazySingleton(() => EditMeter(sl()));
+  sl.registerLazySingleton(() => ValidateMeterBySerial(sl()));
+  sl.registerLazySingleton(() => WatchMeterRealtime(sl()));
+  sl.registerLazySingleton(() => WatchUserMeters(sl()));
+
+  // MeterBloc is a lazy singleton — shared between HomePage, MeterListPage, and Recharge flows
+  sl.registerLazySingleton(
+    () => MeterBloc(
+      getMyMeters: sl(),
+      editMeter: sl(),
+      registerMeter: sl(),
+      validateMeterBySerial: sl(),
+      watchUserMeters: sl(),
+    ),
+  );
+
   // ── Recharge ─────────────────────────────────────────────────────
 
   sl.registerLazySingleton<RechargeRemoteDataSource>(
@@ -202,11 +240,24 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CalculateRechargeBreakdown(sl()));
   sl.registerLazySingleton(() => InitiateRecharge(sl()));
   sl.registerLazySingleton(() => ApplyManualCode(sl()));
+  sl.registerLazySingleton(() => StreamRechargeStatus(sl()));
+  sl.registerLazySingleton(() => GetRechargeHistory(sl()));
+  sl.registerLazySingleton(() => GetDashboardStats(sl()));
   sl.registerFactory(
     () => RechargeBloc(
       calculateRechargeBreakdown: sl(),
       initiateRecharge: sl(),
       applyManualCode: sl(),
+      streamRechargeStatus: sl(),
+    ),
+  );
+
+  // ── History ──────────────────────────────────────────────────────
+
+  sl.registerFactory(
+    () => HistoryCubit(
+      getRechargeHistory: sl(),
+      getDashboardStats: sl(),
     ),
   );
 

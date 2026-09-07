@@ -22,7 +22,7 @@ class MeterConsumptionChart extends StatelessWidget {
                 child: Text(
                   'Semana',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.white,
+                    color: Theme.of(context).colorScheme.surface,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -38,7 +38,7 @@ class MeterConsumptionChart extends StatelessWidget {
                 child: Text(
                   'Mês',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -51,7 +51,7 @@ class MeterConsumptionChart extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: Colors.black.withValues(alpha: 0.08),
@@ -64,7 +64,7 @@ class MeterConsumptionChart extends StatelessWidget {
                 Text(
                   'Consumo (kWh)',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -111,7 +111,7 @@ class MeterConsumptionChart extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textColorSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 10,
           ),
         ),

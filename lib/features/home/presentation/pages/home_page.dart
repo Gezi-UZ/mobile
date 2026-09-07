@@ -12,7 +12,11 @@ import 'package:gezi/features/home/presentation/widgets/recharge_actions_widget.
 import 'package:gezi/features/home/presentation/widgets/recent_recharges_widget.dart';
 import 'package:gezi/injection_container.dart';
 import '../../../../core/theme/theme.dart';
-import '../../../../features/meter/presentation/pages/meter_list_page.dart';
+
+import '../../../../features/meter/domain/entities/meter.dart';
+import '../../../../features/meter/presentation/bloc/meter_bloc.dart';
+import '../../../../features/meter/presentation/bloc/meter_event.dart';
+import '../../../../features/meter/presentation/bloc/meter_state.dart';
 import '../../../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../../../features/profile/presentation/bloc/profile_event.dart';
 import '../../../../features/profile/presentation/bloc/profile_state.dart';
@@ -33,6 +37,8 @@ class _HomePageState extends State<HomePage> {
     }
     // Load profile for the header name
     sl<ProfileBloc>().add(const ProfileLoadRequested());
+    // Load meters
+    sl<MeterBloc>().add(const MeterListRequested());
   }
 
   @override
@@ -41,9 +47,10 @@ class _HomePageState extends State<HomePage> {
       providers: [
         BlocProvider.value(value: sl<HomeBloc>()),
         BlocProvider.value(value: sl<ProfileBloc>()),
+        BlocProvider.value(value: sl<MeterBloc>()),
       ],
       child: Scaffold(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
@@ -73,25 +80,40 @@ class _HomePageState extends State<HomePage> {
                       ),
                       if (state.meterBalance.isLowBalance)
                         LowBalanceAlertWidget(balance: state.meterBalance.kwhBalance),
-                      Builder(
-                        builder: (context) {
-                          final meter = MeterListPage.mockMeters.firstWhere(
-                            (m) => m.serialNumber == state.meterBalance.meterId,
-                            orElse: () => MeterListPage.mockMeters.first,
-                          );
+                      BlocBuilder<MeterBloc, MeterState>(
+                        builder: (context, meterState) {
+                          Meter? meter;
+                          if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+                            meter = meterState.meters.firstWhere(
+                              (m) => m.serialNumber == state.meterBalance.meterId,
+                              orElse: () =>
+                                  meterState.primaryMeter ?? meterState.meters.first,
+                            );
+                          }
+                          final activeMeter = meter ??
+                              Meter(
+                                id: state.meterBalance.meterId,
+                                alias: 'Contador Principal',
+                                serialNumber: state.meterBalance.meterId,
+                                isOnline: state.meterBalance.isOnline,
+                                isPrimary: true,
+                                kwhBalance: state.meterBalance.kwhBalance,
+                                iconType: MeterIconType.home,
+                              );
+
                           return GestureDetector(
                             onTap: () {
                               context.push('/meters/detail', extra: {
-                                'meter': meter,
+                                'meter': activeMeter,
                                 'recharges': state.recentRecharges,
                               });
                             },
                             child: MeterCardWidget(
                               balance: state.meterBalance,
-                              isPrimary: meter.isPrimary,
+                              isPrimary: activeMeter.isPrimary,
                             ),
                           );
-                        }
+                        },
                       ),
                       RechargeActionsWidget(
                         onRecharge: () => context.push('/recharge'),

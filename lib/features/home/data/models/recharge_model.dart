@@ -15,17 +15,33 @@ class RechargeModel extends Recharge {
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
+    DateTime parsedDate = DateTime.now();
+    final dateStr = json['recharged_at'] ?? json['created_at'] ?? json['applied_at'];
+    if (dateStr != null) {
+      parsedDate = DateTime.tryParse(dateStr.toString()) ?? DateTime.now();
+    }
+
     return RechargeModel(
-      id: json['id'] as String,
-      kwhAmount: (json['kwh_amount'] as num).toDouble(),
-      paidAmount: (json['paid_amount'] as num).toDouble(),
-      currency: json['currency'] as String,
-      rechargedAt: DateTime.parse(json['recharged_at'] as String),
-      status: _parseStatus(json['status'] as String),
-      meterAlias: json['meter_alias'] as String?,
-      meterSerialNumber: json['meter_serial_number'] as String,
-      isMyMeter: json['is_my_meter'] as bool? ?? false,
-      paymentMethod: json['payment_method'] as String? ?? 'M-Pesa',
+      id: json['id'] as String? ?? json['recharge_id'] as String? ?? '',
+      kwhAmount: (json['kwh_amount'] as num?)?.toDouble() ??
+          (json['credit_kwh'] as num?)?.toDouble() ??
+          (json['kwh'] as num?)?.toDouble() ??
+          0.0,
+      paidAmount: (json['paid_amount'] as num?)?.toDouble() ??
+          (json['amount_mzn'] as num?)?.toDouble() ??
+          (json['amount'] as num?)?.toDouble() ??
+          0.0,
+      currency: json['currency'] as String? ?? 'MT',
+      rechargedAt: parsedDate,
+      status: _parseStatus(json['status']?.toString() ?? ''),
+      meterAlias: json['meter_alias'] as String? ?? json['label'] as String?,
+      meterSerialNumber: json['meter_serial_number'] as String? ??
+          json['meter_id'] as String? ??
+          '',
+      isMyMeter: json['is_my_meter'] as bool? ?? true,
+      paymentMethod: json['payment_method'] as String? ??
+          json['provider'] as String? ??
+          'M-Pesa',
     );
   }
 
@@ -43,9 +59,16 @@ class RechargeModel extends Recharge {
       };
 
   static RechargeStatus _parseStatus(String raw) {
-    return RechargeStatus.values.firstWhere(
-      (s) => s.name == raw,
-      orElse: () => RechargeStatus.pending,
-    );
+    final upper = raw.toUpperCase();
+    if (upper == 'SUCCESS' ||
+        upper == 'CONFIRMED' ||
+        upper == 'CONCLUIDA' ||
+        upper == 'ACK_RECEIVED') {
+      return RechargeStatus.success;
+    }
+    if (upper == 'FAILED' || upper == 'REFUNDED') {
+      return RechargeStatus.failed;
+    }
+    return RechargeStatus.pending;
   }
 }

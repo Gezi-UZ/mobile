@@ -90,7 +90,7 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                           'Valor em MT',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: AppTheme.textColorSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                         ),
@@ -138,7 +138,7 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                               'MT',
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
-                                    color: AppTheme.textColorDark,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                     fontSize: 30,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -209,7 +209,7 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: ShapeDecoration(
-                        color: AppTheme.lightOrangeBackground,
+                        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(
@@ -347,14 +347,14 @@ class _DetailRow extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.textColorSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 12,
             ),
           ),
           Text(
             value,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isBold ? AppTheme.primaryOrange : AppTheme.textColorDark,
+              color: isBold ? AppTheme.primaryOrange : Theme.of(context).colorScheme.onSurface,
               fontSize: 12,
               fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
             ),
@@ -392,7 +392,7 @@ class _QuickAmountButton extends StatelessWidget {
             amount.toString(),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
             ),
           ),

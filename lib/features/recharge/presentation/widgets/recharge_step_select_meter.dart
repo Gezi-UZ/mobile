@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/injection_container.dart';
+import '../../../meter/domain/entities/meter.dart';
+import '../../../meter/presentation/bloc/meter_bloc.dart';
+import '../../../meter/presentation/bloc/meter_state.dart';
+import '../../../meter/presentation/bloc/meter_event.dart';
 
 class RechargeStepSelectMeter extends StatefulWidget {
   final VoidCallback onNext;
@@ -18,204 +24,264 @@ class RechargeStepSelectMeter extends StatefulWidget {
 }
 
 class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
-  // Lista fictícia de contadores do utilizador (o 1º é o favorito por padrão)
-  final List<Map<String, String>> _meters = [
-    {
-      'name': 'Casa',
-      'number': '12345678901',
-      'isFavorite': 'true',
-    },
-    {
-      'name': 'Escritório',
-      'number': '98765432109',
-      'isFavorite': 'false',
-    },
-  ];
-
-  int? _selectedIndex;
+  String? _selectedMeterNumber;
 
   @override
   void initState() {
     super.initState();
-    if (widget.selectedMeterNumber != null) {
-      final index = _meters.indexWhere((m) => m['number'] == widget.selectedMeterNumber);
-      if (index != -1) {
-        _selectedIndex = index;
-      } else {
-        _selectedIndex = 0;
-      }
-    } else {
-      _selectedIndex = 0;
-    }
+    _selectedMeterNumber = widget.selectedMeterNumber;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ListView.separated(
-              itemCount: _meters.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final meter = _meters[index];
-                final isSelected = _selectedIndex == index;
+    return BlocBuilder<MeterBloc, MeterState>(
+      bloc: sl<MeterBloc>()..add(const MeterListRequested()),
+      builder: (context, state) {
+        List<Meter> meters = [];
+        if (state is MeterLoaded) {
+          meters = state.meters;
+        }
 
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                    widget.onMeterSelected(meter['number']!);
+        if (state is MeterLoading && meters.isEmpty) {
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryOrange),
+            ),
+          );
+        }
+
+        if (meters.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.electric_meter_outlined,
+                    size: 48,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Nenhum contador associado',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Adicione um contador para realizar recargas.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Initialize selection if null
+        if (_selectedMeterNumber == null && meters.isNotEmpty) {
+          final primary = meters.firstWhere(
+            (m) => m.isPrimary,
+            orElse: () => meters.first,
+          );
+          _selectedMeterNumber = primary.serialNumber;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.onMeterSelected(primary.serialNumber);
+          });
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ListView.separated(
+                  itemCount: meters.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final meter = meters[index];
+                    final isSelected = _selectedMeterNumber == meter.serialNumber;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedMeterNumber = meter.serialNumber;
+                        });
+                        widget.onMeterSelected(meter.serialNumber);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: ShapeDecoration(
+                          color: isSelected
+                              ? Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 1.11,
+                              color: isSelected
+                                  ? AppTheme.primaryOrange
+                                  : Colors.black.withValues(alpha: 0.08),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFFF5F5F5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.electric_meter_outlined,
+                                  color: AppTheme.primaryOrange,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        meter.alias,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      if (meter.isPrimary) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryOrange
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            'Favorito',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: AppTheme.primaryOrange,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  Text(
+                                    meter.serialNumber,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: ShapeDecoration(
+                                color: isSelected
+                                    ? AppTheme.primaryOrange
+                                    : Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(
+                                    width: 1.11,
+                                    color: isSelected
+                                        ? AppTheme.primaryOrange
+                                        : Colors.black.withValues(alpha: 0.08),
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: isSelected
+                                  ? Center(
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: ShapeDecoration(
+                                          color: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
+                ),
+              ),
+
+              // Botão Continuar
+              GestureDetector(
+                onTap: _selectedMeterNumber != null ? widget.onNext : null,
+                child: Opacity(
+                  opacity: _selectedMeterNumber != null ? 1.0 : 0.50,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: ShapeDecoration(
-                      color: isSelected ? AppTheme.lightOrangeBackground : Colors.white,
+                      color: _selectedMeterNumber != null
+                          ? AppTheme.primaryOrange
+                          : const Color(0xFFCCCCCC),
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1.11,
-                          color: isSelected
-                              ? AppTheme.primaryOrange
-                              : Colors.black.withValues(alpha: 0.08),
-                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: ShapeDecoration(
-                            color: const Color(0xFFF5F5F5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                    child: Text(
+                      'Continuar',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Colors.white,
+                            fontSize: 16,
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.electric_meter_outlined,
-                              color: AppTheme.primaryOrange,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    meter['name']!,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                          color: AppTheme.textColorDark,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                  ),
-                                  if (meter['isFavorite'] == 'true') ...[
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.primaryOrange.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        'Favorito',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: AppTheme.primaryOrange,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              Text(
-                                meter['number']!,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppTheme.textColorSecondary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: ShapeDecoration(
-                            color: isSelected ? AppTheme.primaryOrange : Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                width: 1.11,
-                                color: isSelected
-                                    ? AppTheme.primaryOrange
-                                    : Colors.black.withValues(alpha: 0.08),
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: isSelected
-                              ? Center(
-                                  child: Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: ShapeDecoration(
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Botão Continuar
-          GestureDetector(
-            onTap: _selectedIndex != null ? widget.onNext : null,
-            child: Opacity(
-              opacity: _selectedIndex != null ? 1.0 : 0.50,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: ShapeDecoration(
-                  color: _selectedIndex != null
-                      ? AppTheme.primaryOrange
-                      : const Color(0xFFCCCCCC),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(
-                  'Continuar',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

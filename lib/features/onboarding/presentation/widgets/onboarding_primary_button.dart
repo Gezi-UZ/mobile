@@ -19,11 +19,11 @@ class OnboardingPrimaryButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: ShapeDecoration(
-          color: AppTheme.white.withValues(alpha: 0.20),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.20),
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 1.11,
-              color: AppTheme.white.withValues(alpha: 0.25),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.25),
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -32,7 +32,7 @@ class OnboardingPrimaryButton extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelLarge,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.surface),
           ),
         ),
       ),

@@ -34,14 +34,14 @@ class DashboardHeaderWidget extends StatelessWidget {
         Text(
           'Bem-vindo,',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppTheme.textColorSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 12,
           ),
         ),
         Text(
           userName,
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            color: AppTheme.textColorDark,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 18,
           ),
         ),
@@ -78,8 +78,8 @@ class _NotificationIconButton extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: const ShapeDecoration(
-              color: AppTheme.lightOrangeBackground,
+            decoration: ShapeDecoration(
+              color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
               shape: CircleBorder(),
             ),
             child: const Icon(
@@ -102,8 +102,8 @@ class _NotificationIconButton extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '$count',
-                    style: const TextStyle(
-                      color: AppTheme.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                     ),

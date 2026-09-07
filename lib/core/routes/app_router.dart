@@ -13,7 +13,6 @@ import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/passkey_setup_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/report/presentation/pages/report_list_page.dart';
-import '../../features/report/presentation/pages/receipt_preview_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/meter/presentation/pages/meter_list_page.dart';
 import '../../features/meter/presentation/pages/meter_form_page.dart';
@@ -28,6 +27,8 @@ import '../../features/recharge/presentation/pages/recharge_by_code_page.dart';
 import '../../features/alert/presentation/pages/alerts_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
 import '../../features/meter/domain/entities/meter.dart';
+import '../../features/meter/presentation/bloc/meter_bloc.dart';
+import '../../features/meter/presentation/bloc/meter_state.dart';
 import '../../features/home/domain/entities/recharge.dart';
 import '../../injection_container.dart';
 
@@ -104,25 +105,30 @@ class AppRouter {
             final isCodeRecharge =
                 state.uri.queryParameters['isCodeRecharge'] == 'true';
             final code = state.uri.queryParameters['code'];
+            final rechargeId = state.uri.queryParameters['rechargeId'] ?? '';
             return RechargeStatusPage(
               amount: amount,
               meterNumber: meterNumber,
               isCodeRecharge: isCodeRecharge,
               code: code,
+              rechargeId: rechargeId,
             );
           },
         ),
         GoRoute(
           path: '/recharge/receipt',
           builder: (context, state) {
-            final amount = state.uri.queryParameters['amount'] ?? '0';
-            final meterNumber = state.uri.queryParameters['meterNumber'] ?? '';
-            final isCodeRecharge =
-                state.uri.queryParameters['isCodeRecharge'] == 'true';
-            final code = state.uri.queryParameters['code'];
+            final extra = state.extra as Map<String, dynamic>? ?? {};
+            final recharge = extra['recharge'] as Recharge?;
+            final isCodeRecharge = extra['isCodeRecharge'] as bool? ?? false;
+            final code = extra['code'] as String?;
+            
+            if (recharge == null) {
+              return const Scaffold(body: Center(child: Text('Recarga não encontrada')));
+            }
+
             return RechargeReceiptPage(
-              amount: amount,
-              meterNumber: meterNumber,
+              recharge: recharge,
               isCodeRecharge: isCodeRecharge,
               code: code,
             );
@@ -141,10 +147,27 @@ class AppRouter {
           path: '/meters/detail',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>? ?? {};
-            final meter =
-                extra['meter'] as Meter? ?? MeterListPage.mockMeters.first;
+            Meter? meter = extra['meter'] as Meter?;
+            if (meter == null) {
+              final meterState = sl<MeterBloc>().state;
+              if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+                meter = meterState.primaryMeter ?? meterState.meters.first;
+              }
+            }
             final recharges = extra['recharges'] as List<Recharge>? ?? [];
-            return MeterDetailPage(meter: meter, recentRecharges: recharges);
+            return MeterDetailPage(
+              meter: meter ??
+                  const Meter(
+                    id: '',
+                    alias: 'Contador',
+                    serialNumber: '',
+                    isOnline: false,
+                    isPrimary: true,
+                    kwhBalance: 0.0,
+                    iconType: MeterIconType.home,
+                  ),
+              recentRecharges: recharges,
+            );
           },
         ),
         GoRoute(
@@ -156,7 +179,13 @@ class AppRouter {
         ),
         GoRoute(
           path: '/receipt_preview',
-          builder: (context, state) => const ReceiptPreviewPage(),
+          builder: (context, state) {
+            final recharge = state.extra as Recharge;
+            // Reusing RechargeReceiptPage for preview
+            return RechargeReceiptPage(
+              recharge: recharge,
+            );
+          },
         ),
         // ── Shell with bottom nav (protected) ─────────────────────────
         StatefulShellRoute.indexedStack(

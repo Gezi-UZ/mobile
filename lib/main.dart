@@ -6,6 +6,8 @@ import 'core/routes/app_router.dart';
 import 'core/theme/theme.dart';
 import 'core/supabase/supabase_client.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'core/theme/theme_cubit.dart';
+import 'core/theme/theme_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -37,13 +39,22 @@ class GeziApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>.value(
-      value: di.sl<AuthBloc>(),
-      child: MaterialApp.router(
-        title: 'Gezi',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.themeData,
-        routerConfig: AppRouter.router,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>.value(value: di.sl<AuthBloc>()),
+        BlocProvider<ThemeCubit>.value(value: di.sl<ThemeCubit>()),
+      ],
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp.router(
+            title: 'Gezi',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.themeData,
+            darkTheme: AppTheme.darkThemeData,
+            themeMode: themeState.themeMode,
+            routerConfig: AppRouter.router,
+          );
+        },
       ),
     );
   }

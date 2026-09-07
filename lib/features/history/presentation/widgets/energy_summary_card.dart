@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/recharge/domain/entities/dashboard_stats.dart';
 
 class EnergySummaryCard extends StatelessWidget {
-  final double energyReceived;
-  final String energyUnit;
-  final String totalPaid;
-  final int rechargesCount;
+  final DashboardStats? stats;
 
   const EnergySummaryCard({
     super.key,
-    this.energyReceived = 64.7,
-    this.energyUnit = 'kWh',
-    this.totalPaid = '1750 MZN',
-    this.rechargesCount = 3,
+    this.stats,
   });
 
   @override
   Widget build(BuildContext context) {
+    final double energyReceived = stats?.totalKwhPurchased ?? 0.0;
+    final String energyUnit = 'kWh';
+    final String totalPaid = '${stats?.totalSpentMzn.toStringAsFixed(0) ?? 0} MZN';
+    final int rechargesCount = stats?.rechargeCount ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.08),
           width: 1,
@@ -33,7 +33,7 @@ class EnergySummaryCard extends StatelessWidget {
           Text(
             'Energia recebida esta semana',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                 ),
           ),
@@ -44,7 +44,7 @@ class EnergySummaryCard extends StatelessWidget {
                 TextSpan(
                   text: '$energyReceived ',
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                         fontSize: 30,
                       ),
@@ -52,7 +52,7 @@ class EnergySummaryCard extends StatelessWidget {
                 TextSpan(
                   text: energyUnit,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                         fontSize: 18,
                       ),
@@ -98,7 +98,7 @@ class EnergySummaryCard extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 11,
                 ),
           ),
@@ -107,7 +107,7 @@ class EnergySummaryCard extends StatelessWidget {
             value,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),

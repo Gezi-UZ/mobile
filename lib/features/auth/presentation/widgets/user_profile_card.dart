@@ -30,7 +30,7 @@ class UserProfileCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: AppTheme.lightOrangeBackground,
+        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Row(
@@ -60,7 +60,7 @@ class UserProfileCard extends StatelessWidget {
                 Text(
                   name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
                     height: 1.50,
@@ -71,7 +71,7 @@ class UserProfileCard extends StatelessWidget {
                   child: Text(
                     phone,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textColorSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       height: 1.43,

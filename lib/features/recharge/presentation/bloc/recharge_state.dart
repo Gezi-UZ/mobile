@@ -29,6 +29,24 @@ class RechargeSuccess extends RechargeState {
   List<Object?> get props => [recharge];
 }
 
+class RechargeInitiated extends RechargeState {
+  final Recharge recharge;
+
+  const RechargeInitiated(this.recharge);
+
+  @override
+  List<Object?> get props => [recharge];
+}
+
+class RechargeStatusUpdated extends RechargeState {
+  final Recharge recharge;
+
+  const RechargeStatusUpdated(this.recharge);
+
+  @override
+  List<Object?> get props => [recharge];
+}
+
 class RechargeError extends RechargeState {
   final String message;
 

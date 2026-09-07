@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/onboarding_step_entity.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/theme/theme.dart';
 
 class OnboardingContent extends StatelessWidget {
   final OnboardingStepEntity step;
@@ -55,8 +56,8 @@ class OnboardingContent extends StatelessWidget {
             step.title,
             textAlign: TextAlign.center,
             style: step.isLargeTitle
-                ? Theme.of(context).textTheme.displayLarge
-                : Theme.of(context).textTheme.displayMedium,
+                ? Theme.of(context).textTheme.displayLarge?.copyWith(color: Theme.of(context).colorScheme.surface)
+                : Theme.of(context).textTheme.displayMedium?.copyWith(color: Theme.of(context).colorScheme.surface),
           ),
           const SizedBox(height: 12),
           ConstrainedBox(
@@ -64,7 +65,7 @@ class OnboardingContent extends StatelessWidget {
             child: Text(
               step.subtitle,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.surface),
             ),
           ),
         ],

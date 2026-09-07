@@ -26,7 +26,7 @@ class EquipmentEstimationCard extends StatelessWidget {
             'Estimativa de consumo diário',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.white.withValues(alpha: 0.70),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.70),
               fontWeight: FontWeight.w400,
               height: 1.33,
             ),
@@ -36,7 +36,7 @@ class EquipmentEstimationCard extends StatelessWidget {
             estimateValue.toStringAsFixed(2),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
-              color: AppTheme.white,
+              color: Theme.of(context).colorScheme.surface,
               fontWeight: FontWeight.w700,
               fontSize: 36,
               height: 1.11,
@@ -46,7 +46,7 @@ class EquipmentEstimationCard extends StatelessWidget {
             'kWh / dia',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.white.withValues(alpha: 0.80),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.80),
               fontWeight: FontWeight.w400,
               height: 1.43,
             ),

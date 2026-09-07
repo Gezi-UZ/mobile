@@ -79,4 +79,21 @@ class MeterRepositoryImpl implements MeterRepository {
   Stream<Meter> watchMeterStatus(String meterId) {
     return realtimeDataSource.watchMeterStatus(meterId);
   }
+
+  @override
+  Future<Either<Failure, Meter>> validateMeterBySerial(String serialNumber) async {
+    try {
+      final meter = await remoteDataSource.validateMeterBySerial(serialNumber);
+      return Right(meter);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Stream<List<Meter>> watchUserMeters(String userId) {
+    return realtimeDataSource.watchUserMeters(userId);
+  }
 }

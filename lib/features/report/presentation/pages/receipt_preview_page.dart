@@ -9,19 +9,19 @@ class ReceiptPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightOrangeBackground,
+      backgroundColor: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.lightOrangeBackground,
+        backgroundColor: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
         elevation: 0,
         title: Text(
           'Comprovativo',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.textColorDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppTheme.textColorDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SafeArea(
         child: Padding(

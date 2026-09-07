@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 
-class RechargeStepConfirm extends StatelessWidget {
-  final VoidCallback onConfirm;
+class RechargeStepConfirm extends StatefulWidget {
+  final Function(String?) onConfirm;
   final String amount;
   final String meterNumber;
   final bool isForSomeone;
@@ -16,8 +16,44 @@ class RechargeStepConfirm extends StatelessWidget {
   });
 
   @override
+  State<RechargeStepConfirm> createState() => _RechargeStepConfirmState();
+}
+
+class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
+  final _phoneController = TextEditingController();
+  String? _phoneError;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _handleConfirm() {
+    final phone = _phoneController.text.trim();
+    if (phone.isNotEmpty) {
+      if (!phone.startsWith('84') && !phone.startsWith('85')) {
+        setState(() {
+          _phoneError = 'O número deve começar por 84 ou 85';
+        });
+        return;
+      }
+      if (phone.length != 9) {
+        setState(() {
+          _phoneError = 'O número deve ter 9 dígitos';
+        });
+        return;
+      }
+    }
+    setState(() {
+      _phoneError = null;
+    });
+    widget.onConfirm(phone.isEmpty ? null : phone);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double totalAmount = double.tryParse(amount) ?? 0.0;
+    final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
     final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
@@ -50,7 +86,7 @@ class RechargeStepConfirm extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: ShapeDecoration(
-                      color: AppTheme.lightOrangeBackground,
+                      color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
                       shape: RoundedRectangleBorder(
                         side: const BorderSide(
                           width: 1.11,
@@ -92,7 +128,7 @@ class RechargeStepConfirm extends StatelessWidget {
                                 'M-Pesa',
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
-                                      color: AppTheme.textColorDark,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                       fontWeight: FontWeight.w700,
                                     ),
                               ),
@@ -100,7 +136,7 @@ class RechargeStepConfirm extends StatelessWidget {
                                 'Vodacom M-Pesa',
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
-                                      color: AppTheme.textColorSecondary,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w500,
                                     ),
                               ),
@@ -135,12 +171,71 @@ class RechargeStepConfirm extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
+                  // Número de telemóvel opcional
+                  Text(
+                    'Número de telemóvel (Opcional)',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 9,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 841234567',
+                      errorText: _phoneError,
+                      hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                      counterText: '',
+                      filled: true,
+                      fillColor: const Color(0xFFF9FAFB),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.primaryOrange),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      if (_phoneError != null) {
+                        setState(() {
+                          _phoneError = null;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Se deixares vazio, usaremos o número do teu perfil.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Resumo Detalhado EDM
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: ShapeDecoration(
-                      color: AppTheme.lightOrangeBackground,
+                      color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -152,14 +247,14 @@ class RechargeStepConfirm extends StatelessWidget {
                           'Detalhes da recarga',
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(
-                                color: AppTheme.textColorDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
                         ),
                         const SizedBox(height: 12),
-                        _SummaryRow(title: 'Contador', value: meterNumber),
+                        _SummaryRow(title: 'Contador', value: widget.meterNumber),
                         const SizedBox(height: 8),
-                        _SummaryRow(title: 'Valor total', value: '$amount MT'),
+                        _SummaryRow(title: 'Valor total', value: '${widget.amount} MT'),
                         const SizedBox(height: 8),
                         _SummaryRow(
                           title: 'Val Energia',
@@ -202,7 +297,7 @@ class RechargeStepConfirm extends StatelessWidget {
 
           // Botão Confirmar
           GestureDetector(
-            onTap: onConfirm,
+            onTap: _handleConfirm,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -213,7 +308,7 @@ class RechargeStepConfirm extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Confirmar pagamento · $amount MT',
+                'Confirmar pagamento · ${widget.amount} MT',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: Colors.white,
@@ -243,12 +338,12 @@ class _SummaryRow extends StatelessWidget {
           title,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppTheme.textColorSecondary),
+          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Text(
           value,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textColorDark,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),

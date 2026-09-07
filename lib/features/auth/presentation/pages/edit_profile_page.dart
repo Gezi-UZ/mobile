@@ -74,18 +74,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
           final isLoading = state is ProfileLoading;
 
           return Scaffold(
-            backgroundColor: AppTheme.white,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: AppTheme.textColorDark),
+                icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
                 onPressed: () => context.pop(),
               ),
               title: Text(
                 'Editar Perfil',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -126,7 +126,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     Text(
                       'Nome Completo',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -144,7 +144,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     Text(
                       'Telefone (opcional)',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -229,14 +229,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         textCapitalization: textCapitalization,
         inputFormatters: inputFormatters,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: AppTheme.textColorDark,
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: 16,
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hint,
           hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppTheme.textColorSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 16,
           ),
         ),

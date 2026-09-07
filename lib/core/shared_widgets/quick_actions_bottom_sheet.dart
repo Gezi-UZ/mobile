@@ -11,9 +11,9 @@ class QuickActionsBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 8, bottom: 32),
-      decoration: const ShapeDecoration(
-        color: AppTheme.white,
+      padding: EdgeInsets.only(top: 8, bottom: 32),
+      decoration: ShapeDecoration(
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24),
@@ -22,7 +22,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
         ),
         shadows: [
           BoxShadow(
-            color: AppTheme.textColorDark,
+            color: Theme.of(context).colorScheme.onSurface,
             blurRadius: 50,
             offset: Offset(0, 25),
             spreadRadius: -12,
@@ -52,7 +52,7 @@ class QuickActionsBottomSheet extends StatelessWidget {
             child: Text(
               'O QUE QUER FAZER?',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.textColorSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.30,
@@ -138,7 +138,7 @@ class _QuickActionItem extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.textColorDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                     ),
                   ),
@@ -146,7 +146,7 @@ class _QuickActionItem extends StatelessWidget {
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textColorSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),

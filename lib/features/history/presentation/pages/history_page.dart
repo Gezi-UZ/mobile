@@ -1,39 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/history/presentation/bloc/history_cubit.dart';
 import 'package:gezi/features/history/presentation/widgets/daily_consumption_chart_widget.dart';
 import 'package:gezi/features/history/presentation/widgets/energy_summary_card.dart';
 import 'package:gezi/features/history/presentation/widgets/history_header_widget.dart';
 import 'package:gezi/features/history/presentation/widgets/meter_selector_widget.dart';
 import 'package:gezi/features/history/presentation/widgets/time_filter_toggle_widget.dart';
 import 'package:gezi/features/history/presentation/widgets/recharge_tile_widget.dart';
+import 'package:gezi/features/meter/domain/entities/meter.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
+import 'package:gezi/injection_container.dart';
+import 'package:intl/intl.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<HistoryCubit>(),
+      child: const HistoryPageView(),
+    );
+  }
 }
 
-class _HistoryPageState extends State<HistoryPage> {
-  String _selectedMeterName = 'Todos os contadores';
-  String _selectedMeterSubtitle = '3 contadores registados';
+class HistoryPageView extends StatefulWidget {
+  const HistoryPageView({super.key});
 
-  void _showMeterSelectionBottomSheet() {
-    // Mocks for meters
-    final List<Map<String, String>> meters = [
-      {'name': 'Todos os contadores', 'subtitle': '3 contadores registados'},
-      {'name': 'Casa - Principal', 'subtitle': 'Contador: 04040404040'},
-      {'name': 'Escritório', 'subtitle': 'Contador: 04040404041'},
-      {'name': 'Casa de Praia', 'subtitle': 'Contador: 04040404042'},
-    ];
+  @override
+  State<HistoryPageView> createState() => _HistoryPageViewState();
+}
 
+class _HistoryPageViewState extends State<HistoryPageView> {
+  Meter? _selectedMeter;
+  String _currentPeriod = 'week'; // week, month, year
+
+  @override
+  void initState() {
+    super.initState();
+    final meterState = context.read<MeterBloc>().state;
+    if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+      _selectedMeter = meterState.meters.firstWhere(
+        (m) => m.isPrimary,
+        orElse: () => meterState.meters.first,
+      );
+      _fetchHistory();
+    }
+  }
+
+  void _fetchHistory() {
+    if (_selectedMeter != null) {
+      context.read<HistoryCubit>().fetchHistoryData(_selectedMeter!.id, _currentPeriod);
+    }
+  }
+
+  void _showMeterSelectionBottomSheet(List<Meter> meters) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
+      builder: (bottomSheetContext) {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -44,14 +74,14 @@ class _HistoryPageState extends State<HistoryPage> {
                 Text(
                   'Selecione um contador',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                       ),
                 ),
                 const SizedBox(height: 16),
                 ...meters.map((meter) {
-                  final isSelected = _selectedMeterName == meter['name'];
+                  final isSelected = _selectedMeter?.id == meter.id;
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Container(
@@ -60,33 +90,33 @@ class _HistoryPageState extends State<HistoryPage> {
                       decoration: BoxDecoration(
                         color: isSelected 
                             ? AppTheme.primaryOrange.withValues(alpha: 0.1)
-                            : AppTheme.lightOrangeBackground,
+                            : Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         isSelected ? Icons.check_circle : Icons.bolt_rounded,
-                        color: isSelected ? AppTheme.primaryOrange : AppTheme.textColorSecondary,
+                        color: isSelected ? AppTheme.primaryOrange : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     title: Text(
-                      meter['name']!,
+                      meter.alias,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                           ),
                     ),
                     subtitle: Text(
-                      meter['subtitle']!,
+                      'SN: ${meter.serialNumber}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textColorSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     onTap: () {
                       setState(() {
-                        _selectedMeterName = meter['name']!;
-                        _selectedMeterSubtitle = meter['subtitle']!;
+                        _selectedMeter = meter;
                       });
-                      Navigator.pop(context);
+                      _fetchHistory();
+                      Navigator.pop(bottomSheetContext);
                     },
                   );
                 }),
@@ -101,76 +131,136 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 24,
-              left: 20,
-              right: 20,
-              bottom: 40,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                HistoryHeaderWidget(
-                  onFilterTap: () {
-                    // Action when filter is tapped
-                  },
-                ),
-                const SizedBox(height: 20),
-                MeterSelectorWidget(
-                  title: _selectedMeterName,
-                  subtitle: _selectedMeterSubtitle,
-                  onTap: _showMeterSelectionBottomSheet,
-                ),
-                const SizedBox(height: 16),
-                TimeFilterToggleWidget(
-                  onFilterChanged: (filter) {
-                    // Handle filter change
-                  },
-                ),
-                const SizedBox(height: 24),
-                const EnergySummaryCard(),
-                const SizedBox(height: 16),
-                const DailyConsumptionChartWidget(),
-                const SizedBox(height: 24),
-                Text(
-                  'Recargas efectuadas',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppTheme.textColorDark,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+        child: BlocConsumer<MeterBloc, MeterState>(
+          listener: (context, meterState) {
+            if (meterState is MeterLoaded && meterState.meters.isNotEmpty && _selectedMeter == null) {
+              setState(() {
+                _selectedMeter = meterState.meters.firstWhere(
+                  (m) => m.isPrimary,
+                  orElse: () => meterState.meters.first,
+                );
+              });
+              _fetchHistory();
+            }
+          },
+          builder: (context, meterState) {
+            final meters = meterState is MeterLoaded ? meterState.meters : <Meter>[];
+            final meterName = _selectedMeter?.alias ?? 'Nenhum contador';
+            final meterSubtitle = _selectedMeter != null 
+                ? 'Contador: ${_selectedMeter!.serialNumber}' 
+                : 'Sem contadores registados';
+
+            return RefreshIndicator(
+              onRefresh: () async {
+                _fetchHistory();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 24,
+                    left: 20,
+                    right: 20,
+                    bottom: 40,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      HistoryHeaderWidget(
+                        onFilterTap: () {},
                       ),
+                      const SizedBox(height: 20),
+                      MeterSelectorWidget(
+                        title: meterName,
+                        subtitle: meterSubtitle,
+                        onTap: () {
+                          if (meters.isNotEmpty) {
+                            _showMeterSelectionBottomSheet(meters);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TimeFilterToggleWidget(
+                        onFilterChanged: (filter) {
+                          setState(() {
+                            if (filter == TimeFilter.semana) {
+                              _currentPeriod = 'week';
+                            } else if (filter == TimeFilter.mes) {
+                              _currentPeriod = 'month';
+                            } else if (filter == TimeFilter.anual) {
+                              _currentPeriod = 'year';
+                            } else {
+                              _currentPeriod = 'week';
+                            }
+                          });
+                          _fetchHistory();
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      BlocBuilder<HistoryCubit, HistoryState>(
+                        builder: (context, historyState) {
+                          if (historyState is HistoryLoading) {
+                            return const Center(child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: CircularProgressIndicator(),
+                            ));
+                          } else if (historyState is HistoryError) {
+                            return Center(child: Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Text('Erro: ${historyState.message}'),
+                            ));
+                          } else if (historyState is HistoryLoaded) {
+                            final stats = historyState.stats;
+                            final recharges = historyState.recharges;
+                            
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                EnergySummaryCard(
+                                  stats: stats,
+                                ),
+                                const SizedBox(height: 16),
+                                DailyConsumptionChartWidget(
+                                  recharges: recharges,
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  'Recargas efectuadas',
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                ),
+                                const SizedBox(height: 16),
+                                if (recharges.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 24),
+                                    child: Center(child: Text('Nenhuma recarga efectuada.')),
+                                  )
+                                else
+                                  ...recharges.map((recharge) {
+                                    return RechargeTileWidget(
+                                      dateHeader: DateFormat('dd MMM yyyy').format(recharge.createdAt).toUpperCase(),
+                                      energyAmount: '${recharge.creditKwh.toStringAsFixed(1)} kWh',
+                                      timeAndMethod: '${DateFormat('HH:mm').format(recharge.createdAt)} · M-Pesa',
+                                      cost: '${recharge.amountMzn.toStringAsFixed(0)} MZN',
+                                    );
+                                  }),
+                              ],
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                const RechargeTileWidget(
-                  dateHeader: '18 JUN 2026',
-                  energyAmount: '18.5 kWh',
-                  timeAndMethod: '14:32 · M-Pesa · CR...92',
-                  cost: '500 MZN',
-                ),
-                const RechargeTileWidget(
-                  dateHeader: '15 JUN 2026',
-                  energyAmount: '20.0 kWh',
-                  timeAndMethod: '09:15 · e-Mola · CR...14',
-                  cost: '600 MZN',
-                ),
-                const RechargeTileWidget(
-                  dateHeader: '10 JUN 2026',
-                  energyAmount: '10.2 kWh',
-                  timeAndMethod: '18:45 · M-Pesa · CR...88',
-                  cost: '300 MZN',
-                ),
-                const RechargeTileWidget(
-                  dateHeader: '02 JUN 2026',
-                  energyAmount: '35.0 kWh',
-                  timeAndMethod: '11:20 · Conta Móvel · CR...42',
-                  cost: '1000 MZN',
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

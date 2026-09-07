@@ -22,10 +22,10 @@ class TransactionListItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.dividerColor,
+            color: Theme.of(context).extension<AppColorsExtension>()!.dividerColor,
             width: 1,
           ),
         ),
@@ -33,9 +33,9 @@ class TransactionListItem extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: AppTheme.lightOrangeBackground,
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -52,7 +52,7 @@ class TransactionListItem extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                   maxLines: 1,
@@ -62,7 +62,7 @@ class TransactionListItem extends StatelessWidget {
                 Text(
                   date,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textColorSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ],
@@ -72,7 +72,7 @@ class TransactionListItem extends StatelessWidget {
           Text(
             '${isCredit ? '+' : '-'} $amount',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: isCredit ? AppTheme.successColor : AppTheme.textColorDark,
+                  color: isCredit ? Theme.of(context).extension<AppColorsExtension>()!.successColor : Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
           ),

@@ -31,6 +31,24 @@ class Meter extends Equatable {
   /// Tipo de ícone/avatar a exibir no card.
   final MeterIconType iconType;
 
+  /// Latitude da localização do contador.
+  final double? latitude;
+
+  /// Longitude da localização do contador.
+  final double? longitude;
+
+  /// Endereço legível da localização do contador.
+  final String? address;
+
+  /// Estado do relé (true = ligado / energia fornecida, false = cortado).
+  final bool relayState;
+
+  /// Data e hora da última recarga efectuada.
+  final DateTime? lastRechargeAt;
+
+  /// Data e hora da última sincronização/telemetria recebida.
+  final DateTime? lastSyncAt;
+
   const Meter({
     required this.id,
     required this.alias,
@@ -39,6 +57,12 @@ class Meter extends Equatable {
     required this.isPrimary,
     required this.kwhBalance,
     required this.iconType,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.relayState = true,
+    this.lastRechargeAt,
+    this.lastSyncAt,
   });
 
   @override
@@ -50,6 +74,12 @@ class Meter extends Equatable {
         isPrimary,
         kwhBalance,
         iconType,
+        latitude,
+        longitude,
+        address,
+        relayState,
+        lastRechargeAt,
+        lastSyncAt,
       ];
 
   Meter copyWith({
@@ -60,6 +90,12 @@ class Meter extends Equatable {
     bool? isPrimary,
     double? kwhBalance,
     MeterIconType? iconType,
+    double? latitude,
+    double? longitude,
+    String? address,
+    bool? relayState,
+    DateTime? lastRechargeAt,
+    DateTime? lastSyncAt,
   }) {
     return Meter(
       id: id ?? this.id,
@@ -69,6 +105,12 @@ class Meter extends Equatable {
       isPrimary: isPrimary ?? this.isPrimary,
       kwhBalance: kwhBalance ?? this.kwhBalance,
       iconType: iconType ?? this.iconType,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      address: address ?? this.address,
+      relayState: relayState ?? this.relayState,
+      lastRechargeAt: lastRechargeAt ?? this.lastRechargeAt,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
     );
   }
 }

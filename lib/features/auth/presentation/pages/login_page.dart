@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
         BlocProvider(create: (_) => sl<LoginBloc>()),
       ],
       child: Scaffold(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: MultiBlocListener(
             listeners: [
@@ -140,14 +140,14 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         'Bem-vindo ao Gezi',
                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Introduza o seu email e PIN para entrar.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textColorSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -156,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         'Email',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -178,14 +178,14 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'exemplo@gezi.com',
                             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
                             ),
                           ),
@@ -197,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text(
                         'PIN (6 dígitos)',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -224,20 +224,20 @@ class _LoginPageState extends State<LoginPage> {
                             LengthLimitingTextInputFormatter(6),
                           ],
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: '••••••',
                             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePin ? Icons.visibility_off : Icons.visibility,
-                                color: AppTheme.textColorSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               onPressed: () {
                                 setState(() => _obscurePin = !_obscurePin);
@@ -313,7 +313,7 @@ class _LoginPageState extends State<LoginPage> {
                             Text(
                               'Ou entre com',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppTheme.textColorSecondary),
+                                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -353,7 +353,7 @@ class _LoginPageState extends State<LoginPage> {
                         'Ao continuar, aceita os nossos Termos de Serviço e Política de Privacidade.',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textColorSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -379,7 +379,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: AppTheme.white,
+          color: Theme.of(context).colorScheme.surface,
           border: Border.all(
             color: Colors.black.withValues(alpha: 0.08),
             width: 1.11,
@@ -394,7 +394,7 @@ class _LoginPageState extends State<LoginPage> {
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppTheme.textColorDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],

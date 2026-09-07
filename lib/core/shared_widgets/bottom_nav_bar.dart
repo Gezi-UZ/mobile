@@ -59,7 +59,7 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: navigationShell,
       bottomNavigationBar: _GezBottomNavBar(
         currentBranchIndex: navigationShell.currentIndex,
@@ -94,7 +94,7 @@ class _GezBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
             color: Colors.black.withValues(alpha: 0.08),

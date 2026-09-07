@@ -13,6 +13,7 @@ abstract class RechargeRepository {
   Future<Either<Failure, Recharge>> initiateRecharge({
     required double amount,
     required String meterId,
+    String? phone,
   });
 
   Future<Either<Failure, Recharge>> applyCode({

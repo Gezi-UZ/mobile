@@ -75,12 +75,12 @@ class _SignupPageState extends State<SignupPage> {
     return BlocProvider(
       create: (_) => sl<SignupBloc>(),
       child: Scaffold(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppTheme.textColorDark),
+            icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => context.pop(),
           ),
         ),
@@ -123,14 +123,14 @@ class _SignupPageState extends State<SignupPage> {
                       Text(
                         'Criar conta',
                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Preencha os seus dados para aderir ao Gezi.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textColorSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -139,7 +139,7 @@ class _SignupPageState extends State<SignupPage> {
                       Text(
                         'Nome Completo',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -157,14 +157,14 @@ class _SignupPageState extends State<SignupPage> {
                           keyboardType: TextInputType.name,
                           textCapitalization: TextCapitalization.words,
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'O seu nome',
                             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
                             ),
                           ),
@@ -176,7 +176,7 @@ class _SignupPageState extends State<SignupPage> {
                       Text(
                         'Email',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -193,14 +193,14 @@ class _SignupPageState extends State<SignupPage> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'exemplo@gezi.com',
                             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
                             ),
                           ),
@@ -212,7 +212,7 @@ class _SignupPageState extends State<SignupPage> {
                       Text(
                         'Crie um PIN',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppTheme.textColorDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -234,20 +234,20 @@ class _SignupPageState extends State<SignupPage> {
                             LengthLimitingTextInputFormatter(6),
                           ],
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                           ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: '••••••',
                             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePin ? Icons.visibility_off : Icons.visibility,
-                                color: AppTheme.textColorSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               onPressed: () {
                                 setState(() => _obscurePin = !_obscurePin);

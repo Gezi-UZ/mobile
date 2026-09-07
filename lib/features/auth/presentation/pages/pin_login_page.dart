@@ -81,7 +81,7 @@ class _PinLoginPageState extends State<PinLoginPage> {
         child: Builder(
           builder: (context) {
             return Scaffold(
-              backgroundColor: AppTheme.white,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               body: SafeArea(
                 child: Padding(
               padding: const EdgeInsets.only(
@@ -101,7 +101,7 @@ class _PinLoginPageState extends State<PinLoginPage> {
                   Text(
                     'Entrar com PIN',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: AppTheme.textColorDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       height: 1.33,
@@ -111,7 +111,7 @@ class _PinLoginPageState extends State<PinLoginPage> {
                   Text(
                     'Introduza o PIN de 6 dígitos que definiu quando criou a sua passkey.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textColorSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 14,
                       height: 1.63,
                     ),

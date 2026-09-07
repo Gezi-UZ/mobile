@@ -24,7 +24,7 @@ class MeterCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: ShapeDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           side: BorderSide(
             width: 1.1,
@@ -149,8 +149,8 @@ class _MeterInfo extends StatelessWidget {
         // Nome amigável
         Text(
           meter.alias,
-          style: const TextStyle(
-            color: AppTheme.textColorDark,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
             fontFamily: 'Inter',
             fontWeight: FontWeight.w700,
@@ -160,8 +160,8 @@ class _MeterInfo extends StatelessWidget {
         // Número de série
         Text(
           meter.serialNumber,
-          style: const TextStyle(
-            color: AppTheme.textColorSecondary,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 12,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w500,
@@ -210,13 +210,13 @@ class _OptionsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Icon(
+      icon: Icon(
         Icons.more_vert,
-        color: AppTheme.textColorSecondary,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         size: 20,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: AppTheme.white,
+      color: Theme.of(context).colorScheme.surface,
       onSelected: (value) {
         if (value == 'primary') {
           onSetPrimary?.call();
@@ -225,7 +225,7 @@ class _OptionsButton extends StatelessWidget {
         } else if (value == 'edit') {
           context.push('/meters/edit', extra: {'meter': meter});
         } else if (value == 'remove') {
-          // TODO: Implementar lógica de remoção com confirmação
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Remover contador: Em breve')),
           );
@@ -233,33 +233,33 @@ class _OptionsButton extends StatelessWidget {
       },
       itemBuilder: (context) => [
         if (!meter.isPrimary)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'primary',
             child: Row(
               spacing: 12,
               children: [
-                Icon(Icons.star_outline, size: 20, color: AppTheme.textColorDark),
-                Text('Definir como principal', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+                Icon(Icons.star_outline, size: 20, color: Theme.of(context).colorScheme.onSurface),
+                const Text('Definir como principal', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
               ],
             ),
           ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'details',
           child: Row(
             spacing: 12,
             children: [
-              Icon(Icons.visibility_outlined, size: 20, color: AppTheme.textColorDark),
-              Text('Ver detalhes', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+              Icon(Icons.visibility_outlined, size: 20, color: Theme.of(context).colorScheme.onSurface),
+              const Text('Ver detalhes', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'edit',
           child: Row(
             spacing: 12,
             children: [
-              Icon(Icons.edit_outlined, size: 20, color: AppTheme.textColorDark),
-              Text('Editar', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+              Icon(Icons.edit_outlined, size: 20, color: Theme.of(context).colorScheme.onSurface),
+              const Text('Editar', style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
             ],
           ),
         ),

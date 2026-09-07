@@ -14,6 +14,7 @@ abstract class MeterRemoteDataSource {
   });
   Future<MeterModel> getMeterDetails(String meterId);
   Future<MeterModel> updateMeter(String meterId, {String? alias, bool? isPrimary});
+  Future<MeterModel> validateMeterBySerial(String serialNumber);
 }
 
 class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
@@ -26,8 +27,20 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
     try {
       final response = await dioClient.dio.get('/meters/me');
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => MeterModel.fromJson(json)).toList();
+        final dynamic raw = response.data;
+        List<dynamic> list;
+        if (raw is List) {
+          list = raw;
+        } else if (raw is Map && raw['data'] is List) {
+          list = raw['data'] as List;
+        } else if (raw is Map && raw['data'] is Map && raw['data']['meters'] is List) {
+          list = raw['data']['meters'] as List;
+        } else if (raw is Map && raw['meters'] is List) {
+          list = raw['meters'] as List;
+        } else {
+          list = [];
+        }
+        return list.map((json) => MeterModel.fromJson(json as Map<String, dynamic>)).toList();
       } else {
         throw ServerException('Failed to load meters');
       }
@@ -59,7 +72,11 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
       );
       
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return MeterModel.fromJson(response.data);
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+        return MeterModel.fromJson(item);
       } else {
         throw ServerException('Failed to add meter');
       }
@@ -73,7 +90,11 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
     try {
       final response = await dioClient.dio.get('/meters/$meterId');
       if (response.statusCode == 200) {
-        return MeterModel.fromJson(response.data);
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+        return MeterModel.fromJson(item);
       } else {
         throw ServerException('Failed to get meter details');
       }
@@ -94,12 +115,52 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
         data: data,
       );
       if (response.statusCode == 200) {
-        return MeterModel.fromJson(response.data);
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+        return MeterModel.fromJson(item);
       } else {
         throw ServerException('Failed to update meter');
       }
     } on DioException catch (e) {
       throw ServerException(e.message ?? 'Network error');
+    }
+  }
+
+  @override
+  Future<MeterModel> validateMeterBySerial(String serialNumber) async {
+    try {
+      // First try backend direct lookup endpoint
+      try {
+        final response = await dioClient.dio.get(
+          '/meters/lookup',
+          queryParameters: {'serial_number': serialNumber},
+        );
+        if (response.statusCode == 200) {
+          final dynamic raw = response.data;
+          final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+              ? raw['data'] as Map<String, dynamic>
+              : raw as Map<String, dynamic>;
+          return MeterModel.fromJson(item);
+        }
+      } catch (_) {
+        // Fallback to /meters/{serialNumber}
+        final response = await dioClient.dio.get('/meters/$serialNumber');
+        if (response.statusCode == 200) {
+          final dynamic raw = response.data;
+          final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+              ? raw['data'] as Map<String, dynamic>
+              : raw as Map<String, dynamic>;
+          return MeterModel.fromJson(item);
+        }
+      }
+      throw ServerException('Contador não encontrado');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw ServerException('Contador não encontrado no sistema EDM');
+      }
+      throw ServerException(e.message ?? 'Erro ao validar contador');
     }
   }
 }

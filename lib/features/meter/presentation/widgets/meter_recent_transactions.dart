@@ -17,7 +17,7 @@ class MeterRecentTransactions extends StatelessWidget {
           Text(
             'ÚLTIMAS TRANSACÇÕES',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppTheme.textColorSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               letterSpacing: 0.30,
             ),
           ),
@@ -27,7 +27,7 @@ class MeterRecentTransactions extends StatelessWidget {
               child: Text(
                 'Nenhuma transacção recente',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             )
@@ -35,7 +35,7 @@ class MeterRecentTransactions extends StatelessWidget {
             ...recharges.map((recharge) {
               final isSuccess = recharge.status == RechargeStatus.success;
               final isPending = recharge.status == RechargeStatus.pending;
-              final provider = 'M-PESA'; // Mock provider since Recharge doesn't have paymentMethod yet
+              final provider = recharge.paymentMethod;
               final dateStr = _formatDate(recharge.rechargedAt);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -67,7 +67,7 @@ class MeterRecentTransactions extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.08),
@@ -99,14 +99,14 @@ class MeterRecentTransactions extends StatelessWidget {
                 Text(
                   amount,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   details,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

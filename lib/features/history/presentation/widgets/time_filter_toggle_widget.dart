@@ -63,7 +63,7 @@ class _TimeFilterToggleWidgetState extends State<TimeFilterToggleWidget> {
         child: Container(
           decoration: isSelected
               ? BoxDecoration(
-                  color: AppTheme.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
                     BoxShadow(
@@ -79,8 +79,8 @@ class _TimeFilterToggleWidgetState extends State<TimeFilterToggleWidget> {
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: isSelected
-                      ? AppTheme.textColorDark
-                      : AppTheme.textColorSecondary,
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),

@@ -15,6 +15,7 @@ abstract class RechargeRemoteDataSource {
   Future<RechargeModel> initiateRecharge({
     required double amount,
     required String meterId,
+    String? phone,
   });
 
   Future<RechargeModel> applyCode({
@@ -47,16 +48,42 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     required String meterId,
   }) async {
     // Simulando localmente até existir endpoint real
+    try {
+      final response = await dioClient.dio.get(
+        '/recharges/calculate',
+        queryParameters: {
+          'meter_id': meterId,
+          'amount_mzn': amount,
+        },
+      );
+      if (response.statusCode == 200) {
+        final dynamic raw = response.data;
+        final Map<String, dynamic> data = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : (raw is Map ? raw as Map<String, dynamic> : {});
+        return RechargeBreakdownModel.fromJson(data);
+      }
+    } catch (_) {
+      // Fallback para fórmula tarifária oficial EDM (CREDELEC Doméstica)
+    }
+
+    const double ratePerKwh = 7.64; // Tarifa Doméstica padrão EDM
+    const double txLixo = 100.0; // Taxa de Lixo Municipal (1ª compra do mês)
+    final bool isFirstPurchase = amount >= 100.0;
+    final double lixoFee = isFirstPurchase ? txLixo : 0.0;
+    final double netForEnergy = (amount > lixoFee) ? (amount - lixoFee) : amount;
+    final double kwh = netForEnergy / ratePerKwh;
+
     return RechargeBreakdownModel(
       meterNumber: meterId,
       totalAmount: amount,
-      valEnergia: amount * 0.7,
-      iva: amount * 0.1,
-      dividaPaga: 0,
-      txRadio: amount * 0.05,
-      txLixo: amount * 0.15,
-      calculatedKwh: amount / 7.5,
-      isFirstPurchaseOfMonth: true,
+      valEnergia: netForEnergy,
+      iva: amount * 0.16,
+      dividaPaga: 0.0,
+      txRadio: 0.0,
+      txLixo: lixoFee,
+      calculatedKwh: double.parse(kwh.toStringAsFixed(2)),
+      isFirstPurchaseOfMonth: isFirstPurchase,
     );
   }
 
@@ -64,17 +91,27 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
   Future<RechargeModel> initiateRecharge({
     required double amount,
     required String meterId,
+    String? phone,
   }) async {
     try {
+      final data = {
+        'meter_id': meterId,
+        'amount_mzn': amount,
+      };
+      if (phone != null && phone.isNotEmpty) {
+        data['phone'] = phone;
+      }
+      
       final response = await dioClient.dio.post(
         '/recharges/initiate',
-        data: {
-          'meter_id': meterId,
-          'amount_mzn': amount,
-        },
+        data: data,
       );
       if (response.statusCode == 201 || response.statusCode == 200) {
-        return RechargeModel.fromJson(response.data['data']);
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : (raw is Map ? raw as Map<String, dynamic> : {});
+        return RechargeModel.fromJson(item);
       } else {
         throw ServerException('Failed to initiate recharge');
       }
@@ -96,8 +133,12 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
           'recharge_code': code,
         },
       );
-      if (response.statusCode == 200) {
-        return RechargeModel.fromJson(response.data['data']);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : (raw is Map ? raw as Map<String, dynamic> : {});
+        return RechargeModel.fromJson(item);
       } else {
         throw ServerException('Failed to apply code');
       }
@@ -160,8 +201,20 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
         },
       );
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data']['recharges'];
-        return data.map((json) => RechargeModel.fromJson(json)).toList();
+        final dynamic raw = response.data;
+        List<dynamic> list;
+        if (raw is List) {
+          list = raw;
+        } else if (raw is Map && raw['data'] is List) {
+          list = raw['data'] as List;
+        } else if (raw is Map && raw['data'] is Map && raw['data']['recharges'] is List) {
+          list = raw['data']['recharges'] as List;
+        } else if (raw is Map && raw['recharges'] is List) {
+          list = raw['recharges'] as List;
+        } else {
+          list = [];
+        }
+        return list.map((json) => RechargeModel.fromJson(json as Map<String, dynamic>)).toList();
       } else {
         throw ServerException('Failed to get recharge history');
       }
@@ -184,7 +237,11 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
         },
       );
       if (response.statusCode == 200) {
-        return DashboardStatsModel.fromJson(response.data['data']);
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : (raw is Map ? raw as Map<String, dynamic> : {});
+        return DashboardStatsModel.fromJson(item);
       } else {
         throw ServerException('Failed to get dashboard stats');
       }

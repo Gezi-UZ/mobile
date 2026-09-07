@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
 
 class MeterStatsRow extends StatelessWidget {
-  const MeterStatsRow({super.key});
+  final double monthlyKwh;
+  final double dailyAvgKwh;
+  final int rechargeCount;
+
+  const MeterStatsRow({
+    super.key,
+    this.monthlyKwh = 64.7,
+    this.dailyAvgKwh = 2.1,
+    this.rechargeCount = 3,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -10,11 +19,29 @@ class MeterStatsRow extends StatelessWidget {
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard(context, 'Este mês', '64.7 kWh')),
+          Expanded(
+            child: _buildStatCard(
+              context,
+              'Este mês',
+              '${monthlyKwh.toStringAsFixed(1)} kWh',
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(context, 'Dia médio', '2.1 kWh')),
+          Expanded(
+            child: _buildStatCard(
+              context,
+              'Dia médio',
+              '${dailyAvgKwh.toStringAsFixed(1)} kWh',
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(context, 'Recargas', '3')),
+          Expanded(
+            child: _buildStatCard(
+              context,
+              'Recargas',
+              '$rechargeCount',
+            ),
+          ),
         ],
       ),
     );
@@ -24,7 +51,7 @@ class MeterStatsRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.08),
@@ -37,7 +64,7 @@ class MeterStatsRow extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppTheme.textColorSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
@@ -45,7 +72,7 @@ class MeterStatsRow extends StatelessWidget {
             value,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),

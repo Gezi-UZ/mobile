@@ -70,7 +70,7 @@ class StepProgressIndicator extends StatelessWidget {
             : Text(
                 step,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: isActive ? Colors.white : AppTheme.textColorSecondary,
+                  color: isActive ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),

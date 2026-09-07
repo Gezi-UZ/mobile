@@ -53,16 +53,16 @@ class MeterCardWidget extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
-                      color: AppTheme.white,
+                      color: Theme.of(context).colorScheme.surface,
                       size: 12,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'PRINCIPAL',
-                      style: const TextStyle(
-                        color: AppTheme.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.surface,
                         fontSize: 10,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w700,
@@ -97,7 +97,7 @@ class MeterCardWidget extends StatelessWidget {
             Text(
               'Saldo actual',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppTheme.white.withValues(alpha: 0.70),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.70),
                 fontSize: 12,
               ),
             ),
@@ -111,7 +111,7 @@ class MeterCardWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontSize: 48,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
                 Padding(
@@ -119,7 +119,7 @@ class MeterCardWidget extends StatelessWidget {
                   child: Text(
                     'kWh',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppTheme.white.withValues(alpha: 0.80),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.80),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -134,7 +134,7 @@ class MeterCardWidget extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: AppTheme.white.withValues(alpha: 0.15),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Center(
@@ -160,7 +160,7 @@ class MeterCardWidget extends StatelessWidget {
             Text(
               'Contador',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.white.withValues(alpha: 0.60),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.60),
                 fontSize: 10,
               ),
             ),
@@ -168,7 +168,7 @@ class MeterCardWidget extends StatelessWidget {
               balance.meterId,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontSize: 14,
-                color: AppTheme.white,
+                color: Theme.of(context).colorScheme.surface,
               ),
             ),
           ],
@@ -180,7 +180,7 @@ class MeterCardWidget extends StatelessWidget {
             Text(
               '· ${_formatTime(balance.lastSyncAt)}',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.white.withValues(alpha: 0.30),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.30),
                 fontSize: 9,
               ),
             ),

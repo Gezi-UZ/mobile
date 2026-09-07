@@ -34,11 +34,13 @@ class RechargeRepositoryImpl implements RechargeRepository {
   Future<Either<Failure, Recharge>> initiateRecharge({
     required double amount,
     required String meterId,
+    String? phone,
   }) async {
     try {
       final result = await remoteDataSource.initiateRecharge(
         amount: amount,
         meterId: meterId,
+        phone: phone,
       );
       return Right(result);
     } on ServerException catch (e) {

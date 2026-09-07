@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/injection_container.dart';
 import 'package:go_router/go_router.dart';
+import '../../../meter/domain/entities/meter.dart';
+import '../../../meter/presentation/bloc/meter_bloc.dart';
+import '../../../meter/presentation/bloc/meter_state.dart';
+import '../../../meter/presentation/bloc/meter_event.dart';
 
 class RechargeByCodePage extends StatefulWidget {
   const RechargeByCodePage({super.key});
@@ -12,13 +18,8 @@ class RechargeByCodePage extends StatefulWidget {
 
 class _RechargeByCodePageState extends State<RechargeByCodePage> {
   final TextEditingController _codeController = TextEditingController();
-  int _selectedMeterIndex = 0;
-
-  final List<Map<String, dynamic>> _mockMeters = [
-    {'name': 'Casa principal', 'number': 'CRED-4892', 'status': 'Online'},
-    {'name': 'Escritório', 'number': 'CRED-1204', 'status': 'Online'},
-    {'name': 'Armazém', 'number': 'CRED-0371', 'status': 'Offline'},
-  ];
+  String? _selectedMeterId;
+  String? _selectedMeterNumber;
 
   @override
   void dispose() {
@@ -55,7 +56,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
     final int digitCount = _codeController.text.replaceAll('-', '').length;
 
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -73,10 +74,10 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back_ios_new_rounded,
                         size: 18,
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -88,7 +89,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         Text(
                           'Inserir código de recarga',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppTheme.textColorDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -96,7 +97,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         Text(
                           'Código STS de 20 dígitos',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textColorSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                         ),
@@ -121,7 +122,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         Text(
                           'Código de recarga',
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: AppTheme.textColorDark,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -173,17 +174,17 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         controller: _codeController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: AppTheme.textColorDark,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 18,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.80,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'XXXX-XXXX-XXXX-XXXX-XXXX',
                           hintStyle: TextStyle(
-                            color: AppTheme.textColorSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 18,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w700,
@@ -208,7 +209,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     Text(
                       '$digitCount/20 dígitos',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textColorSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                     ),
@@ -218,7 +219,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     Text(
                       'Contador de destino',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -226,122 +227,204 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     const SizedBox(height: 16),
 
                     // Meter List
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _mockMeters.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final meter = _mockMeters[index];
-                        final bool isSelected = _selectedMeterIndex == index;
-                        final bool isOnline = meter['status'] == 'Online';
+                    BlocBuilder<MeterBloc, MeterState>(
+                      bloc: sl<MeterBloc>()..add(const MeterListRequested()),
+                      builder: (context, state) {
+                        List<Meter> meters = [];
+                        if (state is MeterLoaded) {
+                          meters = state.meters;
+                        }
 
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedMeterIndex = index;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
+                        if (state is MeterLoading && meters.isEmpty) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppTheme.primaryOrange,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (meters.isEmpty) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppTheme.lightOrangeBackground : Colors.white,
+                              color: const Color(0xFFF9F9F9),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected
-                                    ? AppTheme.primaryOrange
-                                    : Colors.black.withValues(alpha: 0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 width: 1.11,
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                // Radio button
-                                Container(
-                                  width: 20,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected ? AppTheme.primaryOrange : Colors.transparent,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AppTheme.primaryOrange
-                                          : Colors.black.withValues(alpha: 0.08),
-                                      width: 1.11,
-                                    ),
+                            child: Text(
+                              'Nenhum contador associado encontrado.',
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            ),
+                          );
+                        }
+
+                        if (_selectedMeterId == null && meters.isNotEmpty) {
+                          final primary = meters.firstWhere(
+                            (m) => m.isPrimary,
+                            orElse: () => meters.first,
+                          );
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() {
+                                _selectedMeterId = primary.id;
+                                _selectedMeterNumber = primary.serialNumber;
+                              });
+                            }
+                          });
+                        }
+
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: meters.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final meter = meters[index];
+                            final bool isSelected =
+                                _selectedMeterId == meter.id ||
+                                    _selectedMeterNumber == meter.serialNumber;
+                            final bool isOnline = meter.isOnline;
+
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedMeterId = meter.id;
+                                  _selectedMeterNumber = meter.serialNumber;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppTheme.primaryOrange
+                                        : Colors.black.withValues(alpha: 0.08),
+                                    width: 1.11,
                                   ),
-                                  child: isSelected
-                                      ? Center(
-                                          child: Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.white,
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Radio button
+                                    Container(
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isSelected
+                                            ? AppTheme.primaryOrange
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppTheme.primaryOrange
+                                              : Colors.black.withValues(alpha: 0.08),
+                                          width: 1.11,
+                                        ),
+                                      ),
+                                      child: isSelected
+                                          ? Center(
+                                              child: Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 12),
+
+                                    // Info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            meter.alias,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall
+                                                ?.copyWith(
+                                                  color: Theme.of(context).colorScheme.onSurface,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          Text(
+                                            meter.serialNumber,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: AppTheme
+                                                      .textColorSecondary,
+                                                  fontSize: 12,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Status badge
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isOnline
+                                            ? const Color(0xFFDCFCE7)
+                                            : const Color(0xFFFEE2E2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              color: isOnline
+                                                  ? const Color(0xFF00C950)
+                                                  : const Color(0xFFEF4444),
                                               shape: BoxShape.circle,
                                             ),
                                           ),
-                                        )
-                                      : null,
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isOnline ? 'Online' : 'Offline',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall
+                                                ?.copyWith(
+                                                  color: isOnline
+                                                      ? const Color(0xFF008236)
+                                                      : const Color(0xFFB91C1C),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 12),
-                                
-                                // Info
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        meter['name'],
-                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                              color: AppTheme.textColorDark,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      Text(
-                                        meter['number'],
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: AppTheme.textColorSecondary,
-                                              fontSize: 12,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                
-                                // Status badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: isOnline ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 6,
-                                        height: 6,
-                                        decoration: BoxDecoration(
-                                          color: isOnline ? const Color(0xFF00C950) : const Color(0xFFEF4444),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        isOnline ? 'Online' : 'Offline',
-                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                              color: isOnline ? const Color(0xFF008236) : const Color(0xFFB91C1C),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),
@@ -355,15 +438,15 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
             Padding(
               padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24, top: 12),
               child: GestureDetector(
-                onTap: digitCount == 20
+                onTap: (digitCount == 20 && (_selectedMeterId != null || _selectedMeterNumber != null))
                     ? () {
-                        final meter = _mockMeters[_selectedMeterIndex];
+                        final targetMeter = _selectedMeterId ?? _selectedMeterNumber!;
                         final rawCode = _codeController.text.replaceAll('-', '');
                         context.go(Uri(
                           path: '/recharge/status',
                           queryParameters: {
                             'amount': '0',
-                            'meterNumber': meter['number'],
+                            'meterNumber': targetMeter,
                             'isCodeRecharge': 'true',
                             'code': rawCode,
                           },
@@ -384,7 +467,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     'Aplicar recarga',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: digitCount == 20 ? Colors.white : AppTheme.textColorSecondary,
+                          color: digitCount == 20 ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 16,
                         ),
                   ),

@@ -21,7 +21,7 @@ class ProfileMenuItem extends StatelessWidget {
         margin: const EdgeInsets.only(top: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: ShapeDecoration(
-          color: AppTheme.white,
+          color: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 1.11,
@@ -50,15 +50,15 @@ class ProfileMenuItem extends StatelessWidget {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
                   height: 1.43,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: AppTheme.textColorSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 20,
             ),
           ],

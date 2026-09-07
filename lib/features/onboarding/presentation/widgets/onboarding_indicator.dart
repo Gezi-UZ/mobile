@@ -24,7 +24,7 @@ class OnboardingIndicator extends StatelessWidget {
           height: 6.0,
           margin: EdgeInsets.only(right: index < totalSteps - 1 ? 8.0 : 0.0),
           decoration: ShapeDecoration(
-            color: isActive ? AppTheme.white : AppTheme.white.withValues(alpha: 0.35),
+            color: isActive ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface.withValues(alpha: 0.35),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(100),
             ),

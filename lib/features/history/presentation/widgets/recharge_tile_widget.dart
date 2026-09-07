@@ -31,7 +31,7 @@ class RechargeTileWidget extends StatelessWidget {
             child: Text(
               dateHeader,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.55,
@@ -47,7 +47,7 @@ class RechargeTileWidget extends StatelessWidget {
               bottom: 12,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.white,
+              color: Theme.of(context).colorScheme.surface,
               border: Border.all(
                 color: Colors.black.withValues(alpha: 0.08),
                 width: 1,
@@ -87,7 +87,7 @@ class RechargeTileWidget extends StatelessWidget {
                       Text(
                         energyAmount,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: AppTheme.textColorDark,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -96,7 +96,7 @@ class RechargeTileWidget extends StatelessWidget {
                       Text(
                         timeAndMethod,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textColorSecondary,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                             ),
@@ -110,7 +110,7 @@ class RechargeTileWidget extends StatelessWidget {
                     Text(
                       cost,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                           ),

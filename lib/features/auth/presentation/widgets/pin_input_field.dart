@@ -117,7 +117,7 @@ class _PinInputFieldState extends State<PinInputField> {
                 child: Text(
                   widget.obscureText && hasChar ? '●' : char,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),

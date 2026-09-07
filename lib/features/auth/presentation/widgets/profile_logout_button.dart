@@ -18,9 +18,9 @@ class ProfileLogoutButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
-            side: const BorderSide(
+            side: BorderSide(
               width: 1.11,
-              color: AppTheme.errorColor,
+              color: Theme.of(context).colorScheme.error,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -28,16 +28,16 @@ class ProfileLogoutButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.logout,
-              color: AppTheme.errorColor,
+              color: Theme.of(context).colorScheme.error,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               'Terminar sessão',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppTheme.errorColor,
+                color: Theme.of(context).colorScheme.error,
                 fontWeight: FontWeight.w600,
                 height: 1.50,
               ),

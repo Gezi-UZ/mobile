@@ -32,7 +32,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
       subtitle:
           'Pague via M-Pesa ou e-Mola e o crédito chega directamente ao contador — em qualquer lugar e a qualquer momento',
       backgroundColors: [AppTheme.darkOrange, AppTheme.darkerOrange],
-      footerText: 'ELECTRICIDADE DE MOÇAMBIQUE',
       imageUrl: 'assets/images/onboarding-content1.svg',
       imageWidth: 220.0,
       imageHeight: 200.0,

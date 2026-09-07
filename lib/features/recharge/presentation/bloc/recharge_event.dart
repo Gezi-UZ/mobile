@@ -24,15 +24,26 @@ class InitiateRechargeEvent extends RechargeEvent {
   final double amount;
   final String meterId;
   final String method;
+  final String? phone;
 
   const InitiateRechargeEvent({
     required this.amount,
     required this.meterId,
     required this.method,
+    this.phone,
   });
 
   @override
-  List<Object?> get props => [amount, meterId, method];
+  List<Object?> get props => [amount, meterId, method, phone];
+}
+
+class StreamRechargeStatusEvent extends RechargeEvent {
+  final String rechargeId;
+
+  const StreamRechargeStatusEvent(this.rechargeId);
+
+  @override
+  List<Object?> get props => [rechargeId];
 }
 
 class ApplyCodeEvent extends RechargeEvent {

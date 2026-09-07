@@ -15,6 +15,7 @@ class InitiateRecharge implements UseCase<Recharge, InitiateRechargeParams> {
     return await repository.initiateRecharge(
       amount: params.amount,
       meterId: params.meterId,
+      phone: params.phone,
     );
   }
 }
@@ -23,13 +24,15 @@ class InitiateRechargeParams extends Equatable {
   final double amount;
   final String meterId;
   final String method;
+  final String? phone;
 
   const InitiateRechargeParams({
     required this.amount,
     required this.meterId,
     required this.method,
+    this.phone,
   });
 
   @override
-  List<Object?> get props => [amount, meterId, method];
+  List<Object?> get props => [amount, meterId, method, phone];
 }

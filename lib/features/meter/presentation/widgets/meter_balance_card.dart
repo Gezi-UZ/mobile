@@ -44,7 +44,7 @@ class MeterBalanceCard extends StatelessWidget {
                     Text(
                       'Saldo actual',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.white.withValues(alpha: 0.70),
+                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.70),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -54,7 +54,7 @@ class MeterBalanceCard extends StatelessWidget {
                         Text(
                           meter.kwhBalance.toStringAsFixed(1),
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: AppTheme.white,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -63,7 +63,7 @@ class MeterBalanceCard extends StatelessWidget {
                           child: Text(
                             'kWh',
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.white.withValues(alpha: 0.80),
+                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.80),
                             ),
                           ),
                         ),
@@ -75,7 +75,7 @@ class MeterBalanceCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppTheme.white.withValues(alpha: 0.15),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
@@ -93,7 +93,7 @@ class MeterBalanceCard extends StatelessWidget {
             Text(
               '· sync 14:32',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.white.withValues(alpha: 0.50), // Increased alpha slightly for readability
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.50), // Increased alpha slightly for readability
               ),
             ),
           ],

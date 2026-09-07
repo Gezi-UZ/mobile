@@ -20,7 +20,7 @@ class MeterSelectorWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppTheme.white,
+          color: Theme.of(context).colorScheme.surface,
           border: Border.all(
             color: Colors.black.withValues(alpha: 0.08),
             width: 1,
@@ -52,7 +52,7 @@ class MeterSelectorWidget extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
@@ -61,7 +61,7 @@ class MeterSelectorWidget extends StatelessWidget {
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textColorSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                             fontSize: 11,
                           ),
@@ -70,9 +70,9 @@ class MeterSelectorWidget extends StatelessWidget {
                 ),
               ],
             ),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               size: 20,
             ),
           ],

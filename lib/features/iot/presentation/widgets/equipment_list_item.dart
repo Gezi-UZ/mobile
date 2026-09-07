@@ -21,7 +21,7 @@ class EquipmentListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: ShapeDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           side: BorderSide(
             width: 1.11,
@@ -55,7 +55,7 @@ class EquipmentListItem extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                     height: 1.43,
                   ),
@@ -63,7 +63,7 @@ class EquipmentListItem extends StatelessWidget {
                 Text(
                   consumptionDetail,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     height: 1.33,
@@ -83,9 +83,9 @@ class EquipmentListItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.delete_outline,
-                color: AppTheme.errorColor,
+                color: Theme.of(context).colorScheme.error,
                 size: 14,
               ),
             ),

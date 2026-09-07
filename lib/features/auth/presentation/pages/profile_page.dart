@@ -21,7 +21,7 @@ class ProfilePage extends StatelessWidget {
     return BlocProvider<ProfileBloc>(
       create: (_) => sl<ProfileBloc>()..add(const ProfileLoadRequested()),
       child: Scaffold(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(
@@ -36,7 +36,7 @@ class ProfilePage extends StatelessWidget {
                 Text(
                   'Perfil',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
                     height: 1.40,

@@ -44,7 +44,7 @@ class PasskeyBenefitsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.lightOrangeBackground,
+        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -67,7 +67,7 @@ class PasskeyBenefitsCard extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -76,7 +76,7 @@ class PasskeyBenefitsCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textColorSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     height: 1.33,
                   ),

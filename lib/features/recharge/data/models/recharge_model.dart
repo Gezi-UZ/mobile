@@ -17,7 +17,7 @@ class RechargeModel extends Recharge {
       meterId: json['meter_id'] ?? '',
       amountMzn: (json['amount_mzn'] as num?)?.toDouble() ?? 0.0,
       creditKwh: (json['credit_kwh'] as num?)?.toDouble() ?? 0.0,
-      status: json['status'] ?? 'UNKNOWN',
+      status: json['status'] ?? json['payment_status'] ?? 'UNKNOWN',
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : DateTime.now(),

@@ -30,7 +30,7 @@ class RecentRechargesWidget extends StatelessWidget {
               Text(
                 'Últimas recargas',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                 ),
               ),
@@ -158,7 +158,7 @@ class _RechargeItem extends StatelessWidget {
                         Text(
                           '${recharge.kwhAmount.toStringAsFixed(1)} kWh',
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -202,7 +202,7 @@ class _RechargeItem extends StatelessWidget {
                   Text(
                     '${_formatAmount(recharge.paidAmount)} ${recharge.currency}',
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.textColorDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),

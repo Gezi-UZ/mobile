@@ -23,16 +23,16 @@ class AlertToggleItem extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: AppTheme.white,
+            activeThumbColor: Theme.of(context).colorScheme.surface,
             activeTrackColor: AppTheme.primaryOrange,
-            inactiveThumbColor: AppTheme.white,
+            inactiveThumbColor: Theme.of(context).colorScheme.surface,
             inactiveTrackColor: Colors.grey.shade300,
             trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
               if (states.contains(WidgetState.selected)) {

@@ -8,7 +8,7 @@ class DocumentsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -20,7 +20,7 @@ class DocumentsPage extends StatelessWidget {
               Text(
                 'Relatórios',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,
                 ),
               ),
@@ -28,7 +28,7 @@ class DocumentsPage extends StatelessWidget {
               Text(
                 'Em breve',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),

@@ -9,7 +9,7 @@ class EquipmentEstimationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(
@@ -31,9 +31,9 @@ class EquipmentEstimationPage extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back,
-                        color: AppTheme.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurface,
                         size: 24,
                       ),
                     ),
@@ -42,7 +42,7 @@ class EquipmentEstimationPage extends StatelessWidget {
                   Text(
                     'Os meus equipamentos',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppTheme.textColorDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
                       height: 1.56,
@@ -110,7 +110,7 @@ class EquipmentEstimationPage extends StatelessWidget {
                   child: Text(
                     'Ver estimativa de consumo',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.white,
+                      color: Theme.of(context).colorScheme.surface,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                       height: 1.50,

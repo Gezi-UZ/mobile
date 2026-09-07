@@ -19,12 +19,12 @@ class _AlertsPageState extends State<AlertsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textColorDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -39,7 +39,7 @@ class _AlertsPageState extends State<AlertsPage> {
               Text(
                 'Alertas',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  color: AppTheme.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 24),
@@ -48,7 +48,7 @@ class _AlertsPageState extends State<AlertsPage> {
               Text(
                 'CONFIGURAR ALERTAS',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   letterSpacing: 0.30,
                 ),
               ),
@@ -56,7 +56,7 @@ class _AlertsPageState extends State<AlertsPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Colors.black.withValues(alpha: 0.08),
@@ -102,7 +102,7 @@ class _AlertsPageState extends State<AlertsPage> {
               Text(
                 'NOTIFICAÇÕES RECENTES',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   letterSpacing: 0.30,
                 ),
               ),

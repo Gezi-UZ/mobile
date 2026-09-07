@@ -25,16 +25,16 @@ class ReceiptCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: AppTheme.dividerColor),
+        border: Border.all(color: Theme.of(context).extension<AppColorsExtension>()!.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,13 +52,13 @@ class ReceiptCard extends StatelessWidget {
               ),
               Icon(
                 Icons.check_circle,
-                color: AppTheme.successColor,
+                color: Theme.of(context).extension<AppColorsExtension>()!.successColor,
                 size: 32,
               ),
             ],
           ),
           const SizedBox(height: 24),
-          const Divider(color: AppTheme.dividerColor),
+          Divider(color: Theme.of(context).extension<AppColorsExtension>()!.dividerColor),
           const SizedBox(height: 24),
 
           // Title
@@ -66,7 +66,7 @@ class ReceiptCard extends StatelessWidget {
             child: Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppTheme.textColorDark,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -80,9 +80,9 @@ class ReceiptCard extends StatelessWidget {
           const SizedBox(height: 16),
           _buildDetailRow(context, 'ID Transação', transactionId),
           const SizedBox(height: 16),
-          _buildDetailRow(context, 'Estado', status, valueColor: AppTheme.successColor),
+          _buildDetailRow(context, 'Estado', status, valueColor: Theme.of(context).extension<AppColorsExtension>()!.successColor),
           const SizedBox(height: 32),
-          const Divider(color: AppTheme.dividerColor),
+          Divider(color: Theme.of(context).extension<AppColorsExtension>()!.dividerColor),
           const SizedBox(height: 24),
 
           // Total
@@ -92,7 +92,7 @@ class ReceiptCard extends StatelessWidget {
               Text(
                 'Total Pago',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.textColorDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -117,13 +117,13 @@ class ReceiptCard extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textColorSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: valueColor ?? AppTheme.textColorDark,
+                color: valueColor ?? Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
         ),

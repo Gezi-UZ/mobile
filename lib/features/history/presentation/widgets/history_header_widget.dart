@@ -18,7 +18,7 @@ class HistoryHeaderWidget extends StatelessWidget {
         Text(
           'Histórico',
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: AppTheme.textColorDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 20,
               ),
         ),
@@ -28,7 +28,7 @@ class HistoryHeaderWidget extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppTheme.lightOrangeBackground,
+              color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(

@@ -1,7 +1,11 @@
+import 'package:dio/dio.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../models/recharge_model.dart';
 import '../../domain/entities/meter_balance.dart';
 import '../../domain/entities/recharge.dart';
-import '../../../meter/presentation/pages/meter_list_page.dart';
+
+import '../../../meter/data/models/meter_model.dart';
 
 abstract class HomeRemoteDataSource {
   /// Obtém o saldo do contador a partir do servidor remoto.
@@ -12,90 +16,94 @@ abstract class HomeRemoteDataSource {
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
-  // TODO: Injectar cliente HTTP (ex: Dio) ou Supabase client quando a API
-  // estiver pronta. Por agora retorna dados stub para desbloquear o desenvolvimento.
+
+  final DioClient dioClient;
+
+  HomeRemoteDataSourceImpl({required this.dioClient});
 
   @override
   Future<MeterBalance> getMeterBalance() async {
-    // Stub — substituir pela chamada real à API.
-    final primaryMeter = MeterListPage.mockMeters.firstWhere(
-      (m) => m.isPrimary,
-      orElse: () => MeterListPage.mockMeters.first,
-    );
+    try {
+      final response = await dioClient.dio.get('/meters/me');
+      if (response.statusCode == 200) {
+        final dynamic raw = response.data;
+        List<dynamic> list;
+        if (raw is List) {
+          list = raw;
+        } else if (raw is Map && raw['data'] is List) {
+          list = raw['data'] as List;
+        } else if (raw is Map && raw['data'] is Map && raw['data']['meters'] is List) {
+          list = raw['data']['meters'] as List;
+        } else if (raw is Map && raw['meters'] is List) {
+          list = raw['meters'] as List;
+        } else {
+          list = [];
+        }
+        if (list.isEmpty) {
+          return MeterBalance(
+            kwhBalance: 0.0,
+            meterId: 'Sem contador',
+            isOnline: false,
+            lastSyncAt: DateTime.now(),
+            isLowBalance: true,
+          );
+        }
 
-    return MeterBalance(
-      kwhBalance: primaryMeter.kwhBalance,
-      meterId: primaryMeter.serialNumber,
-      isOnline: primaryMeter.isOnline,
-      lastSyncAt: DateTime.now(),
-      isLowBalance: primaryMeter.kwhBalance < 5.0,
-    );
+        final meters = list
+            .map((json) => MeterModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+        final primary = meters.firstWhere(
+          (m) => m.isPrimary,
+          orElse: () => meters.first,
+        );
+
+        return MeterBalance(
+          kwhBalance: primary.kwhBalance,
+          meterId: primary.serialNumber,
+          isOnline: primary.isOnline,
+          lastSyncAt: primary.lastSyncAt ?? DateTime.now(),
+          isLowBalance: primary.kwhBalance < 5.0,
+        );
+      }
+      throw ServerException('Erro ao carregar saldo do contador');
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Erro de rede ao carregar saldo');
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(e.toString());
+    }
   }
 
   @override
   Future<List<Recharge>> getRecentRecharges({int limit = 5}) async {
-    // Stub — substituir pela chamada real à API.
-    final now = DateTime.now();
-    final stubs = [
-      RechargeModel(
-        id: 'RCH-001',
-        kwhAmount: 50.0,
-        paidAmount: 250.00,
-        currency: 'MT',
-        rechargedAt: now.subtract(const Duration(hours: 2)),
-        status: RechargeStatus.success,
-        meterAlias: 'Casa principal',
-        meterSerialNumber: 'CR123456792',
-        isMyMeter: true,
-        paymentMethod: 'M-Pesa',
-      ),
-      RechargeModel(
-        id: 'RCH-002',
-        kwhAmount: 20.0,
-        paidAmount: 100.00,
-        currency: 'MT',
-        rechargedAt: now.subtract(const Duration(days: 1)),
-        status: RechargeStatus.success,
-        meterSerialNumber: 'CR987654342',
-        isMyMeter: false,
-        paymentMethod: 'e-Mola',
-      ),
-      RechargeModel(
-        id: 'RCH-003',
-        kwhAmount: 100.0,
-        paidAmount: 500.00,
-        currency: 'MT',
-        rechargedAt: now.subtract(const Duration(days: 3)),
-        status: RechargeStatus.success,
-        meterAlias: 'Escritório',
-        meterSerialNumber: 'CR111222333',
-        isMyMeter: true,
-        paymentMethod: 'Conta Bancária',
-      ),
-      RechargeModel(
-        id: 'RCH-004',
-        kwhAmount: 30.0,
-        paidAmount: 150.00,
-        currency: 'MT',
-        rechargedAt: now.subtract(const Duration(days: 7)),
-        status: RechargeStatus.failed,
-        meterSerialNumber: 'CR444555666',
-        isMyMeter: false,
-        paymentMethod: 'M-Pesa',
-      ),
-      RechargeModel(
-        id: 'RCH-005',
-        kwhAmount: 75.0,
-        paidAmount: 375.00,
-        currency: 'MT',
-        rechargedAt: now.subtract(const Duration(days: 14)),
-        status: RechargeStatus.success,
-        meterAlias: 'Casa de Férias',
-        meterSerialNumber: 'CR777888999',
-        isMyMeter: true,
-        paymentMethod: 'M-Pesa',
-      ),
-    ];
-    return stubs.take(limit).toList();
+    try {
+      final response = await dioClient.dio.get(
+        '/recharges/history',
+        queryParameters: {'page': 1, 'page_size': limit},
+      );
+      if (response.statusCode == 200) {
+        final dynamic raw = response.data;
+        List<dynamic> list;
+        if (raw is List) {
+          list = raw;
+        } else if (raw is Map && raw['data'] is List) {
+          list = raw['data'] as List;
+        } else if (raw is Map && raw['data'] is Map && raw['data']['recharges'] is List) {
+          list = raw['data']['recharges'] as List;
+        } else if (raw is Map && raw['recharges'] is List) {
+          list = raw['recharges'] as List;
+        } else {
+          list = [];
+        }
+        return list
+            .map((json) => RechargeModel.fromJson(json as Map<String, dynamic>))
+            .take(limit)
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      // Retorna lista vazia em caso de falha suave
+      return [];
+    }
   }
 }

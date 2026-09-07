@@ -31,12 +31,12 @@ class RechargeDetailPage extends StatelessWidget {
     final formattedTime = DateFormat('HH:mm').format(recharge.rechargedAt);
 
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textColorDark),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
       ),
@@ -55,7 +55,7 @@ class RechargeDetailPage extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.lightOrangeBackground,
+                        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       alignment: Alignment.center,
@@ -70,7 +70,7 @@ class RechargeDetailPage extends StatelessWidget {
                     Text(
                       'Detalhe da transacção',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -100,7 +100,7 @@ class RechargeDetailPage extends StatelessWidget {
                     Text(
                       '${recharge.kwhAmount.toStringAsFixed(1)} kWh',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: AppTheme.textColorDark,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 30,
                             fontWeight: FontWeight.w700,
                           ),
@@ -187,8 +187,8 @@ class RechargeDetailPage extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               meterSubtitle,
-                              style: const TextStyle(
-                                color: AppTheme.textColorDark,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 14,
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,

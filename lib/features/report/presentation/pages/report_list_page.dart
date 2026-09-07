@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/history/presentation/bloc/history_cubit.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
+import 'package:gezi/injection_container.dart';
+import 'package:intl/intl.dart';
 import '../widgets/transaction_list_item.dart';
 
 class ReportListPage extends StatelessWidget {
@@ -8,20 +14,50 @@ class ReportListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<HistoryCubit>(),
+      child: const ReportListPageView(),
+    );
+  }
+}
+
+class ReportListPageView extends StatefulWidget {
+  const ReportListPageView({super.key});
+
+  @override
+  State<ReportListPageView> createState() => _ReportListPageViewState();
+}
+
+class _ReportListPageViewState extends State<ReportListPageView> {
+  @override
+  void initState() {
+    super.initState();
+    final meterState = context.read<MeterBloc>().state;
+    if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+      final selectedMeter = meterState.meters.firstWhere(
+        (m) => m.isPrimary,
+        orElse: () => meterState.meters.first,
+      );
+      context.read<HistoryCubit>().fetchHistoryData(selectedMeter.id, 'year');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Relatórios',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.textColorDark,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppTheme.textColorDark),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: SafeArea(
         child: Column(
@@ -32,28 +68,57 @@ class ReportListPage extends StatelessWidget {
               child: Text(
                 'Histórico de Transações',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppTheme.textColorSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  // Mock data for UI testing
-                  final isCredit = index % 3 == 0; // Example condition
-                  return InkWell(
-                    onTap: () {
-                      context.push('/receipt_preview');
+              child: BlocConsumer<MeterBloc, MeterState>(
+                listener: (context, meterState) {
+                  if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+                    final selectedMeter = meterState.meters.firstWhere(
+                      (m) => m.isPrimary,
+                      orElse: () => meterState.meters.first,
+                    );
+                    context.read<HistoryCubit>().fetchHistoryData(selectedMeter.id, 'year');
+                  }
+                },
+                builder: (context, meterState) {
+                  return BlocBuilder<HistoryCubit, HistoryState>(
+                    builder: (context, state) {
+                      if (state is HistoryLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is HistoryError) {
+                        return Center(child: Text('Erro: ${state.message}'));
+                      } else if (state is HistoryLoaded) {
+                        if (state.recharges.isEmpty) {
+                          return const Center(child: Text('Nenhuma transacção encontrada.'));
+                        }
+
+                        return ListView.builder(
+                          itemCount: state.recharges.length,
+                          itemBuilder: (context, index) {
+                            final recharge = state.recharges[index];
+                            final dateStr = DateFormat('dd MMMM yyyy, HH:mm', 'pt_PT').format(recharge.createdAt);
+
+                            return InkWell(
+                              onTap: () {
+                                context.push('/receipt_preview', extra: recharge);
+                              },
+                              child: TransactionListItem(
+                                title: 'Recarga de Saldo',
+                                date: dateStr,
+                                amount: '${recharge.amountMzn.toStringAsFixed(0)} MT',
+                                isCredit: true,
+                                icon: Icons.add_card,
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
-                    child: TransactionListItem(
-                      title: isCredit ? 'Recarga de Saldo' : 'Pagamento de Serviço',
-                      date: '12 Outubro 2023, 14:${10 + index}',
-                      amount: '${(index + 1) * 1500} MT',
-                      isCredit: isCredit,
-                      icon: isCredit ? Icons.add_card : Icons.receipt_long,
-                    ),
                   );
                 },
               ),

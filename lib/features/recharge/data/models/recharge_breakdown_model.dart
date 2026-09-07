@@ -15,15 +15,22 @@ class RechargeBreakdownModel extends RechargeBreakdown {
 
   factory RechargeBreakdownModel.fromJson(Map<String, dynamic> json) {
     return RechargeBreakdownModel(
-      meterNumber: json['meter_number'] ?? '',
-      totalAmount: (json['total_amount'] ?? 0.0).toDouble(),
-      valEnergia: (json['val_energia'] ?? 0.0).toDouble(),
-      iva: (json['iva'] ?? 0.0).toDouble(),
-      dividaPaga: (json['divida_paga'] ?? 0.0).toDouble(),
-      txRadio: (json['tx_radio'] ?? 0.0).toDouble(),
-      txLixo: (json['tx_lixo'] ?? 0.0).toDouble(),
-      calculatedKwh: (json['calculated_kwh'] ?? 0.0).toDouble(),
-      isFirstPurchaseOfMonth: json['is_first_purchase_of_month'] ?? true,
+
+      meterNumber: json['meter_number'] as String? ?? json['meter_id'] as String? ?? '',
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ??
+          (json['montante_total'] as num?)?.toDouble() ??
+          (json['amount_mzn'] as num?)?.toDouble() ??
+          0.0,
+      valEnergia: (json['val_energia'] as num?)?.toDouble() ?? 0.0,
+      iva: (json['iva'] as num?)?.toDouble() ?? 0.0,
+      dividaPaga: (json['divida_paga'] as num?)?.toDouble() ?? 0.0,
+      txRadio: (json['tx_radio'] as num?)?.toDouble() ?? 0.0,
+      txLixo: (json['tx_lixo'] as num?)?.toDouble() ?? 0.0,
+      calculatedKwh: (json['calculated_kwh'] as num?)?.toDouble() ??
+          (json['kwh_calculado'] as num?)?.toDouble() ??
+          (json['estimated_kwh'] as num?)?.toDouble() ??
+          0.0,
+      isFirstPurchaseOfMonth: json['is_first_purchase_of_month'] as bool? ?? true,
     );
   }
 

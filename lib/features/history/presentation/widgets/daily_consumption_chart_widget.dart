@@ -1,28 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/recharge/domain/entities/recharge.dart';
+import 'package:intl/intl.dart';
 
 class DailyConsumptionChartWidget extends StatelessWidget {
-  const DailyConsumptionChartWidget({super.key});
+  final List<Recharge> recharges;
+
+  const DailyConsumptionChartWidget({
+    super.key,
+    required this.recharges,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Mock data for the chart
-    final List<Map<String, dynamic>> chartData = [
-      {'date': '13/06', 'value': 2.5},
-      {'date': '14/06', 'value': 3.7},
-      {'date': '15/06', 'value': 5.2},
-      {'date': '16/06', 'value': 7.8},
-      {'date': '17/06', 'value': 4.1},
-      {'date': '18/06', 'value': 6.0},
-      {'date': '19/06', 'value': 8.5},
-    ];
+    // Generate the last 7 days (including today)
+    final now = DateTime.now();
+    final List<Map<String, dynamic>> chartData = [];
+    double maxValue = 0.0;
 
-    final double maxValue = 10.0;
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final dateString = DateFormat('dd/MM').format(date);
+      
+      // Calculate total kwh for this day
+      double dailyTotal = 0;
+      for (final recharge in recharges) {
+        if (recharge.createdAt.year == date.year &&
+            recharge.createdAt.month == date.month &&
+            recharge.createdAt.day == date.day) {
+          dailyTotal += recharge.creditKwh;
+        }
+      }
+
+      if (dailyTotal > maxValue) {
+        maxValue = dailyTotal;
+      }
+
+      chartData.add({
+        'date': dateString,
+        'value': dailyTotal,
+      });
+    }
+
+    // Ensure we don't divide by zero
+    if (maxValue == 0) {
+      maxValue = 10.0; // Default max to avoid division by zero
+    } else {
+      // Add a little padding to the max value for better visual
+      maxValue = maxValue * 1.2;
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.08),
           width: 1,
@@ -35,7 +66,7 @@ class DailyConsumptionChartWidget extends StatelessWidget {
           Text(
             'Consumo diário · kWh',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.textColorSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
@@ -47,8 +78,8 @@ class DailyConsumptionChartWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: chartData.map((data) {
-                final double percentage = data['value'] / maxValue;
-                return _buildBar(context, data['date'], percentage);
+                final double percentage = (data['value'] as double) / maxValue;
+                return _buildBar(context, data['date'] as String, percentage);
               }).toList(),
             ),
           ),
@@ -78,7 +109,7 @@ class DailyConsumptionChartWidget extends StatelessWidget {
         Text(
           date,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.textColorSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 10,
               ),
         ),

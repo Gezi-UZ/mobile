@@ -25,7 +25,7 @@ class QuickActionsWidget extends StatelessWidget {
           Text(
             'Acções rápidas',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
             ),
           ),
@@ -83,7 +83,7 @@ class _QuickActionItem extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.lightOrangeBackground,
+              color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -96,7 +96,7 @@ class _QuickActionItem extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppTheme.textColorDark,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
