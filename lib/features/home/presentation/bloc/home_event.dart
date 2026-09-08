@@ -8,5 +8,9 @@ abstract class HomeEvent extends Equatable {
 }
 
 class HomeDashboardLoadRequested extends HomeEvent {
-  const HomeDashboardLoadRequested();
+  final bool isRefresh;
+  const HomeDashboardLoadRequested({this.isRefresh = false});
+
+  @override
+  List<Object?> get props => [isRefresh];
 }

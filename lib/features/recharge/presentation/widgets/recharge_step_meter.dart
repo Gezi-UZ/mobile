@@ -6,7 +6,7 @@ import '../../../meter/domain/entities/meter.dart';
 import '../../../meter/domain/usecases/validate_meter_by_serial.dart';
 
 class RechargeStepMeter extends StatefulWidget {
-  final Function(String) onNext;
+  final Function(String id, String number) onNext;
 
   const RechargeStepMeter({super.key, required this.onNext});
 
@@ -136,7 +136,7 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: ShapeDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
               shape: RoundedRectangleBorder(
                 side: BorderSide(
                   width: 1.11,
@@ -255,9 +255,11 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
           // Continue Button
           GestureDetector(
             onTap: canContinue
-                ? () => widget.onNext(_validatedMeter?.id.isNotEmpty == true
-                    ? _validatedMeter!.id
-                    : _meterController.text)
+                ? () {
+                    final id = _validatedMeter?.id ?? '';
+                    final number = _validatedMeter?.serialNumber ?? _meterController.text;
+                    widget.onNext(id.isNotEmpty ? id : number, number);
+                  }
                 : null,
             child: Opacity(
               opacity: canContinue ? 1.0 : 0.50,

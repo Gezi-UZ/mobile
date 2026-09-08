@@ -105,7 +105,7 @@ class _PinInputFieldState extends State<PinInputField> {
                 ),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
                   border: Border.all(
                     color: isFocused
                         ? AppTheme.primaryOrange

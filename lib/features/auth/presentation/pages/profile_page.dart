@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/theme.dart';
 import '../../../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../../../features/profile/presentation/bloc/profile_event.dart';
 import '../../../../features/profile/presentation/bloc/profile_state.dart';

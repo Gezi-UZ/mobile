@@ -5,7 +5,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color successColor;
   final Color errorColor;
   final Color lightOrangeBackground;
-  final Color textColorSecondary;
+  final Color textColorSecondary;  final Color inputBackground;
 
   const AppColorsExtension({
     required this.dividerColor,
@@ -13,6 +13,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.errorColor,
     required this.lightOrangeBackground,
     required this.textColorSecondary,
+    required this.inputBackground,
   });
 
   @override
@@ -22,6 +23,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? errorColor,
     Color? lightOrangeBackground,
     Color? textColorSecondary,
+    Color? inputBackground,
   }) {
     return AppColorsExtension(
       dividerColor: dividerColor ?? this.dividerColor,
@@ -29,6 +31,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       errorColor: errorColor ?? this.errorColor,
       lightOrangeBackground: lightOrangeBackground ?? this.lightOrangeBackground,
       textColorSecondary: textColorSecondary ?? this.textColorSecondary,
+      inputBackground: inputBackground ?? this.inputBackground,
     );
   }
 
@@ -46,6 +49,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       errorColor: Color.lerp(errorColor, other.errorColor, t)!,
       lightOrangeBackground: Color.lerp(lightOrangeBackground, other.lightOrangeBackground, t)!,
       textColorSecondary: Color.lerp(textColorSecondary, other.textColorSecondary, t)!,
+      inputBackground: Color.lerp(inputBackground, other.inputBackground, t)!,
     );
   }
 }

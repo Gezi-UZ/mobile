@@ -68,9 +68,31 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     }
 
     const double ratePerKwh = 7.64; // Tarifa Doméstica padrão EDM
-    const double txLixo = 100.0; // Taxa de Lixo Municipal (1ª compra do mês)
-    final bool isFirstPurchase = amount >= 100.0;
-    final double lixoFee = isFirstPurchase ? txLixo : 0.0;
+    bool isFirstPurchase = amount >= 100.0;
+
+    try {
+      final history = await getRechargeHistory(meterId: meterId, page: 1, pageSize: 20);
+      final now = DateTime.now();
+      final hasPurchaseThisMonth = history.any((r) => 
+        r.createdAt.month == now.month && 
+        r.createdAt.year == now.year &&
+        (r.status.toLowerCase() == 'success' || r.status.toLowerCase() == 'concluída')
+      );
+      if (hasPurchaseThisMonth) {
+        isFirstPurchase = false;
+      }
+    } catch (_) {
+      // Ignorar se a busca de histórico falhar
+    }
+
+    double lixoFee = 0.0;
+    if (isFirstPurchase) {
+      if (amount == 100.0) {
+        lixoFee = 50.0;
+      } else if (amount > 100.0) {
+        lixoFee = 100.0;
+      }
+    }
     final double netForEnergy = (amount > lixoFee) ? (amount - lixoFee) : amount;
     final double kwh = netForEnergy / ratePerKwh;
 

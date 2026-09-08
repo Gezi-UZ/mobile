@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/theme.dart';
 
 class OnboardingIndicator extends StatelessWidget {
   final int totalSteps;

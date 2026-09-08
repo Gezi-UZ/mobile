@@ -106,12 +106,16 @@ class AppRouter {
                 state.uri.queryParameters['isCodeRecharge'] == 'true';
             final code = state.uri.queryParameters['code'];
             final rechargeId = state.uri.queryParameters['rechargeId'] ?? '';
+            final meterId = state.uri.queryParameters['meterId'];
+            final phone = state.uri.queryParameters['phone'];
             return RechargeStatusPage(
               amount: amount,
               meterNumber: meterNumber,
               isCodeRecharge: isCodeRecharge,
               code: code,
               rechargeId: rechargeId,
+              meterId: meterId,
+              phone: phone,
             );
           },
         ),
@@ -119,7 +123,26 @@ class AppRouter {
           path: '/recharge/receipt',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>? ?? {};
-            final recharge = extra['recharge'] as Recharge?;
+            
+            Recharge? recharge;
+            if (extra.containsKey('rechargeJson') && extra['rechargeJson'] != null) {
+              final json = extra['rechargeJson'] as Map<String, dynamic>;
+              recharge = Recharge(
+                id: json['id'],
+                kwhAmount: json['kwhAmount'],
+                paidAmount: json['paidAmount'],
+                currency: json['currency'],
+                rechargedAt: DateTime.parse(json['rechargedAt']),
+                status: RechargeStatus.success, // We assume success here based on mapping
+                meterSerialNumber: json['meterSerialNumber'],
+                isMyMeter: json['isMyMeter'],
+                paymentMethod: json['paymentMethod'],
+                meterAlias: json['meterAlias'],
+              );
+            } else {
+              recharge = extra['recharge'] as Recharge?;
+            }
+            
             final isCodeRecharge = extra['isCodeRecharge'] as bool? ?? false;
             final code = extra['code'] as String?;
             
@@ -154,7 +177,7 @@ class AppRouter {
                 meter = meterState.primaryMeter ?? meterState.meters.first;
               }
             }
-            final recharges = extra['recharges'] as List<Recharge>? ?? [];
+            final recharges = (extra['recharges'] as List?)?.cast<Recharge>().toList() ?? [];
             return MeterDetailPage(
               meter: meter ??
                   const Meter(

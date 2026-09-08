@@ -19,8 +19,11 @@ class HistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<HistoryCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<HistoryCubit>()),
+        BlocProvider.value(value: sl<MeterBloc>()),
+      ],
       child: const HistoryPageView(),
     );
   }
@@ -42,10 +45,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
     super.initState();
     final meterState = context.read<MeterBloc>().state;
     if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
-      _selectedMeter = meterState.meters.firstWhere(
-        (m) => m.isPrimary,
-        orElse: () => meterState.meters.first,
-      );
+      _selectedMeter = meterState.primaryMeter ?? meterState.meters.first;
       _fetchHistory();
     }
   }
@@ -106,7 +106,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                           ),
                     ),
                     subtitle: Text(
-                      'SN: ${meter.serialNumber}',
+                      meter.serialNumber,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
@@ -137,10 +137,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
           listener: (context, meterState) {
             if (meterState is MeterLoaded && meterState.meters.isNotEmpty && _selectedMeter == null) {
               setState(() {
-                _selectedMeter = meterState.meters.firstWhere(
-                  (m) => m.isPrimary,
-                  orElse: () => meterState.meters.first,
-                );
+                _selectedMeter = meterState.primaryMeter ?? meterState.meters.first;
               });
               _fetchHistory();
             }
@@ -242,11 +239,19 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                                   )
                                 else
                                   ...recharges.map((recharge) {
+                                    final isSuccess = recharge.status.toLowerCase() == 'success' || recharge.status.toLowerCase() == 'concluída';
+                                    final isPending = recharge.status.toLowerCase() == 'pending' || recharge.status.toLowerCase() == 'pendente';
+                                    final statusText = isSuccess ? 'Concluída' : (isPending ? 'Pendente' : 'Falhou');
+                                    final statusColor = isSuccess ? const Color(0xFF2E7D32) : (isPending ? const Color(0xFFFFB300) : const Color(0xFFFF3B30));
+                                    final creditKwhStr = isSuccess ? '${recharge.creditKwh.toStringAsFixed(1)} kWh' : '-';
+
                                     return RechargeTileWidget(
                                       dateHeader: DateFormat('dd MMM yyyy').format(recharge.createdAt).toUpperCase(),
-                                      energyAmount: '${recharge.creditKwh.toStringAsFixed(1)} kWh',
+                                      energyAmount: creditKwhStr,
                                       timeAndMethod: '${DateFormat('HH:mm').format(recharge.createdAt)} · M-Pesa',
                                       cost: '${recharge.amountMzn.toStringAsFixed(0)} MZN',
+                                      status: statusText,
+                                      statusColor: statusColor,
                                     );
                                   }),
                               ],

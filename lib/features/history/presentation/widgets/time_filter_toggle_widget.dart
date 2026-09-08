@@ -39,7 +39,7 @@ class _TimeFilterToggleWidgetState extends State<TimeFilterToggleWidget> {
       height: 44,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

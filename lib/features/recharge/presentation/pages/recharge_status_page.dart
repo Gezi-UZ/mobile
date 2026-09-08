@@ -13,6 +13,8 @@ class RechargeStatusPage extends StatefulWidget {
   final bool isCodeRecharge;
   final String? code;
   final String rechargeId;
+  final String? meterId;
+  final String? phone;
 
   const RechargeStatusPage({
     super.key,
@@ -21,6 +23,8 @@ class RechargeStatusPage extends StatefulWidget {
     required this.rechargeId,
     this.isCodeRecharge = true,
     this.code,
+    this.meterId,
+    this.phone,
   });
 
   @override
@@ -38,9 +42,14 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
     final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
-    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
-        ? 100.0
-        : 0.0;
+    double txLixo = 0.0;
+    if (isFirstPurchaseOfMonth) {
+      if (totalAmount == 100.0) {
+        txLixo = 50.0;
+      } else if (totalAmount > 100.0) {
+        txLixo = 100.0;
+      }
+    }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
 
@@ -59,7 +68,15 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
         } else if (widget.isCodeRecharge && widget.code != null && widget.code!.isNotEmpty) {
           bloc.add(ApplyCodeEvent(
             code: widget.code!,
-            meterId: widget.meterNumber,
+            meterId: widget.meterId ?? widget.meterNumber,
+          ));
+        } else if (!widget.isCodeRecharge && widget.rechargeId.isEmpty) {
+          // If we navigate from Step 3 without an ID, we initiate here
+          bloc.add(InitiateRechargeEvent(
+            amount: totalAmount,
+            meterId: widget.meterId ?? widget.meterNumber,
+            method: 'MPESA',
+            phone: widget.phone,
           ));
         }
         return bloc;
@@ -69,9 +86,12 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
         body: SafeArea(
           child: BlocConsumer<RechargeBloc, RechargeState>(
             listener: (context, state) {
+              if (state is RechargeInitiated) {
+                // Now we have the rechargeId, start streaming
+                context.read<RechargeBloc>().add(StreamRechargeStatusEvent(state.recharge.id));
+              }
               if (state is RechargeSuccess) {
-                // Navega para comprovativo logo após sucesso?
-                // O mockup tem um botão, então vamos apenas atualizar o estado visualmente
+                // Sucesso
               }
             },
             builder: (context, state) {
@@ -261,12 +281,34 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                     if (isConcluida && currentRecharge != null)
                       GestureDetector(
                         onTap: () {
+                          // Fix for type casting exception
+                          // Map Recharge from features/recharge to Recharge from features/home
+                          final mappedRecharge = currentRecharge != null
+                              ? {
+                                  'id': currentRecharge.id,
+                                  'kwhAmount': currentRecharge.creditKwh,
+                                  'paidAmount': currentRecharge.amountMzn,
+                                  'currency': 'MT',
+                                  'rechargedAt': currentRecharge.createdAt.toIso8601String(),
+                                  'status': 'SUCCESS',
+                                  'meterAlias': null,
+                                  'meterSerialNumber': widget.meterNumber,
+                                  'isMyMeter': true,
+                                  'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
+                                }
+                              : null;
+
+                          // We use the JSON parsing constructor in app_router/receipt to handle this map if we pass a model.
+                          // Wait, app_router expects `extra['recharge']` to be a Recharge object from features/home.
+                          // However, we don't have access to features/home/domain/entities/recharge.dart inside this onTap easily without importing.
+                          // So we'll pass the JSON map and let app_router construct it or we can import it.
+                          // Let's rely on GoRouter extra.
                           context.go(
                             '/recharge/receipt',
                             extra: {
-                              'recharge': currentRecharge,
+                              'rechargeJson': mappedRecharge, // We will update app_router to read this
                               'isCodeRecharge': widget.isCodeRecharge,
-                              'code': widget.code,
+                              'code': widget.code ?? currentRecharge?.token,
                             },
                           );
                         },

@@ -22,14 +22,14 @@ class StepProgressIndicator extends StatelessWidget {
           isActive: currentStep == 1,
           isCompleted: currentStep > 1,
         ),
-        _buildLine(isActive: currentStep >= 2),
+        _buildLine(context, isActive: currentStep >= 2),
         _buildCircle(
           context,
           '2',
           isActive: currentStep == 2,
           isCompleted: currentStep > 2,
         ),
-        _buildLine(isActive: currentStep >= 3),
+        _buildLine(context, isActive: currentStep >= 3),
         _buildCircle(
           context,
           '3',
@@ -61,7 +61,7 @@ class StepProgressIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive || isCompleted
             ? AppTheme.primaryOrange
-            : const Color(0xFFF5F5F5),
+            : Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -79,12 +79,12 @@ class StepProgressIndicator extends StatelessWidget {
     );
   }
 
-  Widget _buildLine({required bool isActive}) {
+  Widget _buildLine(BuildContext context, {required bool isActive}) {
     return Container(
       width: 32,
       height: 2,
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: isActive ? AppTheme.primaryOrange : const Color(0xFFF5F5F5),
+      color: isActive ? AppTheme.primaryOrange : Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
     );
   }
 }

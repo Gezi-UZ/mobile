@@ -102,8 +102,8 @@ class _NotificationIconButton extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '$count',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.surface,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                     ),

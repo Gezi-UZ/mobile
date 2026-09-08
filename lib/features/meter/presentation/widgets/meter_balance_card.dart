@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
 
 import 'package:gezi/features/meter/domain/entities/meter.dart';
 
@@ -44,7 +43,7 @@ class MeterBalanceCard extends StatelessWidget {
                     Text(
                       'Saldo actual',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.70),
+                        color: Colors.white.withValues(alpha: 0.70),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -54,7 +53,7 @@ class MeterBalanceCard extends StatelessWidget {
                         Text(
                           meter.kwhBalance.toStringAsFixed(1),
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -63,7 +62,7 @@ class MeterBalanceCard extends StatelessWidget {
                           child: Text(
                             'kWh',
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.80),
+                              color: Colors.white.withValues(alpha: 0.80),
                             ),
                           ),
                         ),
@@ -75,7 +74,7 @@ class MeterBalanceCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
@@ -93,7 +92,7 @@ class MeterBalanceCard extends StatelessWidget {
             Text(
               '· sync 14:32',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.50), // Increased alpha slightly for readability
+                color: Colors.white.withValues(alpha: 0.50), // Increased alpha slightly for readability
               ),
             ),
           ],

@@ -53,6 +53,14 @@ Na **primeira recarga do mês civil** em contadores CREDELEC, o sistema realiza 
    * O montante varia conforme o município e a categoria de consumo (ex.: nos municípios de Maputo e Matola, os valores situam-se geralmente entre 50 MT e 250 MT).
 2. **Imposto sobre o Valor Acrescentado (IVA):**
    * Incide sobre as taxas ou serviços tributáveis de acordo com a legislação fiscal em vigor.
+3. **Taxa de Rádio:**
+   * Taxa de contribuição para a radiodifusão pública (Rádio Moçambique).
+
+**Regra de Fracionamento (Ex: Primeira recarga de 100 MT)**
+Para evitar que o cliente fique sem energia numa recarga de baixo valor (ex: 100 MT), o saldo **não é totalmente absorvido pela Taxa de Lixo**:
+* **Metade do valor (50 MT)** é descontado para abater uma parte da Taxa de Lixo.
+* **A outra metade (50 MT)** é parcelada entre o IVA, a Taxa de Rádio e a compra efetiva de energia (kWh).
+* No **próximo pagamento (2ª recarga) ainda no mesmo mês**, o sistema cobrará a outra parte pendente da Taxa de Lixo.
 
 ---
 
@@ -88,3 +96,12 @@ $$\text{Quantidade de kWh} = \frac{\text{Valor do Recarregamento (MT)}}{\text{Ta
 * **Taxa de Lixo (assumida):** 150 MT (1ª compra)
 1. $\text{Valor para Energia} = 2.000\text{ MT} - 150\text{ MT} = 1.850\text{ MT}$
 2. $\text{kWh Obtidos} = \frac{1.850\text{ MT}}{13,34\text{ MT/kWh}} \approx \mathbf{138,68\text{ kWh}}$
+
+### Exemplo 4: Primeira compra do mês de 100 MT (CREDELEC Doméstico - Regra de Fracionamento)
+* **Preço por kWh:** 7,64 MT
+* **Taxa de Lixo Total (assumida):** 100 MT
+1. **Desconto de Lixo (50% da recarga):** $100\text{ MT} \times 50\% = 50\text{ MT}$ (Ficam $50\text{ MT}$ de lixo pendentes).
+2. **Valor Restante:** $50\text{ MT}$ (Parcelado entre IVA, Taxa de Rádio e Energia).
+3. Assumindo que IVA e Taxa de Rádio totalizam aprox. $10\text{ MT}$, restam $40\text{ MT}$ para energia.
+4. $\text{kWh Obtidos} = \frac{40\text{ MT}}{7,64\text{ MT/kWh}} \approx \mathbf{5,23\text{ kWh}}$
+5. **Na próxima recarga no mesmo mês:** O sistema cobrará os $50\text{ MT}$ pendentes do lixo.

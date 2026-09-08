@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/theme.dart';
 
 class OnboardingPrimaryButton extends StatelessWidget {
   final String text;

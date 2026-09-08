@@ -34,7 +34,7 @@ class DioClient {
       BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 60), // STK Push pode demorar até o utilizador inserir o PIN
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

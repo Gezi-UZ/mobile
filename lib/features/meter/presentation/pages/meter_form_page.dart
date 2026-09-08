@@ -229,7 +229,7 @@ class _MeterFormPageState extends State<MeterFormPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: enabled ? Theme.of(context).colorScheme.surface : Color(0xFFF5F5F5),
+        color: enabled ? Theme.of(context).colorScheme.surface : Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE0E0E0),

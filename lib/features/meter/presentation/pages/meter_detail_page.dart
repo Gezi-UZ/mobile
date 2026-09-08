@@ -26,7 +26,13 @@ class MeterDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
-    final thisMonthRecharges = recentRecharges
+    
+    // Filter for successful recharges only
+    final successfulRecharges = recentRecharges
+        .where((r) => r.status == RechargeStatus.success)
+        .toList();
+
+    final thisMonthRecharges = successfulRecharges
         .where((r) => r.rechargedAt.isAfter(monthStart))
         .toList();
     final double monthlyKwh = thisMonthRecharges.fold(
@@ -37,8 +43,8 @@ class MeterDetailPage extends StatelessWidget {
     // Estimate daily average and autonomy based on recharge intervals
     double dailyAvgKwh = 2.1;
     int daysBetweenRecharges = 15;
-    if (recentRecharges.length >= 2) {
-      final sorted = List<Recharge>.from(recentRecharges)
+    if (successfulRecharges.length >= 2) {
+      final sorted = List<Recharge>.from(successfulRecharges)
         ..sort((a, b) => a.rechargedAt.compareTo(b.rechargedAt));
       final totalIntervalDays =
           sorted.last.rechargedAt.difference(sorted.first.rechargedAt).inDays;
@@ -50,8 +56,8 @@ class MeterDetailPage extends StatelessWidget {
         daysBetweenRecharges =
             (totalIntervalDays / (sorted.length - 1)).round().clamp(1, 90);
       }
-    } else if (recentRecharges.length == 1) {
-      dailyAvgKwh = (recentRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
+    } else if (successfulRecharges.length == 1) {
+      dailyAvgKwh = (successfulRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
     }
     final int estimatedDaysRemaining =
         (dailyAvgKwh > 0) ? (meter.kwhBalance / dailyAvgKwh).round() : 0;
@@ -74,7 +80,7 @@ class MeterDetailPage extends StatelessWidget {
               MeterStatsRow(
                 monthlyKwh: monthlyKwh > 0 ? monthlyKwh : 64.7,
                 dailyAvgKwh: dailyAvgKwh,
-                rechargeCount: recentRecharges.length,
+                rechargeCount: successfulRecharges.length,
               ),
               _buildEstimationCard(
                 context,

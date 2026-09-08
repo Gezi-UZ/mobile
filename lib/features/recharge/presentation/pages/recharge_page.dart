@@ -28,6 +28,7 @@ class _RechargePageState extends State<RechargePage> {
   int _currentStep = 0;
   String _amount = '0';
   String _meterNumber = '';
+  String _meterId = '';
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _RechargePageState extends State<RechargePage> {
       if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
         final primary = meterState.primaryMeter ?? meterState.meters.first;
         _meterNumber = primary.serialNumber;
+        _meterId = primary.id;
       }
     }
   }
@@ -56,15 +58,17 @@ class _RechargePageState extends State<RechargePage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Step 3 Confirmation -> Iniciar Recarga via BLoC
-      context.read<RechargeBloc>().add(
-        InitiateRechargeEvent(
-          amount: double.parse(_amount),
-          meterId: _meterNumber,
-          method: 'MPESA',
-          phone: phone,
-        ),
-      );
+      // Step 3 Confirmation -> Navegar para a página de status, que tratará a iniciação
+      context.go(Uri(
+        path: '/recharge/status',
+        queryParameters: {
+          'amount': _amount,
+          'meterNumber': _meterNumber,
+          'meterId': _meterId,
+          'phone': ?phone,
+          'isCodeRecharge': 'false',
+        },
+      ).toString());
     }
   }
 
@@ -111,23 +115,14 @@ class _RechargePageState extends State<RechargePage> {
         body: SafeArea(
         child: BlocConsumer<RechargeBloc, RechargeState>(
           listener: (context, state) {
-            if (state is RechargeInitiated) {
-              context.go(Uri(
-                path: '/recharge/status',
-                queryParameters: {
-                  'amount': _amount,
-                  'meterNumber': _meterNumber,
-                  'rechargeId': state.recharge.id,
-                },
-              ).toString());
-            } else if (state is RechargeError) {
+            if (state is RechargeError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
               );
             }
           },
           builder: (context, state) {
-            final isLoading = state is RechargeLoading;
+            final isLoading = false; // We no longer load here on Step 3
             
             return Stack(
               children: [
@@ -184,8 +179,9 @@ class _RechargePageState extends State<RechargePage> {
                         },
                         children: widget.isForSomeone
                             ? [
-                                RechargeStepMeter(onNext: (val) {
-                                  _meterNumber = val;
+                                RechargeStepMeter(onNext: (id, number) {
+                                  _meterId = id;
+                                  _meterNumber = number;
                                   _nextPage(context);
                                 }),
                                 RechargeStepAmount(
@@ -213,8 +209,13 @@ class _RechargePageState extends State<RechargePage> {
                                   },
                                 ),
                                 RechargeStepSelectMeter(
-                                  selectedMeterNumber: _meterNumber,
-                                  onMeterSelected: (val) => setState(() => _meterNumber = val),
+                                  selectedMeterId: _meterId,
+                                  onMeterSelected: (id, number) {
+                                    setState(() {
+                                      _meterId = id;
+                                      _meterNumber = number;
+                                    });
+                                  },
                                   onNext: () => _nextPage(context),
                                 ),
                                 RechargeStepConfirm(

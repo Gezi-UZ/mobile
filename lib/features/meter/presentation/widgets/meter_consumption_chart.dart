@@ -32,7 +32,7 @@ class MeterConsumptionChart extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
                   borderRadius: BorderRadius.circular(37282700),
                 ),
                 child: Text(

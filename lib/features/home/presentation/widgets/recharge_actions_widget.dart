@@ -24,7 +24,7 @@ class RechargeActionsWidget extends StatelessWidget {
               'assets/images/recharge_icon.png',
               height: 20,
               width: 20,
-              color: Theme.of(context).colorScheme.surface,
+              color: Colors.white,
             ),
           ),
           // Botão secundário

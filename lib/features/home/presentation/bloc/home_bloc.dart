@@ -23,7 +23,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     HomeDashboardLoadRequested event,
     Emitter<HomeState> emit,
   ) async {
-    emit(HomeLoading());
+    if (!event.isRefresh) {
+      emit(HomeLoading());
+    }
 
     // Dispara os dois pedidos em paralelo, mantendo os tipos.
     final Future<Either<Failure, MeterBalance>> balanceFuture = getMeterBalance();

@@ -22,6 +22,14 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
   String? _selectedMeterNumber;
 
   @override
+  void initState() {
+    super.initState();
+    if (sl<MeterBloc>().state is! MeterLoaded) {
+      sl<MeterBloc>().add(const MeterListRequested());
+    }
+  }
+
+  @override
   void dispose() {
     _codeController.dispose();
     super.dispose();
@@ -163,7 +171,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
+                        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.black.withValues(alpha: 0.08),
@@ -228,7 +236,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
 
                     // Meter List
                     BlocBuilder<MeterBloc, MeterState>(
-                      bloc: sl<MeterBloc>()..add(const MeterListRequested()),
+                      bloc: sl<MeterBloc>(),
                       builder: (context, state) {
                         List<Meter> meters = [];
                         if (state is MeterLoaded) {

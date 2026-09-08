@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/history/presentation/bloc/history_cubit.dart';
 import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
 import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
 import 'package:gezi/injection_container.dart';
 import 'package:intl/intl.dart';
+import 'package:gezi/features/home/domain/entities/recharge.dart' as home_recharge;
 import '../widgets/transaction_list_item.dart';
 
 class ReportListPage extends StatelessWidget {
@@ -14,8 +14,11 @@ class ReportListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<HistoryCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<HistoryCubit>()),
+        BlocProvider.value(value: sl<MeterBloc>()),
+      ],
       child: const ReportListPageView(),
     );
   }
@@ -34,10 +37,7 @@ class _ReportListPageViewState extends State<ReportListPageView> {
     super.initState();
     final meterState = context.read<MeterBloc>().state;
     if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
-      final selectedMeter = meterState.meters.firstWhere(
-        (m) => m.isPrimary,
-        orElse: () => meterState.meters.first,
-      );
+      final selectedMeter = meterState.primaryMeter ?? meterState.meters.first;
       context.read<HistoryCubit>().fetchHistoryData(selectedMeter.id, 'year');
     }
   }
@@ -77,10 +77,7 @@ class _ReportListPageViewState extends State<ReportListPageView> {
               child: BlocConsumer<MeterBloc, MeterState>(
                 listener: (context, meterState) {
                   if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
-                    final selectedMeter = meterState.meters.firstWhere(
-                      (m) => m.isPrimary,
-                      orElse: () => meterState.meters.first,
-                    );
+                    final selectedMeter = meterState.primaryMeter ?? meterState.meters.first;
                     context.read<HistoryCubit>().fetchHistoryData(selectedMeter.id, 'year');
                   }
                 },
@@ -104,7 +101,26 @@ class _ReportListPageViewState extends State<ReportListPageView> {
 
                             return InkWell(
                               onTap: () {
-                                context.push('/receipt_preview', extra: recharge);
+                                final lowerStatus = recharge.status.toLowerCase();
+                                home_recharge.RechargeStatus mappedStatus = home_recharge.RechargeStatus.pending;
+                                if (lowerStatus == 'success' || lowerStatus == 'concluída') {
+                                  mappedStatus = home_recharge.RechargeStatus.success;
+                                } else if (lowerStatus == 'failed' || lowerStatus == 'falhou') {
+                                  mappedStatus = home_recharge.RechargeStatus.failed;
+                                }
+
+                                final homeRechargeObj = home_recharge.Recharge(
+                                  id: recharge.id,
+                                  kwhAmount: recharge.creditKwh,
+                                  paidAmount: recharge.amountMzn,
+                                  currency: 'MZN',
+                                  rechargedAt: recharge.createdAt,
+                                  status: mappedStatus,
+                                  meterSerialNumber: recharge.meterId,
+                                  isMyMeter: true,
+                                  paymentMethod: 'M-Pesa',
+                                );
+                                context.push('/receipt_preview', extra: homeRechargeObj);
                               },
                               child: TransactionListItem(
                                 title: 'Recarga de Saldo',

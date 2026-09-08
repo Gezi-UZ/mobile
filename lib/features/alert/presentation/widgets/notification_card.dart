@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
 
 class NotificationCard extends StatelessWidget {
   final String title;

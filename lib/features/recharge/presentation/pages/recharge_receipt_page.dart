@@ -30,9 +30,14 @@ class RechargeReceiptPage extends StatelessWidget {
     // Ideally Breakdown should be part of Recharge entity, but for UI we simulate if absent.
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
-    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
-        ? 100.0
-        : 0.0;
+    double txLixo = 0.0;
+    if (isFirstPurchaseOfMonth) {
+      if (totalAmount == 100.0) {
+        txLixo = 50.0;
+      } else if (totalAmount > 100.0) {
+        txLixo = 100.0;
+      }
+    }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
 
@@ -332,7 +337,14 @@ class RechargeReceiptPage extends StatelessWidget {
     final double totalAmount = recharge.paidAmount;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
-    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100) ? 100.0 : 0.0;
+    double txLixo = 0.0;
+    if (isFirstPurchaseOfMonth) {
+      if (totalAmount == 100.0) {
+        txLixo = 50.0;
+      } else if (totalAmount > 100.0) {
+        txLixo = 100.0;
+      }
+    }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
     final double remainingAfterFees = (totalAmount - txLixo - txRadio - dividaPaga).clamp(0.0, double.infinity);

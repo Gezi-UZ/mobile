@@ -72,6 +72,7 @@ class _RechargeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSuccess = recharge.status == RechargeStatus.success;
     final isPending = recharge.status == RechargeStatus.pending;
 
@@ -82,21 +83,28 @@ class _RechargeItem extends StatelessWidget {
         : const Color(0xFFFF3B30);
 
     final statusBg = isSuccess
-        ? const Color(0xFFDCFCE7)
+        ? (isDark ? const Color(0xFF052E16) : const Color(0xFFDCFCE7))
         : isPending
-        ? const Color(0xFFFFF8E1)
-        : const Color(0xFFFFEDED);
-
+        ? (isDark ? const Color(0xFF3D2600) : const Color(0xFFFFF8E1))
+        : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED));
 
     final isMyMeter = recharge.isMyMeter;
-    final badgeColor = isMyMeter ? const Color(0xFFFF6A00) : const Color(0xFF8A5500);
-    final badgeBgColor = isMyMeter ? const Color(0x11FF6A00) : const Color(0x17FFB300);
+    final badgeColor = isMyMeter
+        ? (isDark ? const Color(0xFFFF8C38) : const Color(0xFFFF6A00))
+        : (isDark ? const Color(0xFFFFC107) : const Color(0xFF8A5500));
+    final badgeBgColor = isMyMeter
+        ? (isDark ? const Color(0x33FF6A00) : const Color(0x11FF6A00))
+        : (isDark ? const Color(0x33FFB300) : const Color(0x17FFB300));
     final badgeText = isMyMeter ? 'Meu' : 'Outro';
 
     final meterText = isMyMeter
-        ? (recharge.meterAlias ?? recharge.meterSerialNumber)
+        ? (recharge.meterAlias != null && recharge.meterAlias!.isNotEmpty
+            ? '${recharge.meterAlias} • ${recharge.meterSerialNumber}'
+            : recharge.meterSerialNumber)
         : recharge.meterSerialNumber;
     final dateText = _formatDate(recharge.rechargedAt);
+
+    final secondaryTextColor = isDark ? Colors.white60 : const Color(0xFF666666);
 
     return GestureDetector(
       onTap: () {
@@ -105,11 +113,11 @@ class _RechargeItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: ShapeDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 1,
-              color: Colors.black.withValues(alpha: 0.08),
+              color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08),
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -186,7 +194,7 @@ class _RechargeItem extends StatelessWidget {
                     Text(
                       '$meterText · $dateText',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: const Color(0xFF666666),
+                        color: secondaryTextColor,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
@@ -208,9 +216,9 @@ class _RechargeItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
-                    color: Color(0xFF666666),
+                    color: secondaryTextColor,
                     size: 20,
                   ),
                 ],
@@ -220,7 +228,7 @@ class _RechargeItem extends StatelessWidget {
         ),
       ),
     );
-}
+  }
 
   String _formatDate(DateTime dt) {
     final now = DateTime.now();

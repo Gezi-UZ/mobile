@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/home/domain/entities/recharge.dart';
 
 class MeterRecentTransactions extends StatelessWidget {
@@ -41,7 +40,7 @@ class MeterRecentTransactions extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: _buildTransactionItem(
                   context,
-                  '${recharge.kwhAmount.toStringAsFixed(1)} kWh',
+                  isSuccess ? '${recharge.kwhAmount.toStringAsFixed(1)} kWh' : '-',
                   '$dateStr · $provider',
                   isSuccess,
                   isPending,

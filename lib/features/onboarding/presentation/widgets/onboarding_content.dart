@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/onboarding_step_entity.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../../core/theme/theme.dart';
 
 class OnboardingContent extends StatelessWidget {
   final OnboardingStepEntity step;

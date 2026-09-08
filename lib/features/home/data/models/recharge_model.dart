@@ -35,8 +35,12 @@ class RechargeModel extends Recharge {
       rechargedAt: parsedDate,
       status: _parseStatus(json['status']?.toString() ?? ''),
       meterAlias: json['meter_alias'] as String? ?? json['label'] as String?,
-      meterSerialNumber: json['meter_serial_number'] as String? ??
-          json['meter_id'] as String? ??
+      meterSerialNumber: (json['meter_serial_number'] ??
+              json['meter_number'] ??
+              json['serial_number'] ??
+              json['numero_serie'] ??
+              json['meter_id'])
+          ?.toString() ??
           '',
       isMyMeter: json['is_my_meter'] as bool? ?? true,
       paymentMethod: json['payment_method'] as String? ??

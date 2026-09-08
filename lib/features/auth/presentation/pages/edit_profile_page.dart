@@ -219,7 +219,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
         borderRadius: BorderRadius.circular(16),
       ),

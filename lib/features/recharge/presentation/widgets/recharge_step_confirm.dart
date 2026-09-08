@@ -31,24 +31,28 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
 
   void _handleConfirm() {
     final phone = _phoneController.text.trim();
-    if (phone.isNotEmpty) {
-      if (!phone.startsWith('84') && !phone.startsWith('85')) {
-        setState(() {
-          _phoneError = 'O número deve começar por 84 ou 85';
-        });
-        return;
-      }
-      if (phone.length != 9) {
-        setState(() {
-          _phoneError = 'O número deve ter 9 dígitos';
-        });
-        return;
-      }
+    if (phone.isEmpty) {
+      setState(() {
+        _phoneError = 'O número de telemóvel é obrigatório';
+      });
+      return;
+    }
+    if (!phone.startsWith('84') && !phone.startsWith('85')) {
+      setState(() {
+        _phoneError = 'O número deve começar por 84 ou 85';
+      });
+      return;
+    }
+    if (phone.length != 9) {
+      setState(() {
+        _phoneError = 'O número deve ter 9 dígitos';
+      });
+      return;
     }
     setState(() {
       _phoneError = null;
     });
-    widget.onConfirm(phone.isEmpty ? null : phone);
+    widget.onConfirm(phone);
   }
 
   @override
@@ -56,9 +60,14 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
     final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
-    final double txLixo = (isFirstPurchaseOfMonth && totalAmount >= 100)
-        ? 100.0
-        : 0.0;
+    double txLixo = 0.0;
+    if (isFirstPurchaseOfMonth) {
+      if (totalAmount == 100.0) {
+        txLixo = 50.0;
+      } else if (totalAmount > 100.0) {
+        txLixo = 100.0;
+      }
+    }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
 
@@ -171,9 +180,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
 
                   const SizedBox(height: 24),
 
-                  // Número de telemóvel opcional
+                  // Número de telemóvel obrigatório
                   Text(
-                    'Número de telemóvel (Opcional)',
+                    'Número de telemóvel M-Pesa',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
@@ -184,6 +193,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     maxLength: 9,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Ex: 841234567',
                       errorText: _phoneError,
@@ -192,7 +204,7 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                       ),
                       counterText: '',
                       filled: true,
-                      fillColor: const Color(0xFFF9FAFB),
+                      fillColor: Theme.of(context).extension<AppColorsExtension>()?.inputBackground ?? const Color(0xFFF9FAFB),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -218,14 +230,6 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                         });
                       }
                     },
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Se deixares vazio, usaremos o número do teu perfil.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 12,
-                        ),
                   ),
 
                   const SizedBox(height: 24),

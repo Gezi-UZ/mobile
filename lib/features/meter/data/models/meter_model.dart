@@ -61,10 +61,13 @@ class MeterModel extends Meter {
       lastSync = DateTime.tryParse(json['last_seen_at'].toString());
     }
 
+    final idVal = (json['id'] ?? json['meter_id'] ?? json['_id'])?.toString() ?? '';
+    final serialVal = (json['serial_number'] ?? json['meter_number'] ?? json['numero_serie'] ?? json['serialNumber'] ?? json['meterNumber'])?.toString() ?? '';
+
     return MeterModel(
-      id: json['id'] as String? ?? json['meter_id'] as String? ?? '',
+      id: idVal.isNotEmpty ? idVal : serialVal, // fallback to serial if id is missing
       alias: label,
-      serialNumber: json['serial_number'] as String? ?? '',
+      serialNumber: serialVal,
       isOnline: isOnlineVal,
       isPrimary: json['is_primary'] as bool? ?? false,
       kwhBalance: (json['kwh_saldo'] as num?)?.toDouble() ??

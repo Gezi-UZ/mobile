@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
 
 import '../widgets/alert_toggle_item.dart';
 import '../widgets/notification_card.dart';

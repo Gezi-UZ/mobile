@@ -23,7 +23,7 @@ class MeterLoaded extends MeterState {
 
   Meter? get primaryMeter {
     if (meters.isEmpty) return null;
-    return meters.firstWhere(
+    return meters.cast<Meter>().firstWhere(
       (m) => m.isPrimary,
       orElse: () => meters.first,
     );

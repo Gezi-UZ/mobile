@@ -16,13 +16,24 @@ import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
 ///
 /// Exibe todos os contadores associados à conta, com destaque para o contador
 /// principal. Permite adicionar um novo contador através do botão de ação.
-class MeterListPage extends StatelessWidget {
+class MeterListPage extends StatefulWidget {
   const MeterListPage({super.key});
+
+  @override
+  State<MeterListPage> createState() => _MeterListPageState();
+}
+
+class _MeterListPageState extends State<MeterListPage> {
+  @override
+  void initState() {
+    super.initState();
+    sl<MeterBloc>().add(const MeterListRequested());
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: sl<MeterBloc>()..add(const MeterListRequested()),
+      value: sl<MeterBloc>(),
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(

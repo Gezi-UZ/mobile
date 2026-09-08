@@ -47,9 +47,14 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
 
     // Cálculo conforme guião da EDM (Tarifa Doméstica = 7.64 MT/kWh)
     const double ratePerKwh = 7.64;
-    final double txLixo = (_isFirstPurchaseOfMonth && totalAmount >= 100)
-        ? 100.0
-        : 0.0;
+    double txLixo = 0.0;
+    if (_isFirstPurchaseOfMonth) {
+      if (totalAmount == 100.0) {
+        txLixo = 50.0;
+      } else if (totalAmount > 100.0) {
+        txLixo = 100.0;
+      }
+    }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
 
@@ -79,7 +84,7 @@ class _RechargeStepAmountState extends State<RechargeStepAmount> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: ShapeDecoration(
-                      color: const Color(0xFFF5F5F5),
+                      color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -379,11 +384,11 @@ class _QuickAmountButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: ShapeDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             shape: RoundedRectangleBorder(
               side: BorderSide(
                 width: 1.11,
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Theme.of(context).extension<AppColorsExtension>()?.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
               ),
               borderRadius: BorderRadius.circular(16),
             ),

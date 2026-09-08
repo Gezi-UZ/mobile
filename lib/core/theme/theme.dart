@@ -49,6 +49,7 @@ class AppTheme {
           errorColor: AppColors.errorColor,
           lightOrangeBackground: AppColors.lightOrangeBackground,
           textColorSecondary: AppColors.textColorSecondary,
+          inputBackground: Color(0xFFF5F5F5),
         ),
       ],
       // Default Elevated Button Theme
@@ -94,6 +95,7 @@ class AppTheme {
           errorColor: AppColors.errorColor,
           lightOrangeBackground: Color(0xFF3E2713),
           textColorSecondary: Colors.white70,
+          inputBackground: Color(0xFF2C2C2C),
         ),
       ],
       // Default Elevated Button Theme

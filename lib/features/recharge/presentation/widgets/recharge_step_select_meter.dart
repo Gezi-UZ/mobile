@@ -9,14 +9,14 @@ import '../../../meter/presentation/bloc/meter_event.dart';
 
 class RechargeStepSelectMeter extends StatefulWidget {
   final VoidCallback onNext;
-  final Function(String) onMeterSelected;
-  final String? selectedMeterNumber;
+  final Function(String id, String number) onMeterSelected;
+  final String? selectedMeterId;
 
   const RechargeStepSelectMeter({
     super.key,
     required this.onNext,
     required this.onMeterSelected,
-    this.selectedMeterNumber,
+    this.selectedMeterId,
   });
 
   @override
@@ -24,18 +24,21 @@ class RechargeStepSelectMeter extends StatefulWidget {
 }
 
 class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
-  String? _selectedMeterNumber;
+  String? _selectedMeterId;
 
   @override
   void initState() {
     super.initState();
-    _selectedMeterNumber = widget.selectedMeterNumber;
+    _selectedMeterId = widget.selectedMeterId;
+    if (sl<MeterBloc>().state is! MeterLoaded) {
+      sl<MeterBloc>().add(const MeterListRequested());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MeterBloc, MeterState>(
-      bloc: sl<MeterBloc>()..add(const MeterListRequested()),
+      bloc: sl<MeterBloc>(),
       builder: (context, state) {
         List<Meter> meters = [];
         if (state is MeterLoaded) {
@@ -84,14 +87,14 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
         }
 
         // Initialize selection if null
-        if (_selectedMeterNumber == null && meters.isNotEmpty) {
+        if (_selectedMeterId == null && meters.isNotEmpty) {
           final primary = meters.firstWhere(
             (m) => m.isPrimary,
             orElse: () => meters.first,
           );
-          _selectedMeterNumber = primary.serialNumber;
+          _selectedMeterId = primary.id;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            widget.onMeterSelected(primary.serialNumber);
+            widget.onMeterSelected(primary.id, primary.serialNumber);
           });
         }
 
@@ -107,14 +110,14 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                       const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final meter = meters[index];
-                    final isSelected = _selectedMeterNumber == meter.serialNumber;
+                    final isSelected = _selectedMeterId == meter.id;
 
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedMeterNumber = meter.serialNumber;
+                          _selectedMeterId = meter.id;
                         });
-                        widget.onMeterSelected(meter.serialNumber);
+                        widget.onMeterSelected(meter.id, meter.serialNumber);
                       },
                       child: Container(
                         width: double.infinity,
@@ -122,13 +125,13 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                         decoration: ShapeDecoration(
                           color: isSelected
                               ? Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground
-                              : Colors.white,
+                              : Theme.of(context).colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 1.11,
                               color: isSelected
                                   ? AppTheme.primaryOrange
-                                  : Colors.black.withValues(alpha: 0.08),
+                                  : Theme.of(context).extension<AppColorsExtension>()?.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -139,7 +142,7 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                               width: 36,
                               height: 36,
                               decoration: ShapeDecoration(
-                                color: const Color(0xFFF5F5F5),
+                                color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -222,7 +225,7 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                     width: 1.11,
                                     color: isSelected
                                         ? AppTheme.primaryOrange
-                                        : Colors.black.withValues(alpha: 0.08),
+                                        : Theme.of(context).extension<AppColorsExtension>()?.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -253,14 +256,14 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
 
               // Botão Continuar
               GestureDetector(
-                onTap: _selectedMeterNumber != null ? widget.onNext : null,
+                onTap: _selectedMeterId != null ? widget.onNext : null,
                 child: Opacity(
-                  opacity: _selectedMeterNumber != null ? 1.0 : 0.50,
+                  opacity: _selectedMeterId != null ? 1.0 : 0.50,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: ShapeDecoration(
-                      color: _selectedMeterNumber != null
+                      color: _selectedMeterId != null
                           ? AppTheme.primaryOrange
                           : const Color(0xFFCCCCCC),
                       shape: RoundedRectangleBorder(

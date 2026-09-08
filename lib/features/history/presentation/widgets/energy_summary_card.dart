@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/recharge/domain/entities/dashboard_stats.dart';
+import 'package:gezi/core/theme/theme.dart';
 
 class EnergySummaryCard extends StatelessWidget {
   final DashboardStats? stats;
@@ -89,7 +89,7 @@ class EnergySummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

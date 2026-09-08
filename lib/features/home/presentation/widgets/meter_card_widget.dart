@@ -5,11 +5,13 @@ import 'package:gezi/features/home/domain/entities/meter_balance.dart';
 class MeterCardWidget extends StatelessWidget {
   final MeterBalance balance;
   final bool isPrimary;
+  final String meterAlias;
 
   const MeterCardWidget({
     super.key,
     required this.balance,
     this.isPrimary = false,
+    required this.meterAlias,
   });
 
   @override
@@ -55,14 +57,14 @@ class MeterCardWidget extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.star_rounded,
-                      color: Theme.of(context).colorScheme.surface,
+                      color: Colors.white,
                       size: 12,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'PRINCIPAL',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.surface,
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 10,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w700,
@@ -97,7 +99,7 @@ class MeterCardWidget extends StatelessWidget {
             Text(
               'Saldo actual',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.70),
+                color: Colors.white.withValues(alpha: 0.70),
                 fontSize: 12,
               ),
             ),
@@ -111,7 +113,7 @@ class MeterCardWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontSize: 48,
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Colors.white,
                   ),
                 ),
                 Padding(
@@ -119,7 +121,7 @@ class MeterCardWidget extends StatelessWidget {
                   child: Text(
                     'kWh',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.80),
+                      color: Colors.white.withValues(alpha: 0.80),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -134,7 +136,7 @@ class MeterCardWidget extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Center(
@@ -158,9 +160,9 @@ class MeterCardWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Contador',
+              meterAlias,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.60),
+                color: Colors.white.withValues(alpha: 0.70),
                 fontSize: 10,
               ),
             ),
@@ -168,7 +170,7 @@ class MeterCardWidget extends StatelessWidget {
               balance.meterId,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontSize: 14,
-                color: Theme.of(context).colorScheme.surface,
+                color: Colors.white,
               ),
             ),
           ],
@@ -180,7 +182,7 @@ class MeterCardWidget extends StatelessWidget {
             Text(
               '· ${_formatTime(balance.lastSyncAt)}',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.30),
+                color: Colors.white.withValues(alpha: 0.50),
                 fontSize: 9,
               ),
             ),
