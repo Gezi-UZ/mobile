@@ -14,11 +14,16 @@ class RechargeDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSuccess = recharge.status == RechargeStatus.success;
     final isMyMeter = recharge.isMyMeter;
 
-    final badgeColor = isMyMeter ? const Color(0xFFE84300) : const Color(0xFF8A5500);
-    final badgeBgColor = isMyMeter ? const Color(0x11FF6A00) : const Color(0x17FFB300);
+    final badgeColor = isMyMeter 
+        ? (isDark ? const Color(0xFFFF8C38) : const Color(0xFFE84300)) 
+        : (isDark ? const Color(0xFFFFC107) : const Color(0xFF8A5500));
+    final badgeBgColor = isMyMeter 
+        ? (isDark ? const Color(0x33FF6A00) : const Color(0x11FF6A00)) 
+        : (isDark ? const Color(0x33FFB300) : const Color(0x17FFB300));
     final badgeText = isMyMeter ? 'Meu contador' : 'Outro';
     final smallBadgeText = isMyMeter ? 'Meu' : 'Outro';
 
@@ -55,7 +60,7 @@ class RechargeDetailPage extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+                        color: isDark ? const Color(0xFF331600) : Theme.of(context).extension<AppColorsExtension>()?.lightOrangeBackground ?? const Color(0xFFFFF6ED),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       alignment: Alignment.center,
@@ -68,7 +73,7 @@ class RechargeDetailPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Detalhe da transacção',
+                      'Detalhe da recarga',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
@@ -86,13 +91,17 @@ class RechargeDetailPage extends StatelessWidget {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: isSuccess ? const Color(0x172E7D32) : const Color(0xFFFFEDED),
+                        color: isSuccess 
+                            ? (isDark ? const Color(0xFF052E16) : const Color(0x172E7D32)) 
+                            : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       alignment: Alignment.center,
                       child: Icon(
                         isSuccess ? Icons.check_circle : Icons.error,
-                        color: isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFFF3B30),
+                        color: isSuccess 
+                            ? (isDark ? const Color(0xFF00C950) : const Color(0xFF2E7D32)) 
+                            : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
                         size: 32,
                       ),
                     ),
@@ -112,13 +121,17 @@ class RechargeDetailPage extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isSuccess ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDED),
+                            color: isSuccess 
+                                ? (isDark ? const Color(0xFF052E16) : const Color(0xFFDCFCE7)) 
+                                : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             isSuccess ? 'Recarga concluída' : 'Recarga falhou',
                             style: TextStyle(
-                              color: isSuccess ? const Color(0xFF008236) : const Color(0xFFFF3B30),
+                              color: isSuccess 
+                                  ? (isDark ? const Color(0xFF00C950) : const Color(0xFF008236)) 
+                                  : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
                               fontSize: 14,
                               fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,
@@ -151,9 +164,9 @@ class RechargeDetailPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
@@ -178,8 +191,8 @@ class RechargeDetailPage extends StatelessWidget {
                           children: [
                             Text(
                               meterTitle,
-                              style: const TextStyle(
-                                color: Color(0xFF666666),
+                              style: TextStyle(
+                                color: isDark ? Colors.white60 : const Color(0xFF666666),
                                 fontSize: 12,
                                 fontFamily: 'Poppins',
                               ),
@@ -221,24 +234,25 @@ class RechargeDetailPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF6ED),
+                    color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFF6ED),
                     borderRadius: BorderRadius.circular(16),
+                    border: isDark ? Border.all(color: Colors.white.withValues(alpha: 0.10)) : null,
                   ),
                   child: Column(
                     children: [
-                      _buildInfoRow('ID', recharge.id),
+                      _buildInfoRow(context, 'ID', recharge.id),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Data e hora', '$formattedDate · $formattedTime'),
+                      _buildInfoRow(context, 'Data e hora', '$formattedDate · $formattedTime'),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Valor pago', '${recharge.paidAmount.toStringAsFixed(2)} ${recharge.currency}'),
+                      _buildInfoRow(context, 'Valor pago', '${recharge.paidAmount.toStringAsFixed(2)} ${recharge.currency}'),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Crédito', '${recharge.kwhAmount.toStringAsFixed(1)} kWh'),
+                      _buildInfoRow(context, 'Crédito', '${recharge.kwhAmount.toStringAsFixed(1)} kWh'),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Método', recharge.paymentMethod),
+                      _buildInfoRow(context, 'Método', recharge.paymentMethod),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Contador', recharge.meterSerialNumber),
+                      _buildInfoRow(context, 'Contador', recharge.meterSerialNumber),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Destinatário', isMyMeter ? 'Próprio' : 'Outro', noBorder: true),
+                      _buildInfoRow(context, 'Destinatário', isMyMeter ? 'Próprio' : 'Outro', noBorder: true),
                     ],
                   ),
                 ),
@@ -279,7 +293,8 @@ class RechargeDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {bool noBorder = false}) {
+  Widget _buildInfoRow(BuildContext context, String label, String value, {bool noBorder = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.only(bottom: 12),
       decoration: noBorder
@@ -288,7 +303,7 @@ class RechargeDetailPage extends StatelessWidget {
               border: Border(
                 bottom: BorderSide(
                   width: 1,
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -297,16 +312,16 @@ class RechargeDetailPage extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF666666),
+            style: TextStyle(
+              color: isDark ? Colors.white60 : const Color(0xFF666666),
               fontSize: 14,
               fontFamily: 'Poppins',
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF1A1A1A),
+            style: TextStyle(
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
               fontSize: 14,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,

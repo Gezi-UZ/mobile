@@ -12,6 +12,7 @@ class RechargeModel extends Recharge {
     required super.meterSerialNumber,
     required super.isMyMeter,
     required super.paymentMethod,
+    super.paymentReference,
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +47,7 @@ class RechargeModel extends Recharge {
       paymentMethod: json['payment_method'] as String? ??
           json['provider'] as String? ??
           'M-Pesa',
+      paymentReference: json['referencia_mpesa'] as String? ?? json['payment_reference'] as String?,
     );
   }
 
@@ -60,6 +62,7 @@ class RechargeModel extends Recharge {
         'meter_serial_number': meterSerialNumber,
         'is_my_meter': isMyMeter,
         'payment_method': paymentMethod,
+        'referencia_mpesa': paymentReference,
       };
 
   static RechargeStatus _parseStatus(String raw) {

@@ -12,6 +12,7 @@ class Recharge extends Equatable {
   final String meterSerialNumber;
   final bool isMyMeter;
   final String paymentMethod;
+  final String? paymentReference;
 
   const Recharge({
     required this.id,
@@ -24,6 +25,7 @@ class Recharge extends Equatable {
     required this.meterSerialNumber,
     required this.isMyMeter,
     required this.paymentMethod,
+    this.paymentReference,
   });
 
   @override
@@ -38,6 +40,7 @@ class Recharge extends Equatable {
         meterSerialNumber,
         isMyMeter,
         paymentMethod,
+        paymentReference,
       ];
 }
 

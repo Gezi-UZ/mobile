@@ -9,6 +9,10 @@ class RechargeModel extends Recharge {
     required super.status,
     required super.createdAt,
     super.token,
+    super.paymentMethod,
+    super.paymentReference,
+    super.rechargeType = 'SELF',
+    super.otherPartyName,
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +26,10 @@ class RechargeModel extends Recharge {
           ? DateTime.parse(json['created_at']) 
           : DateTime.now(),
       token: json['token'],
+      paymentMethod: json['payment_method'],
+      paymentReference: json['referencia_mpesa'] ?? json['payment_reference'],
+      rechargeType: json['recharge_type'] ?? 'SELF',
+      otherPartyName: json['other_party_name'],
     );
   }
 
@@ -34,6 +42,10 @@ class RechargeModel extends Recharge {
       'status': status,
       'created_at': createdAt.toIso8601String(),
       'token': token,
+      'payment_method': paymentMethod,
+      'referencia_mpesa': paymentReference,
+      'recharge_type': rechargeType,
+      'other_party_name': otherPartyName,
     };
   }
 }

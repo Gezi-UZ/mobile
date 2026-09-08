@@ -118,7 +118,8 @@ class _ReportListPageViewState extends State<ReportListPageView> {
                                   status: mappedStatus,
                                   meterSerialNumber: recharge.meterId,
                                   isMyMeter: true,
-                                  paymentMethod: 'M-Pesa',
+                                  paymentMethod: recharge.paymentMethod ?? 'M-Pesa',
+                                  paymentReference: recharge.paymentReference,
                                 );
                                 context.push('/receipt_preview', extra: homeRechargeObj);
                               },

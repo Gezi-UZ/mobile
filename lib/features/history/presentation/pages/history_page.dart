@@ -252,6 +252,8 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                                       cost: '${recharge.amountMzn.toStringAsFixed(0)} MZN',
                                       status: statusText,
                                       statusColor: statusColor,
+                                      rechargeType: recharge.rechargeType,
+                                      otherPartyName: recharge.otherPartyName,
                                     );
                                   }),
                               ],

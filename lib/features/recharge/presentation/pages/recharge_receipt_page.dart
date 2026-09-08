@@ -10,6 +10,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class RechargeReceiptPage extends StatelessWidget {
   final Recharge recharge;
@@ -52,7 +53,8 @@ class RechargeReceiptPage extends StatelessWidget {
         ? recharge.kwhAmount
         : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
 
-    final String transactionId = recharge.id;
+    final String transactionId = recharge.paymentReference ?? 
+        (recharge.id.length >= 4 ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}' : 'GEZI${recharge.id.toUpperCase()}');
     final String dateStr = DateFormat(
       'dd/MM/yyyy · HH:mm',
     ).format(recharge.rechargedAt);
@@ -334,6 +336,11 @@ class RechargeReceiptPage extends StatelessWidget {
   Future<Uint8List> _generatePdf() async {
     final pdf = pw.Document();
 
+    // Load Logo
+    final ByteData bytes = await rootBundle.load('assets/images/GeziBrand.png');
+    final Uint8List logoBytes = bytes.buffer.asUint8List();
+    final logoImage = pw.MemoryImage(logoBytes);
+
     final double totalAmount = recharge.paidAmount;
     const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
@@ -352,41 +359,93 @@ class RechargeReceiptPage extends StatelessWidget {
     final double iva = remainingAfterFees - valEnergia;
     final double estimatedKwh = recharge.kwhAmount > 0 ? recharge.kwhAmount : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
 
-    final String transactionId = recharge.id;
+    final String transactionId = recharge.paymentReference ?? 
+        (recharge.id.length >= 4 ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}' : 'GEZI${recharge.id.toUpperCase()}');
     final String dateStr = DateFormat('dd/MM/yyyy · HH:mm').format(recharge.rechargedAt);
     final meterNumber = recharge.meterSerialNumber;
+
+    // Build Table Data
+    final tableData = [
+      ['Ref ID do Pagamento', transactionId],
+      ['Data e hora', dateStr],
+      ['Contador', meterNumber],
+    ];
+
+    if (isCodeRecharge) {
+      tableData.add(['Código aplicado', '${code?.substring(0, 4)}...${code?.substring((code?.length ?? 4) - 4)}']);
+    } else {
+      tableData.addAll([
+        ['Valor pago', '${totalAmount.toStringAsFixed(0)} ${recharge.currency}'],
+        ['Val Energia', '${valEnergia.toStringAsFixed(2)} ${recharge.currency}'],
+        ['IVA (16%)', '${iva.toStringAsFixed(2)} ${recharge.currency}'],
+        ['Dívida Paga', '${dividaPaga.toStringAsFixed(2)} ${recharge.currency}'],
+        ['Tx Rádio', '${txRadio.toStringAsFixed(2)} ${recharge.currency}'],
+        ['Tx Lixo', '${txLixo.toStringAsFixed(2)} ${recharge.currency}'],
+      ]);
+    }
+    
+    tableData.addAll([
+      ['Crédito aplicado', '${estimatedKwh.toStringAsFixed(1)} kWh'],
+      ['Método', isCodeRecharge ? 'Código STS' : recharge.paymentMethod],
+    ]);
 
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
         build: (pw.Context context) {
           return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text('Comprovativo de Recarga - GEZI', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              // Logo
+              pw.Image(logoImage, width: 120),
+              pw.SizedBox(height: 16),
+              
+              // Title
+              pw.Text(
+                'Comprovativo de Recarga', 
+                style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)
               ),
-              pw.SizedBox(height: 20),
-              _buildPdfRow('Ref ID do Pagamento', transactionId),
-              _buildPdfRow('Data e hora', dateStr),
-              _buildPdfRow('Contador', meterNumber),
-              if (isCodeRecharge)
-                _buildPdfRow('Código aplicado', '${code?.substring(0, 4)}...${code?.substring((code?.length ?? 4) - 4)}')
-              else ...[
-                _buildPdfRow('Valor pago', '${totalAmount.toStringAsFixed(0)} ${recharge.currency}'),
-                _buildPdfRow('Val Energia', '${valEnergia.toStringAsFixed(2)} ${recharge.currency}'),
-                _buildPdfRow('IVA (16%)', '${iva.toStringAsFixed(2)} ${recharge.currency}'),
-                _buildPdfRow('Dívida Paga', '${dividaPaga.toStringAsFixed(2)} ${recharge.currency}'),
-                _buildPdfRow('Tx Rádio', '${txRadio.toStringAsFixed(2)} ${recharge.currency}'),
-                _buildPdfRow('Tx Lixo', '${txLixo.toStringAsFixed(2)} ${recharge.currency}'),
-              ],
-              _buildPdfRow('Crédito aplicado', '${estimatedKwh.toStringAsFixed(1)} kWh'),
-              _buildPdfRow('Método', isCodeRecharge ? 'Código STS' : recharge.paymentMethod),
-              pw.SizedBox(height: 20),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Text('Obrigado por usar o Gezi!', style: const pw.TextStyle(fontSize: 12)),
+              pw.SizedBox(height: 32),
+              
+              // Table
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+                columnWidths: {
+                  0: const pw.FixedColumnWidth(160),
+                  1: const pw.FlexColumnWidth(),
+                },
+                children: tableData.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  List<String> row = entry.value;
+                  return pw.TableRow(
+                    decoration: pw.BoxDecoration(
+                      color: index % 2 == 0 ? PdfColors.grey100 : PdfColors.white,
+                    ),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        child: pw.Text(row[0], style: const pw.TextStyle(fontSize: 12)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        child: pw.Text(row[1], style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+              
+              pw.SizedBox(height: 40),
+              pw.Divider(color: PdfColors.grey400),
+              pw.SizedBox(height: 16),
+              
+              // Footer
+              pw.Text(
+                'Obrigado por usar o Gezi!', 
+                style: const pw.TextStyle(fontSize: 14, color: PdfColors.grey700),
+                textAlign: pw.TextAlign.center,
+              ),
             ],
           );
         },
@@ -395,18 +454,7 @@ class RechargeReceiptPage extends StatelessWidget {
     return pdf.save();
   }
 
-  pw.Widget _buildPdfRow(String title, String value) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(title),
-          pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-        ],
-      ),
-    );
-  }
+
 }
 
 class _ReceiptRow extends StatelessWidget {
@@ -439,12 +487,18 @@ class _ReceiptRow extends StatelessWidget {
                 fontSize: 14,
               ),
             ),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

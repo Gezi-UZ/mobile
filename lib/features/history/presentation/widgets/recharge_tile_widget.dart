@@ -8,6 +8,9 @@ class RechargeTileWidget extends StatelessWidget {
   final String status;
   final Color statusColor;
 
+  final String rechargeType; // 'SELF', 'RECEIVED', 'FOR_OTHER'
+  final String? otherPartyName;
+
   const RechargeTileWidget({
     super.key,
     this.dateHeader = '18 JUN 2026',
@@ -16,10 +19,30 @@ class RechargeTileWidget extends StatelessWidget {
     this.cost = '500 MZN',
     this.status = 'Concluída',
     this.statusColor = const Color(0xFF2E7D32), // Default to success green
+    this.rechargeType = 'SELF',
+    this.otherPartyName,
   });
+
+  IconData _getIcon() {
+    if (rechargeType == 'RECEIVED') return Icons.south_west_rounded;
+    if (rechargeType == 'FOR_OTHER') return Icons.north_east_rounded;
+    return Icons.check_circle_outline;
+  }
+
+  String _getSubtitle() {
+    if (rechargeType == 'RECEIVED') {
+      return 'Recebida de ${otherPartyName ?? 'Desconhecido'}';
+    } else if (rechargeType == 'FOR_OTHER') {
+      return 'Para ${otherPartyName ?? 'Desconhecido'}';
+    }
+    return timeAndMethod;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final displaySubtitle = _getSubtitle();
+    final bool isThirdParty = rechargeType != 'SELF';
+
     return Container(
       padding: const EdgeInsets.only(top: 16),
       child: Column(
@@ -73,7 +96,7 @@ class RechargeTileWidget extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.check_circle_outline, // Can be dynamic based on status
+                    _getIcon(),
                     color: statusColor,
                     size: 20,
                   ),
@@ -93,13 +116,26 @@ class RechargeTileWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        timeAndMethod,
+                        displaySubtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: isThirdParty 
+                                  ? Theme.of(context).colorScheme.primary 
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
                               fontSize: 11,
                             ),
                       ),
+                      if (isThirdParty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          timeAndMethod,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 10,
+                              ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -112,6 +148,7 @@ class RechargeTileWidget extends StatelessWidget {
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
+                            decoration: rechargeType == 'RECEIVED' ? TextDecoration.lineThrough : null,
                           ),
                     ),
                     const SizedBox(height: 2),
