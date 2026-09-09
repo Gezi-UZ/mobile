@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/home/domain/entities/meter_balance.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
 import 'package:gezi/features/home/presentation/bloc/home_event.dart';
@@ -123,6 +124,14 @@ class _HomePageState extends State<HomePage> {
                                   iconType: MeterIconType.home,
                                 );
 
+                            final activeBalance = MeterBalance(
+                              kwhBalance: activeMeter.kwhBalance,
+                              meterId: activeMeter.serialNumber,
+                              isOnline: activeMeter.isOnline,
+                              lastSyncAt: activeMeter.lastSyncAt ?? DateTime.now(),
+                              isLowBalance: activeMeter.kwhBalance < 5.0,
+                            );
+
                             return GestureDetector(
                               onTap: () {
                                 context.push(
@@ -134,7 +143,7 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                               child: MeterCardWidget(
-                                balance: state.meterBalance,
+                                balance: activeBalance,
                                 isPrimary: activeMeter.isPrimary,
                                 meterAlias: activeMeter.alias,
                               ),

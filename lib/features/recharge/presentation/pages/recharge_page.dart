@@ -1,3 +1,5 @@
+// ignore_for_file: dead_code
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gezi/core/theme/theme.dart';

@@ -31,7 +31,7 @@ class LocalNotificationService {
         ?.requestNotificationsPermission();
   }
 
-  Future<void> showLowBalanceNotification() async {
+  Future<void> showLowBalanceNotification(double balance) async {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
       'gezi_alerts_channel',
@@ -48,7 +48,7 @@ class LocalNotificationService {
     await flutterLocalNotificationsPlugin.show(
       id: 0,
       title: 'Saldo Baixo!',
-      body: 'O seu saldo é de apenas 4.9 kWh. Recarregue antes que fique sem energia.',
+      body: 'O seu saldo é de apenas ${balance.toStringAsFixed(1)} kWh. Recarregue antes que fique sem energia.',
       notificationDetails: notificationDetails,
       payload: 'low_balance',
     );

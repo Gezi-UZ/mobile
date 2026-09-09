@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/injection_container.dart';
 import 'package:go_router/go_router.dart';
-import '../../../meter/domain/entities/meter.dart';
 import '../../../meter/presentation/bloc/meter_bloc.dart';
 import '../../../meter/presentation/bloc/meter_state.dart';
 import '../../../meter/presentation/bloc/meter_event.dart';
