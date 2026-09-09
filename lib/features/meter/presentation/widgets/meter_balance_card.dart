@@ -51,7 +51,7 @@ class MeterBalanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          meter.kwhBalance.toStringAsFixed(1),
+                          meter.kwhBalance.toStringAsFixed(2).replaceAll(RegExp(r'0$'), ''),
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
                             color: Colors.white,
                           ),

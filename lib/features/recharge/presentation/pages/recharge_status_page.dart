@@ -107,9 +107,13 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                 status = 'FAILED';
               }
 
-              bool isProcessing = status == 'PENDING';
-              bool isConcluida = status == 'SUCCESS';
-              bool isConfirmed = isConcluida; // Supabase só retorna pending ou success (mock para outros passos)
+              bool isPaymentConfirmed = status == 'CONFIRMED' || 
+                                        status == 'MQTT_SENT' || 
+                                        status == 'CONCLUIDA' || 
+                                        status == 'SUCCESS';
+
+              bool isConcluida = status == 'CONCLUIDA' || 
+                                 status == 'SUCCESS';
 
               return Column(
                 children: [
@@ -220,8 +224,8 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                       child: ListView(
                         physics: const BouncingScrollPhysics(),
                         children: widget.isCodeRecharge
-                            ? const [
-                                _StatusStepItem(
+                            ? [
+                                const _StatusStepItem(
                                   title: 'Código validado',
                                   description:
                                       'O código STS introduzido é válido.',
@@ -232,15 +236,14 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                                   title: 'A comunicar com o contador',
                                   description:
                                       'A aguardar confirmação do dispositivo...',
-                                  isCompleted: true,
+                                  isCompleted: isConcluida,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
                                   title: 'Crédito aplicado!',
                                   description:
                                       'A operação foi concluída com sucesso.',
-                                  isCompleted:
-                                      false,
+                                  isCompleted: isConcluida,
                                   isLast: true,
                                 ),
                               ]
@@ -255,7 +258,7 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                                   title: 'A aguardar M-Pesa',
                                   description:
                                       'Confirme o PIN no seu telemóvel.',
-                                  isCompleted: isConfirmed || isProcessing,
+                                  isCompleted: isPaymentConfirmed,
                                   isLast: false,
                                 ),
                                 _StatusStepItem(
@@ -268,8 +271,7 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                                   title: 'Recarga concluída!',
                                   description:
                                       'Crédito adicionado com sucesso.',
-                                  isCompleted:
-                                      isConcluida, 
+                                  isCompleted: isConcluida, 
                                   isLast: true,
                                 ),
                               ],

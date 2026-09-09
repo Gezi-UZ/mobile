@@ -16,6 +16,7 @@ class RechargeDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSuccess = recharge.status == RechargeStatus.success;
+    final isPending = recharge.status == RechargeStatus.pending;
     final isMyMeter = recharge.isMyMeter;
 
     final badgeColor = isMyMeter 
@@ -93,15 +94,19 @@ class RechargeDetailPage extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSuccess 
                             ? (isDark ? const Color(0xFF052E16) : const Color(0x172E7D32)) 
-                            : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
+                            : isPending
+                                ? (isDark ? const Color(0xFF3D2600) : const Color(0xFFFFF8E1))
+                                : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       alignment: Alignment.center,
                       child: Icon(
-                        isSuccess ? Icons.check_circle : Icons.error,
+                        isSuccess ? Icons.check_circle : (isPending ? Icons.access_time_filled : Icons.error),
                         color: isSuccess 
                             ? (isDark ? const Color(0xFF00C950) : const Color(0xFF2E7D32)) 
-                            : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
+                            : isPending
+                                ? (const Color(0xFFFFB300))
+                                : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
                         size: 32,
                       ),
                     ),
@@ -123,15 +128,19 @@ class RechargeDetailPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: isSuccess 
                                 ? (isDark ? const Color(0xFF052E16) : const Color(0xFFDCFCE7)) 
-                                : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
+                                : isPending
+                                    ? (isDark ? const Color(0xFF3D2600) : const Color(0xFFFFF8E1))
+                                    : (isDark ? const Color(0xFF450A0A) : const Color(0xFFFFEDED)),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            isSuccess ? 'Recarga concluída' : 'Recarga falhou',
+                            isSuccess ? 'Recarga concluída' : (isPending ? 'Recarga pendente' : 'Recarga falhou'),
                             style: TextStyle(
                               color: isSuccess 
                                   ? (isDark ? const Color(0xFF00C950) : const Color(0xFF008236)) 
-                                  : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
+                                  : isPending
+                                      ? (isDark ? const Color(0xFFFFC107) : const Color(0xFFF57F17))
+                                      : (isDark ? const Color(0xFFFF453A) : const Color(0xFFFF3B30)),
                               fontSize: 14,
                               fontFamily: 'Poppins',
                               fontWeight: FontWeight.w600,

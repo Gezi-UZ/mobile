@@ -195,11 +195,12 @@ class _RechargePageState extends State<RechargePage> {
                                   },
                                 ),
                                 RechargeStepConfirm(
-                                  amount: _amount,
-                                  meterNumber: _meterNumber,
-                                  isForSomeone: true,
-                                  onConfirm: (phone) => _nextPage(context, phone: phone),
-                                ),
+                                   amount: _amount,
+                                   meterNumber: _meterNumber,
+                                   meterId: _meterId,
+                                   isForSomeone: true,
+                                   onConfirm: (phone) => _nextPage(context, phone: phone),
+                                 ),
                               ]
                             : [
                                 RechargeStepAmount(
@@ -221,11 +222,12 @@ class _RechargePageState extends State<RechargePage> {
                                   onNext: () => _nextPage(context),
                                 ),
                                 RechargeStepConfirm(
-                                  amount: _amount,
-                                  meterNumber: _meterNumber,
-                                  isForSomeone: false,
-                                  onConfirm: (phone) => _nextPage(context, phone: phone),
-                                ),
+                                   amount: _amount,
+                                   meterNumber: _meterNumber,
+                                   meterId: _meterId,
+                                   isForSomeone: false,
+                                   onConfirm: (phone) => _nextPage(context, phone: phone),
+                                 ),
                               ],
                       ),
                     ),

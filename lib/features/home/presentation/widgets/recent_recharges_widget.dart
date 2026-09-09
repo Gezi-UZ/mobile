@@ -233,24 +233,42 @@ class _RechargeItem extends StatelessWidget {
   String _formatDate(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inMinutes < 60) return 'Há ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'Há ${diff.inHours}h';
-    if (diff.inDays == 1) return 'Ontem';
+
+    // Menos de 30 segundos
+    if (diff.inSeconds < 30) return 'Agora mesmo';
+    // Menos de 60 segundos
+    if (diff.inSeconds < 60) return 'Há ${diff.inSeconds}s';
+    // Menos de 60 minutos
+    if (diff.inMinutes < 60) {
+      return diff.inMinutes == 1 ? 'Há 1 min' : 'Há ${diff.inMinutes} min';
+    }
+    // Menos de 24 horas
+    if (diff.inHours < 24) {
+      return diff.inHours == 1 ? 'Há 1h' : 'Há ${diff.inHours}h';
+    }
+
+    // Verificar se foi ontem (comparar datas calendaristas, não 24h)
+    final today = DateTime(now.year, now.month, now.day);
+    final dtDay = DateTime(dt.year, dt.month, dt.day);
+    final daysDiff = today.difference(dtDay).inDays;
+
+    if (daysDiff == 1) {
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return 'Ontem às $hh:$mm';
+    }
+
+    // Mais antigo: mostrar data completa
     const months = [
-      'Jan',
-      'Fev',
-      'Mar',
-      'Abr',
-      'Mai',
-      'Jun',
-      'Jul',
-      'Ago',
-      'Set',
-      'Out',
-      'Nov',
-      'Dez',
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
     ];
-    return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]}';
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    if (dt.year == now.year) {
+      return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]}, $hh:$mm';
+    }
+    return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
   }
 
   String _formatAmount(double amount) {

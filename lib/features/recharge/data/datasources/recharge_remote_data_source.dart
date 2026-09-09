@@ -182,20 +182,17 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
 
       final stream = response.data.stream as Stream<List<int>>;
 
-      await for (final chunk in stream) {
-        final lines = utf8.decode(chunk).split('\n');
-        for (final line in lines) {
-          if (line.startsWith('data: ')) {
-            final jsonStr = line.substring(6);
-            if (jsonStr.trim().isEmpty) continue;
+      await for (final line in stream.transform(utf8.decoder).transform(const LineSplitter())) {
+        if (line.startsWith('data: ')) {
+          final jsonStr = line.substring(6);
+          if (jsonStr.trim().isEmpty) continue;
 
-            final event = jsonDecode(jsonStr);
-            if (event['event'] == 'stream_end') {
-              return;
-            }
-            if (event['event'] == 'status_update') {
-              yield RechargeModel.fromJson(event['data']);
-            }
+          final event = jsonDecode(jsonStr);
+          if (event['event'] == 'stream_end') {
+            return;
+          }
+          if (event['event'] == 'status_update') {
+            yield RechargeModel.fromJson(event['data']);
           }
         }
       }

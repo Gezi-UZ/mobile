@@ -7,9 +7,9 @@ class MeterStatsRow extends StatelessWidget {
 
   const MeterStatsRow({
     super.key,
-    this.monthlyKwh = 64.7,
-    this.dailyAvgKwh = 2.1,
-    this.rechargeCount = 3,
+    this.monthlyKwh = 0.0,
+    this.dailyAvgKwh = 0.0,
+    this.rechargeCount = 0,
   });
 
   @override
@@ -22,7 +22,9 @@ class MeterStatsRow extends StatelessWidget {
             child: _buildStatCard(
               context,
               'Este mês',
-              '${monthlyKwh.toStringAsFixed(1)} kWh',
+              monthlyKwh > 0
+                  ? '${monthlyKwh.toStringAsFixed(2)} kWh'
+                  : '— kWh',
             ),
           ),
           const SizedBox(width: 12),
@@ -30,7 +32,9 @@ class MeterStatsRow extends StatelessWidget {
             child: _buildStatCard(
               context,
               'Dia médio',
-              '${dailyAvgKwh.toStringAsFixed(1)} kWh',
+              dailyAvgKwh > 0
+                  ? '${dailyAvgKwh.toStringAsFixed(2)} kWh'
+                  : '— kWh',
             ),
           ),
           const SizedBox(width: 12),

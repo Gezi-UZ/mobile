@@ -177,7 +177,7 @@ class _MeterInfo extends StatelessWidget {
             MeterStatusBadge(isOnline: meter.isOnline),
             Text(
               meter.isOnline
-                  ? '${meter.kwhBalance.toStringAsFixed(1)} kWh'
+                  ? '${meter.kwhBalance.toStringAsFixed(2).replaceAll(RegExp(r'0$'), '')} kWh'
                   : '0 kWh',
               style: TextStyle(
                 color: _kwhColor,

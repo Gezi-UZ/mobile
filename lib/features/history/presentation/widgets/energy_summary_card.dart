@@ -4,17 +4,19 @@ import 'package:gezi/core/theme/theme.dart';
 
 class EnergySummaryCard extends StatelessWidget {
   final DashboardStats? stats;
+  final String periodLabel;
 
   const EnergySummaryCard({
     super.key,
     this.stats,
+    this.periodLabel = 'esta semana',
   });
 
   @override
   Widget build(BuildContext context) {
     final double energyReceived = stats?.totalKwhPurchased ?? 0.0;
-    final String energyUnit = 'kWh';
-    final String totalPaid = '${stats?.totalSpentMzn.toStringAsFixed(0) ?? 0} MZN';
+    final String totalPaid =
+        '${stats?.totalSpentMzn.toStringAsFixed(2) ?? '0.00'} MZN';
     final int rechargesCount = stats?.rechargeCount ?? 0;
 
     return Container(
@@ -31,7 +33,7 @@ class EnergySummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Energia recebida esta semana',
+            'Energia recebida $periodLabel',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
@@ -42,7 +44,7 @@ class EnergySummaryCard extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: '$energyReceived ',
+                  text: '${energyReceived.toStringAsFixed(2)} ',
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
@@ -50,7 +52,7 @@ class EnergySummaryCard extends StatelessWidget {
                       ),
                 ),
                 TextSpan(
-                  text: energyUnit,
+                  text: 'kWh',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
@@ -85,11 +87,13 @@ class EnergySummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSubCard(BuildContext context, {required String title, required String value}) {
+  Widget _buildSubCard(BuildContext context,
+      {required String title, required String value}) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
+        color:
+            Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

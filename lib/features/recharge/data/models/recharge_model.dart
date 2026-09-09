@@ -17,15 +17,21 @@ class RechargeModel extends Recharge {
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
+    // O backend envia timestamps em UTC sem sufixo 'Z'. Forçar parse como UTC e converter para local.
+    DateTime parseDate(dynamic raw) {
+      if (raw == null) return DateTime.now();
+      final s = raw.toString();
+      final utcStr = (s.endsWith('Z') || s.contains('+')) ? s : '${s}Z';
+      return (DateTime.tryParse(utcStr) ?? DateTime.now()).toLocal();
+    }
+
     return RechargeModel(
       id: json['recharge_id'] ?? json['id'] ?? '',
       meterId: json['meter_id'] ?? '',
       amountMzn: (json['amount_mzn'] as num?)?.toDouble() ?? 0.0,
       creditKwh: (json['credit_kwh'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] ?? json['payment_status'] ?? 'UNKNOWN',
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
-          : DateTime.now(),
+      createdAt: parseDate(json['created_at'] ?? json['recharged_at'] ?? json['applied_at']),
       token: json['token'],
       paymentMethod: json['payment_method'],
       paymentReference: json['referencia_mpesa'] ?? json['payment_reference'],

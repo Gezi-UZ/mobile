@@ -189,7 +189,7 @@ class AppRouter {
                     kwhBalance: 0.0,
                     iconType: MeterIconType.home,
                   ),
-              recentRecharges: recharges,
+              initialRecharges: recharges,
             );
           },
         ),

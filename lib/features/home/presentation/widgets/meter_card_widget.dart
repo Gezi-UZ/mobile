@@ -109,7 +109,7 @@ class MeterCardWidget extends StatelessWidget {
               spacing: 8,
               children: [
                 Text(
-                  balance.kwhBalance.toStringAsFixed(1),
+                  balance.kwhBalance.toStringAsFixed(2).replaceAll(RegExp(r'0$'), ''),
                   style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontSize: 48,
                     fontWeight: FontWeight.w700,

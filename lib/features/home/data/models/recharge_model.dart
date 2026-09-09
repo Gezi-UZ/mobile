@@ -19,7 +19,10 @@ class RechargeModel extends Recharge {
     DateTime parsedDate = DateTime.now();
     final dateStr = json['recharged_at'] ?? json['created_at'] ?? json['applied_at'];
     if (dateStr != null) {
-      parsedDate = DateTime.tryParse(dateStr.toString()) ?? DateTime.now();
+      // O backend envia timestamps em UTC sem sufixo 'Z'. Forçar parse como UTC e converter para local.
+      final s = dateStr.toString();
+      final utcStr = (s.endsWith('Z') || s.contains('+')) ? s : '${s}Z';
+      parsedDate = (DateTime.tryParse(utcStr) ?? DateTime.now()).toLocal();
     }
 
     return RechargeModel(
@@ -34,7 +37,7 @@ class RechargeModel extends Recharge {
           0.0,
       currency: json['currency'] as String? ?? 'MT',
       rechargedAt: parsedDate,
-      status: _parseStatus(json['status']?.toString() ?? ''),
+      status: _parseStatus((json['status'] ?? json['payment_status'])?.toString() ?? ''),
       meterAlias: json['meter_alias'] as String? ?? json['label'] as String?,
       meterSerialNumber: (json['meter_serial_number'] ??
               json['meter_number'] ??
@@ -73,7 +76,15 @@ class RechargeModel extends Recharge {
         upper == 'ACK_RECEIVED') {
       return RechargeStatus.success;
     }
-    if (upper == 'FAILED' || upper == 'REFUNDED') {
+    if (upper == 'FAILED' || 
+        upper == 'FAIL' || 
+        upper == 'FALHADA' || 
+        upper == 'FALHOU' || 
+        upper == 'ERROR' || 
+        upper == 'ERRO' || 
+        upper == 'REJECTED' || 
+        upper == 'CANCELLED' || 
+        upper == 'REFUNDED') {
       return RechargeStatus.failed;
     }
     return RechargeStatus.pending;

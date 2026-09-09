@@ -53,8 +53,9 @@ class RechargeReceiptPage extends StatelessWidget {
         ? recharge.kwhAmount
         : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
 
-    final String transactionId = recharge.paymentReference ?? 
-        (recharge.id.length >= 4 ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}' : 'GEZI${recharge.id.toUpperCase()}');
+    final String transactionId = recharge.id.length >= 8
+        ? recharge.id.substring(0, 8).toUpperCase()
+        : recharge.id.toUpperCase();
     final String dateStr = DateFormat(
       'dd/MM/yyyy · HH:mm',
     ).format(recharge.rechargedAt);
@@ -126,7 +127,9 @@ class RechargeReceiptPage extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: ShapeDecoration(
-                        color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+                        color: Theme.of(context)
+                            .extension<AppColorsExtension>()!
+                            .lightOrangeBackground,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -234,7 +237,9 @@ class RechargeReceiptPage extends StatelessWidget {
                                   'Estado',
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                         fontSize: 14,
                                       ),
                                 ),
@@ -262,20 +267,19 @@ class RechargeReceiptPage extends StatelessWidget {
                       onTap: () async {
                         try {
                           final pdfData = await _generatePdf();
-                          await Share.shareXFiles(
-                            [
-                              XFile.fromData(
-                                pdfData,
-                                mimeType: 'application/pdf',
-                                name: 'Comprovativo_Gezi_$transactionId.pdf',
-                              ),
-                            ],
-                            text: 'Comprovativo de Recarga Gezi',
-                          );
+                          await Share.shareXFiles([
+                            XFile.fromData(
+                              pdfData,
+                              mimeType: 'application/pdf',
+                              name: 'Comprovativo_Gezi_$transactionId.pdf',
+                            ),
+                          ], text: 'Comprovativo de Recarga Gezi');
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Erro ao partilhar')),
+                              const SnackBar(
+                                content: Text('Erro ao partilhar'),
+                              ),
                             );
                           }
                         }
@@ -295,7 +299,9 @@ class RechargeReceiptPage extends StatelessWidget {
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Erro ao guardar PDF')),
+                              const SnackBar(
+                                content: Text('Erro ao guardar PDF'),
+                              ),
                             );
                           }
                         }
@@ -354,14 +360,25 @@ class RechargeReceiptPage extends StatelessWidget {
     }
     const double txRadio = 0.0;
     const double dividaPaga = 0.0;
-    final double remainingAfterFees = (totalAmount - txLixo - txRadio - dividaPaga).clamp(0.0, double.infinity);
+    final double remainingAfterFees =
+        (totalAmount - txLixo - txRadio - dividaPaga).clamp(
+          0.0,
+          double.infinity,
+        );
     final double valEnergia = remainingAfterFees / 1.16;
     final double iva = remainingAfterFees - valEnergia;
-    final double estimatedKwh = recharge.kwhAmount > 0 ? recharge.kwhAmount : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
+    final double estimatedKwh = recharge.kwhAmount > 0
+        ? recharge.kwhAmount
+        : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
 
-    final String transactionId = recharge.paymentReference ?? 
-        (recharge.id.length >= 4 ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}' : 'GEZI${recharge.id.toUpperCase()}');
-    final String dateStr = DateFormat('dd/MM/yyyy · HH:mm').format(recharge.rechargedAt);
+    final String transactionId =
+        recharge.paymentReference ??
+        (recharge.id.length >= 4
+            ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}'
+            : 'GEZI${recharge.id.toUpperCase()}');
+    final String dateStr = DateFormat(
+      'dd/MM/yyyy · HH:mm',
+    ).format(recharge.rechargedAt);
     final meterNumber = recharge.meterSerialNumber;
 
     // Build Table Data
@@ -372,18 +389,30 @@ class RechargeReceiptPage extends StatelessWidget {
     ];
 
     if (isCodeRecharge) {
-      tableData.add(['Código aplicado', '${code?.substring(0, 4)}...${code?.substring((code?.length ?? 4) - 4)}']);
+      tableData.add([
+        'Código aplicado',
+        '${code?.substring(0, 4)}...${code?.substring((code?.length ?? 4) - 4)}',
+      ]);
     } else {
       tableData.addAll([
-        ['Valor pago', '${totalAmount.toStringAsFixed(0)} ${recharge.currency}'],
-        ['Val Energia', '${valEnergia.toStringAsFixed(2)} ${recharge.currency}'],
+        [
+          'Valor pago',
+          '${totalAmount.toStringAsFixed(0)} ${recharge.currency}',
+        ],
+        [
+          'Val Energia',
+          '${valEnergia.toStringAsFixed(2)} ${recharge.currency}',
+        ],
         ['IVA (16%)', '${iva.toStringAsFixed(2)} ${recharge.currency}'],
-        ['Dívida Paga', '${dividaPaga.toStringAsFixed(2)} ${recharge.currency}'],
+        [
+          'Dívida Paga',
+          '${dividaPaga.toStringAsFixed(2)} ${recharge.currency}',
+        ],
         ['Tx Rádio', '${txRadio.toStringAsFixed(2)} ${recharge.currency}'],
         ['Tx Lixo', '${txLixo.toStringAsFixed(2)} ${recharge.currency}'],
       ]);
     }
-    
+
     tableData.addAll([
       ['Crédito aplicado', '${estimatedKwh.toStringAsFixed(1)} kWh'],
       ['Método', isCodeRecharge ? 'Código STS' : recharge.paymentMethod],
@@ -400,17 +429,23 @@ class RechargeReceiptPage extends StatelessWidget {
               // Logo
               pw.Image(logoImage, width: 120),
               pw.SizedBox(height: 16),
-              
+
               // Title
               pw.Text(
-                'Comprovativo de Recarga', 
-                style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)
+                'Comprovativo de Recarga',
+                style: pw.TextStyle(
+                  fontSize: 22,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 32),
-              
+
               // Table
               pw.Table(
-                border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+                border: pw.TableBorder.all(
+                  color: PdfColors.grey300,
+                  width: 0.5,
+                ),
                 columnWidths: {
                   0: const pw.FixedColumnWidth(160),
                   1: const pw.FlexColumnWidth(),
@@ -420,30 +455,50 @@ class RechargeReceiptPage extends StatelessWidget {
                   List<String> row = entry.value;
                   return pw.TableRow(
                     decoration: pw.BoxDecoration(
-                      color: index % 2 == 0 ? PdfColors.grey100 : PdfColors.white,
+                      color: index % 2 == 0
+                          ? PdfColors.grey100
+                          : PdfColors.white,
                     ),
                     children: [
                       pw.Padding(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                        child: pw.Text(row[0], style: const pw.TextStyle(fontSize: 12)),
+                        padding: const pw.EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
+                        ),
+                        child: pw.Text(
+                          row[0],
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                        child: pw.Text(row[1], style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                        padding: const pw.EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
+                        ),
+                        child: pw.Text(
+                          row[1],
+                          style: pw.TextStyle(
+                            fontSize: 12,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   );
                 }).toList(),
               ),
-              
+
               pw.SizedBox(height: 40),
               pw.Divider(color: PdfColors.grey400),
               pw.SizedBox(height: 16),
-              
+
               // Footer
               pw.Text(
-                'Obrigado por usar o Gezi!', 
-                style: const pw.TextStyle(fontSize: 14, color: PdfColors.grey700),
+                'Obrigado por usar o Gezi!',
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
                 textAlign: pw.TextAlign.center,
               ),
             ],
@@ -453,8 +508,6 @@ class RechargeReceiptPage extends StatelessWidget {
     );
     return pdf.save();
   }
-
-
 }
 
 class _ReceiptRow extends StatelessWidget {

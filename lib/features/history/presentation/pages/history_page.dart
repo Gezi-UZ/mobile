@@ -38,7 +38,8 @@ class HistoryPageView extends StatefulWidget {
 
 class _HistoryPageViewState extends State<HistoryPageView> {
   Meter? _selectedMeter;
-  String _currentPeriod = 'week'; // week, month, year
+  String _currentPeriod = 'week'; // week, month, year, today
+  String _currentPeriodLabel = 'esta semana';
 
   @override
   void initState() {
@@ -182,14 +183,18 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                       TimeFilterToggleWidget(
                         onFilterChanged: (filter) {
                           setState(() {
-                            if (filter == TimeFilter.semana) {
+                            if (filter == TimeFilter.hoje) {
+                              _currentPeriod = 'today';
+                              _currentPeriodLabel = 'hoje';
+                            } else if (filter == TimeFilter.semana) {
                               _currentPeriod = 'week';
+                              _currentPeriodLabel = 'esta semana';
                             } else if (filter == TimeFilter.mes) {
                               _currentPeriod = 'month';
+                              _currentPeriodLabel = 'este mês';
                             } else if (filter == TimeFilter.anual) {
                               _currentPeriod = 'year';
-                            } else {
-                              _currentPeriod = 'week';
+                              _currentPeriodLabel = 'este ano';
                             }
                           });
                           _fetchHistory();
@@ -217,6 +222,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                               children: [
                                 EnergySummaryCard(
                                   stats: stats,
+                                  periodLabel: _currentPeriodLabel,
                                 ),
                                 const SizedBox(height: 16),
                                 DailyConsumptionChartWidget(
@@ -239,16 +245,38 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                                   )
                                 else
                                   ...recharges.map((recharge) {
-                                    final isSuccess = recharge.status.toLowerCase() == 'success' || recharge.status.toLowerCase() == 'concluída';
-                                    final isPending = recharge.status.toLowerCase() == 'pending' || recharge.status.toLowerCase() == 'pendente';
-                                    final statusText = isSuccess ? 'Concluída' : (isPending ? 'Pendente' : 'Falhou');
-                                    final statusColor = isSuccess ? const Color(0xFF2E7D32) : (isPending ? const Color(0xFFFFB300) : const Color(0xFFFF3B30));
-                                    final creditKwhStr = isSuccess ? '${recharge.creditKwh.toStringAsFixed(1)} kWh' : '-';
+                                    final rawStatus = recharge.status.trim().toUpperCase();
+                                    final isSuccess = rawStatus == 'SUCCESS' ||
+                                        rawStatus == 'CONFIRMED' ||
+                                        rawStatus == 'MQTT_SENT' ||
+                                        rawStatus == 'ACK_RECEIVED' ||
+                                        rawStatus == 'COMPLETED' ||
+                                        rawStatus == 'CONCLUIDA';
+                                    final isFailed = rawStatus == 'FAILED' || 
+                                        rawStatus == 'FAIL' || 
+                                        rawStatus == 'FALHADA' || 
+                                        rawStatus == 'FALHOU' || 
+                                        rawStatus == 'ERROR' || 
+                                        rawStatus == 'ERRO' || 
+                                        rawStatus == 'REJECTED' || 
+                                        rawStatus == 'CANCELLED' || 
+                                        rawStatus == 'REFUNDED';
+                                        
+                                    // Default unknown states to pending for consistency with the home tab, 
+                                    // unless it's explicitly failed.
+                                    
+                                    final statusText = isSuccess ? 'Concluída' : (isFailed ? 'Falhou' : 'Pendente');
+                                    final statusColor = isSuccess ? const Color(0xFF2E7D32) : (isFailed ? const Color(0xFFFF3B30) : const Color(0xFFFFB300));
+                                    final creditKwhStr = isSuccess
+                                        ? (recharge.creditKwh > 0
+                                            ? '${recharge.creditKwh.toStringAsFixed(1)} kWh'
+                                            : '—')
+                                        : '—';
 
                                     return RechargeTileWidget(
                                       dateHeader: DateFormat('dd MMM yyyy').format(recharge.createdAt).toUpperCase(),
                                       energyAmount: creditKwhStr,
-                                      timeAndMethod: '${DateFormat('HH:mm').format(recharge.createdAt)} · M-Pesa',
+                                      timeAndMethod: '${DateFormat('HH:mm').format(recharge.createdAt)} · ${recharge.paymentMethod ?? 'M-Pesa'}',
                                       cost: '${recharge.amountMzn.toStringAsFixed(0)} MZN',
                                       status: statusText,
                                       statusColor: statusColor,

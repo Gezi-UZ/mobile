@@ -1,33 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
-
 import 'package:go_router/go_router.dart';
-
 import 'package:gezi/features/meter/domain/entities/meter.dart';
 import 'package:gezi/features/home/domain/entities/recharge.dart';
+import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
+import 'package:gezi/features/home/presentation/bloc/home_event.dart';
+import 'package:gezi/features/home/presentation/bloc/home_state.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
 import 'package:gezi/core/shared_widgets/buttons/primary_button.dart';
+import 'package:gezi/injection_container.dart';
 
 import '../widgets/meter_balance_card.dart';
 import '../widgets/meter_stats_row.dart';
 import '../widgets/meter_consumption_chart.dart';
 import '../widgets/meter_recent_transactions.dart';
 
-class MeterDetailPage extends StatelessWidget {
+/// MeterDetailPage observa o [HomeBloc] e o [MeterBloc] em tempo real.
+/// Quando uma nova recarga é concluída e o HomeBloc refresca os dados,
+/// esta página reconstrói automaticamente com os valores actualizados.
+class MeterDetailPage extends StatefulWidget {
   final Meter meter;
-  final List<Recharge> recentRecharges;
+
+  /// Recargas iniciais passadas via router (snapshot). A página ignora-as
+  /// assim que o HomeBloc emitir [HomeLoaded] com dados frescos.
+  final List<Recharge> initialRecharges;
 
   const MeterDetailPage({
     super.key,
     required this.meter,
-    required this.recentRecharges,
+    this.initialRecharges = const [],
   });
 
   @override
-  Widget build(BuildContext context) {
+  State<MeterDetailPage> createState() => _MeterDetailPageState();
+}
+
+class _MeterDetailPageState extends State<MeterDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Forçar refresh dos dados ao entrar na página.
+    sl<HomeBloc>().add(const HomeDashboardLoadRequested(isRefresh: true));
+  }
+
+  /// Calcula as métricas a partir das recargas disponíveis.
+  _MeterMetrics _computeMetrics(List<Recharge> recentRecharges, Meter meter) {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
-    
-    // Filter for successful recharges only
+
+    // Filtrar apenas recargas bem-sucedidas
     final successfulRecharges = recentRecharges
         .where((r) => r.status == RechargeStatus.success)
         .toList();
@@ -35,14 +58,15 @@ class MeterDetailPage extends StatelessWidget {
     final thisMonthRecharges = successfulRecharges
         .where((r) => r.rechargedAt.isAfter(monthStart))
         .toList();
+
     final double monthlyKwh = thisMonthRecharges.fold(
       0.0,
       (acc, r) => acc + r.kwhAmount,
     );
 
-    // Estimate daily average and autonomy based on recharge intervals
-    double dailyAvgKwh = 2.1;
-    int daysBetweenRecharges = 15;
+    double dailyAvgKwh = 0.0;
+    int daysBetweenRecharges = 0;
+
     if (successfulRecharges.length >= 2) {
       final sorted = List<Recharge>.from(successfulRecharges)
         ..sort((a, b) => a.rechargedAt.compareTo(b.rechargedAt));
@@ -50,68 +74,136 @@ class MeterDetailPage extends StatelessWidget {
           sorted.last.rechargedAt.difference(sorted.first.rechargedAt).inDays;
       if (totalIntervalDays > 0) {
         final totalKwh = sorted.fold(0.0, (acc, r) => acc + r.kwhAmount);
-        dailyAvgKwh = double.parse(
-          (totalKwh / totalIntervalDays).toStringAsFixed(1),
-        ).clamp(0.5, 50.0);
+        dailyAvgKwh =
+            (totalKwh / totalIntervalDays).clamp(0.5, 50.0);
         daysBetweenRecharges =
             (totalIntervalDays / (sorted.length - 1)).round().clamp(1, 90);
       }
     } else if (successfulRecharges.length == 1) {
-      dailyAvgKwh = (successfulRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
+      dailyAvgKwh =
+          (successfulRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
+      daysBetweenRecharges = 15;
     }
+
     final int estimatedDaysRemaining =
         (dailyAvgKwh > 0) ? (meter.kwhBalance / dailyAvgKwh).round() : 0;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildMeterHeader(context),
-              MeterBalanceCard(meter: meter),
-              MeterStatsRow(
-                monthlyKwh: monthlyKwh > 0 ? monthlyKwh : 64.7,
-                dailyAvgKwh: dailyAvgKwh,
-                rechargeCount: successfulRecharges.length,
-              ),
-              _buildEstimationCard(
-                context,
-                dailyAvgKwh,
-                daysBetweenRecharges,
-                estimatedDaysRemaining,
-              ),
-              const MeterConsumptionChart(),
-              MeterRecentTransactions(recharges: recentRecharges),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20, top: 12),
-          child: SizedBox(
-            child: PrimaryButton(
-              text: 'Recarregar este contador',
-              icon: Image.asset(
-                'assets/images/recharge_icon.png',
-                width: 24,
-                height: 24,
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              onPressed: () {
-                context.push('/recharge');
-              },
+    return _MeterMetrics(
+      monthlyKwh: monthlyKwh,
+      dailyAvgKwh: dailyAvgKwh,
+      rechargeCount: successfulRecharges.length,
+      daysBetweenRecharges: daysBetweenRecharges,
+      estimatedDaysRemaining: estimatedDaysRemaining,
+      allRecharges: recentRecharges,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<HomeBloc>()),
+        BlocProvider.value(value: sl<MeterBloc>()),
+      ],
+      child: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, homeState) {
+          // Usar recargas do HomeBloc quando disponíveis; caso contrário usar o snapshot inicial.
+          final List<Recharge> recentRecharges = homeState is HomeLoaded
+              ? homeState.recentRecharges
+              : widget.initialRecharges;
+
+          // Usar o meter actualizado do MeterBloc (tem o saldo mais recente).
+          final Meter activeMeter = () {
+            final meterState = context.read<MeterBloc>().state;
+            if (meterState is MeterLoaded && meterState.meters.isNotEmpty) {
+              return meterState.meters.cast<Meter>().firstWhere(
+                (m) => m.id == widget.meter.id,
+                orElse: () => widget.meter,
+              );
+            }
+            return widget.meter;
+          }();
+
+          final metrics = _computeMetrics(recentRecharges, activeMeter);
+
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              iconTheme:
+                  IconThemeData(color: Theme.of(context).colorScheme.onSurface),
+              actions: [
+                // Botão de refresh manual
+                if (homeState is HomeLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppTheme.primaryOrange),
+                      ),
+                    ),
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded),
+                    onPressed: () => sl<HomeBloc>()
+                        .add(const HomeDashboardLoadRequested(isRefresh: true)),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+              ],
             ),
-          ),
-        ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildMeterHeader(context, activeMeter),
+                    MeterBalanceCard(meter: activeMeter),
+                    MeterStatsRow(
+                      monthlyKwh: metrics.monthlyKwh,
+                      dailyAvgKwh: metrics.dailyAvgKwh,
+                      rechargeCount: metrics.rechargeCount,
+                    ),
+                    _buildEstimationCard(
+                      context,
+                      metrics.dailyAvgKwh,
+                      metrics.daysBetweenRecharges,
+                      metrics.estimatedDaysRemaining,
+                    ),
+                    const MeterConsumptionChart(),
+                    MeterRecentTransactions(recharges: metrics.allRecharges),
+                  ],
+                ),
+              ),
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 20, right: 20, bottom: 20, top: 12),
+                child: SizedBox(
+                  child: PrimaryButton(
+                    text: 'Recarregar este contador',
+                    icon: Image.asset(
+                      'assets/images/recharge_icon.png',
+                      width: 24,
+                      height: 24,
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                    onPressed: () {
+                      context.push('/recharge');
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -122,12 +214,17 @@ class MeterDetailPage extends StatelessWidget {
     int daysBetweenRecharges,
     int estimatedDaysRemaining,
   ) {
+    // Se ainda não há dados suficientes, não mostrar o card
+    if (dailyAvgKwh == 0.0) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+          color: Theme.of(context)
+              .extension<AppColorsExtension>()!
+              .lightOrangeBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.primaryOrange.withValues(alpha: 0.2),
@@ -156,7 +253,8 @@ class MeterDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Com base na frequência das recargas (média a cada $daysBetweenRecharges dias), o seu consumo estimado é de ${dailyAvgKwh.toStringAsFixed(1)} kWh/dia.',
+              'Com base na frequência das recargas (média a cada $daysBetweenRecharges dias), '
+              'o seu consumo estimado é de ${dailyAvgKwh.toStringAsFixed(2)} kWh/dia.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 12,
@@ -164,7 +262,8 @@ class MeterDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
@@ -175,7 +274,8 @@ class MeterDetailPage extends StatelessWidget {
                   Text(
                     'Autonomia prevista:',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                   Text(
@@ -196,7 +296,7 @@ class MeterDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMeterHeader(BuildContext context) {
+  Widget _buildMeterHeader(BuildContext context, Meter meter) {
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
       child: Row(
@@ -208,7 +308,8 @@ class MeterDetailPage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.flash_on_rounded, color: AppTheme.primaryOrange),
+            child: const Icon(Icons.flash_on_rounded,
+                color: AppTheme.primaryOrange),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -218,24 +319,28 @@ class MeterDetailPage extends StatelessWidget {
                 Text(
                   meter.alias,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
                 Text(
                   meter.serialNumber,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                        color:
+                            Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: meter.isOnline ? const Color(0xFFDCFCE7) : const Color(0xFFF3F4F6),
+              color: meter.isOnline
+                  ? const Color(0xFFDCFCE7)
+                  : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(37282700),
             ),
             child: Row(
@@ -245,7 +350,9 @@ class MeterDetailPage extends StatelessWidget {
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: meter.isOnline ? const Color(0xFF00C950) : const Color(0xFF9CA3AF),
+                    color: meter.isOnline
+                        ? const Color(0xFF00C950)
+                        : const Color(0xFF9CA3AF),
                     borderRadius: BorderRadius.circular(37282700),
                   ),
                 ),
@@ -253,10 +360,12 @@ class MeterDetailPage extends StatelessWidget {
                 Text(
                   meter.isOnline ? 'Online' : 'Offline',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: meter.isOnline ? const Color(0xFF008236) : const Color(0xFF6B7280),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: meter.isOnline
+                            ? const Color(0xFF008236)
+                            : const Color(0xFF6B7280),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -265,4 +374,23 @@ class MeterDetailPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Dados calculados das métricas do contador.
+class _MeterMetrics {
+  final double monthlyKwh;
+  final double dailyAvgKwh;
+  final int rechargeCount;
+  final int daysBetweenRecharges;
+  final int estimatedDaysRemaining;
+  final List<Recharge> allRecharges;
+
+  const _MeterMetrics({
+    required this.monthlyKwh,
+    required this.dailyAvgKwh,
+    required this.rechargeCount,
+    required this.daysBetweenRecharges,
+    required this.estimatedDaysRemaining,
+    required this.allRecharges,
+  });
 }
