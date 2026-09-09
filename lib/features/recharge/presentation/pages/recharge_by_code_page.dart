@@ -18,8 +18,7 @@ class RechargeByCodePage extends StatefulWidget {
 
 class _RechargeByCodePageState extends State<RechargeByCodePage> {
   final TextEditingController _codeController = TextEditingController();
-  String? _selectedMeterId;
-  String? _selectedMeterNumber;
+  int digitCount = 0;
 
   @override
   void initState() {
@@ -223,220 +222,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Target Meter Section
-                    Text(
-                      'Contador de destino',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
 
-                    // Meter List
-                    BlocBuilder<MeterBloc, MeterState>(
-                      bloc: sl<MeterBloc>(),
-                      builder: (context, state) {
-                        List<Meter> meters = [];
-                        if (state is MeterLoaded) {
-                          meters = state.meters;
-                        }
-
-                        if (state is MeterLoading && meters.isEmpty) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppTheme.primaryOrange,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (meters.isEmpty) {
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF9F9F9),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                width: 1.11,
-                              ),
-                            ),
-                            child: Text(
-                              'Nenhum contador associado encontrado.',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            ),
-                          );
-                        }
-
-                        if (_selectedMeterId == null && meters.isNotEmpty) {
-                          final primary = meters.firstWhere(
-                            (m) => m.isPrimary,
-                            orElse: () => meters.first,
-                          );
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              setState(() {
-                                _selectedMeterId = primary.id;
-                                _selectedMeterNumber = primary.serialNumber;
-                              });
-                            }
-                          });
-                        }
-
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: meters.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final meter = meters[index];
-                            final bool isSelected =
-                                _selectedMeterId == meter.id ||
-                                    _selectedMeterNumber == meter.serialNumber;
-                            final bool isOnline = meter.isOnline;
-
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedMeterId = meter.id;
-                                  _selectedMeterNumber = meter.serialNumber;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? AppTheme.primaryOrange
-                                        : Colors.black.withValues(alpha: 0.08),
-                                    width: 1.11,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Radio button
-                                    Container(
-                                      width: 20,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isSelected
-                                            ? AppTheme.primaryOrange
-                                            : Colors.transparent,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? AppTheme.primaryOrange
-                                              : Colors.black.withValues(alpha: 0.08),
-                                          width: 1.11,
-                                        ),
-                                      ),
-                                      child: isSelected
-                                          ? Center(
-                                              child: Container(
-                                                width: 8,
-                                                height: 8,
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.white,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 12),
-
-                                    // Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            meter.alias,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall
-                                                ?.copyWith(
-                                                  color: Theme.of(context).colorScheme.onSurface,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                          Text(
-                                            meter.serialNumber,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: AppTheme
-                                                      .textColorSecondary,
-                                                  fontSize: 12,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Status badge
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: isOnline
-                                            ? const Color(0xFFDCFCE7)
-                                            : const Color(0xFFFEE2E2),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            width: 6,
-                                            height: 6,
-                                            decoration: BoxDecoration(
-                                              color: isOnline
-                                                  ? const Color(0xFF00C950)
-                                                  : const Color(0xFFEF4444),
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            isOnline ? 'Online' : 'Offline',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelSmall
-                                                ?.copyWith(
-                                                  color: isOnline
-                                                      ? const Color(0xFF008236)
-                                                      : const Color(0xFFB91C1C),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -446,15 +232,14 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
             Padding(
               padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24, top: 12),
               child: GestureDetector(
-                onTap: (digitCount == 20 && (_selectedMeterId != null || _selectedMeterNumber != null))
+                onTap: digitCount == 20
                     ? () {
-                        final targetMeter = _selectedMeterId ?? _selectedMeterNumber!;
                         final rawCode = _codeController.text.replaceAll('-', '');
                         context.go(Uri(
                           path: '/recharge/status',
                           queryParameters: {
                             'amount': '0',
-                            'meterNumber': targetMeter,
+                            'meterNumber': '',
                             'isCodeRecharge': 'true',
                             'code': rawCode,
                           },

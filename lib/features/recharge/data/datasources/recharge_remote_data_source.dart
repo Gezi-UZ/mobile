@@ -20,7 +20,6 @@ abstract class RechargeRemoteDataSource {
 
   Future<RechargeModel> applyCode({
     required String code,
-    required String meterId,
   });
 
   Stream<RechargeModel> streamRechargeStatus(String rechargeId);
@@ -145,13 +144,11 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
   @override
   Future<RechargeModel> applyCode({
     required String code,
-    required String meterId,
   }) async {
     try {
       final response = await dioClient.dio.post(
         '/recharges/manual-code',
         data: {
-          'meter_id': meterId,
           'recharge_code': code,
         },
       );

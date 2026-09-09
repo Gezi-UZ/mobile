@@ -73,7 +73,6 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
     final result = await applyManualCode(
       ApplyManualCodeParams(
         code: event.code,
-        meterId: event.meterId,
       ),
     );
     result.fold(

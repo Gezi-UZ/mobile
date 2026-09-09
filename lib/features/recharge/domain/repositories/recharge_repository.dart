@@ -18,7 +18,6 @@ abstract class RechargeRepository {
 
   Future<Either<Failure, Recharge>> applyCode({
     required String code,
-    required String meterId,
   });
 
   Stream<Recharge> streamRechargeStatus(String rechargeId);

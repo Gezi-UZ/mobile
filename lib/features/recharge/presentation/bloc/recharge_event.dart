@@ -48,13 +48,11 @@ class StreamRechargeStatusEvent extends RechargeEvent {
 
 class ApplyCodeEvent extends RechargeEvent {
   final String code;
-  final String meterId;
 
   const ApplyCodeEvent({
     required this.code,
-    required this.meterId,
   });
 
   @override
-  List<Object?> get props => [code, meterId];
+  List<Object?> get props => [code];
 }

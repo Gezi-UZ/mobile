@@ -53,12 +53,10 @@ class RechargeRepositoryImpl implements RechargeRepository {
   @override
   Future<Either<Failure, Recharge>> applyCode({
     required String code,
-    required String meterId,
   }) async {
     try {
       final result = await remoteDataSource.applyCode(
         code: code,
-        meterId: meterId,
       );
       return Right(result);
     } on ServerException catch (e) {

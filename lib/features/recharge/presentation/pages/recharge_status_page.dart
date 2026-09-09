@@ -68,7 +68,6 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
         } else if (widget.isCodeRecharge && widget.code != null && widget.code!.isNotEmpty) {
           bloc.add(ApplyCodeEvent(
             code: widget.code!,
-            meterId: widget.meterId ?? widget.meterNumber,
           ));
         } else if (!widget.isCodeRecharge && widget.rechargeId.isEmpty) {
           // If we navigate from Step 3 without an ID, we initiate here
@@ -206,8 +205,8 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                     const SizedBox(height: 4),
                     Text(
                       widget.isCodeRecharge
-                          ? 'A ser aplicado ao contador ${widget.meterNumber}'
-                          : 'adicionados ao contador ${widget.meterNumber}',
+                          ? 'A ser aplicado ao contador ${currentRecharge?.meterNumber ?? widget.meterNumber}'
+                          : 'adicionados ao contador ${currentRecharge?.meterNumber ?? widget.meterNumber}',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -292,7 +291,7 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                                   'rechargedAt': currentRecharge.createdAt.toIso8601String(),
                                   'status': 'SUCCESS',
                                   'meterAlias': null,
-                                  'meterSerialNumber': widget.meterNumber,
+                                  'meterSerialNumber': currentRecharge.meterNumber ?? widget.meterNumber,
                                   'isMyMeter': true,
                                   'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
                                 }

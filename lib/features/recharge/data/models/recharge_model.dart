@@ -13,6 +13,7 @@ class RechargeModel extends Recharge {
     super.paymentReference,
     super.rechargeType = 'SELF',
     super.otherPartyName,
+    super.meterNumber,
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +31,7 @@ class RechargeModel extends Recharge {
       paymentReference: json['referencia_mpesa'] ?? json['payment_reference'],
       rechargeType: json['recharge_type'] ?? 'SELF',
       otherPartyName: json['other_party_name'],
+      meterNumber: json['meter_number'],
     );
   }
 
@@ -46,6 +48,7 @@ class RechargeModel extends Recharge {
       'referencia_mpesa': paymentReference,
       'recharge_type': rechargeType,
       'other_party_name': otherPartyName,
+      'meter_number': meterNumber,
     };
   }
 }

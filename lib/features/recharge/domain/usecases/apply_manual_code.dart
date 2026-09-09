@@ -14,20 +14,17 @@ class ApplyManualCode implements UseCase<Recharge, ApplyManualCodeParams> {
   Future<Either<Failure, Recharge>> call(ApplyManualCodeParams params) async {
     return await repository.applyCode(
       code: params.code,
-      meterId: params.meterId,
     );
   }
 }
 
 class ApplyManualCodeParams extends Equatable {
   final String code;
-  final String meterId;
 
   const ApplyManualCodeParams({
     required this.code,
-    required this.meterId,
   });
 
   @override
-  List<Object?> get props => [code, meterId];
+  List<Object?> get props => [code];
 }
