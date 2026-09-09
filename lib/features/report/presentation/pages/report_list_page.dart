@@ -116,6 +116,7 @@ class _ReportListPageViewState extends State<ReportListPageView> {
                                   currency: 'MZN',
                                   rechargedAt: recharge.createdAt,
                                   status: mappedStatus,
+                                  rawStatus: recharge.status,
                                   meterSerialNumber: recharge.meterId,
                                   isMyMeter: true,
                                   paymentMethod: recharge.paymentMethod ?? 'M-Pesa',

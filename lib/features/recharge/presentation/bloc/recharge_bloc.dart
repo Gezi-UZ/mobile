@@ -88,7 +88,11 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
     await emit.forEach<Recharge>(
       streamRechargeStatus(event.rechargeId),
       onData: (recharge) {
-        if (recharge.status == 'CONCLUIDA' || recharge.status == 'FAILED') {
+        if (recharge.status == 'CONCLUIDA' || 
+            recharge.status == 'FAILED' || 
+            recharge.status == 'SUCCESS' || 
+            recharge.status == 'MQTT_SENT' || 
+            recharge.status == 'ACK_RECEIVED') {
           return RechargeSuccess(recharge);
         }
         return RechargeStatusUpdated(recharge);

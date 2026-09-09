@@ -13,6 +13,8 @@ class RechargeModel extends Recharge {
     required super.isMyMeter,
     required super.paymentMethod,
     super.paymentReference,
+    super.tokenSts,
+    required super.rawStatus,
   });
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,8 @@ class RechargeModel extends Recharge {
       final utcStr = (s.endsWith('Z') || s.contains('+')) ? s : '${s}Z';
       parsedDate = (DateTime.tryParse(utcStr) ?? DateTime.now()).toLocal();
     }
+
+    final rawStatus = (json['status'] ?? json['payment_status'])?.toString() ?? '';
 
     return RechargeModel(
       id: json['id'] as String? ?? json['recharge_id'] as String? ?? '',
@@ -37,7 +41,8 @@ class RechargeModel extends Recharge {
           0.0,
       currency: json['currency'] as String? ?? 'MT',
       rechargedAt: parsedDate,
-      status: _parseStatus((json['status'] ?? json['payment_status'])?.toString() ?? ''),
+      status: _parseStatus(rawStatus),
+      rawStatus: rawStatus,
       meterAlias: json['meter_alias'] as String? ?? json['label'] as String?,
       meterSerialNumber: (json['meter_serial_number'] ??
               json['meter_number'] ??
@@ -51,6 +56,7 @@ class RechargeModel extends Recharge {
           json['provider'] as String? ??
           'M-Pesa',
       paymentReference: json['referencia_mpesa'] as String? ?? json['payment_reference'] as String?,
+      tokenSts: json['token_sts'] as String?,
     );
   }
 
@@ -61,11 +67,13 @@ class RechargeModel extends Recharge {
         'currency': currency,
         'recharged_at': rechargedAt.toIso8601String(),
         'status': status.name,
+        'raw_status': rawStatus,
         'meter_alias': meterAlias,
         'meter_serial_number': meterSerialNumber,
         'is_my_meter': isMyMeter,
         'payment_method': paymentMethod,
         'referencia_mpesa': paymentReference,
+        'token_sts': tokenSts,
       };
 
   static RechargeStatus _parseStatus(String raw) {

@@ -216,6 +216,11 @@ class RechargeReceiptPage extends StatelessWidget {
                                   '${txLixo.toStringAsFixed(2)} ${recharge.currency}',
                             ),
                           ],
+                          if (recharge.tokenSts != null)
+                            _ReceiptRow(
+                              title: 'Código da recarga',
+                              value: recharge.tokenSts!,
+                            ),
                           _ReceiptRow(
                             title: 'Crédito aplicado',
                             value: '${estimatedKwh.toStringAsFixed(1)} kWh',
@@ -411,6 +416,10 @@ class RechargeReceiptPage extends StatelessWidget {
         ['Tx Rádio', '${txRadio.toStringAsFixed(2)} ${recharge.currency}'],
         ['Tx Lixo', '${txLixo.toStringAsFixed(2)} ${recharge.currency}'],
       ]);
+      
+      if (recharge.tokenSts != null) {
+        tableData.add(['Código da recarga', recharge.tokenSts!]);
+      }
     }
 
     tableData.addAll([

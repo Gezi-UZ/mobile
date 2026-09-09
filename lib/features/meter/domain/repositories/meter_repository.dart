@@ -24,8 +24,10 @@ abstract class MeterRepository {
   /// Subscreve às atualizações em tempo real do estado do contador.
   Stream<Meter> watchMeterStatus(String meterId);
 
-  /// Valida se um contador existe pelo número de série (para compra a terceiros ou inserção manual).
   Future<Either<Failure, Meter>> validateMeterBySerial(String serialNumber);
+
+  /// Pings the meter to check if it's currently online.
+  Future<Either<Failure, bool>> pingMeter(String meterId);
 
   /// Subscreve às atualizações em tempo real de todos os contadores do utilizador.
   Stream<List<Meter>> watchUserMeters(String userId);

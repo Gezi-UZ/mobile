@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
 import '../../domain/entities/recharge_breakdown.dart';
 import '../bloc/recharge_bloc.dart';
+import '../../../../injection_container.dart';
+import '../../../meter/domain/usecases/ping_meter.dart';
 
 class RechargeStepConfirm extends StatefulWidget {
   final Function(String?) onConfirm;
@@ -63,7 +65,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
     super.dispose();
   }
 
-  void _handleConfirm() {
+  bool _isPinging = false;
+
+  void _handleConfirm() async {
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
       setState(() {
@@ -85,7 +89,60 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
     }
     setState(() {
       _phoneError = null;
+      _isPinging = true;
     });
+
+    // Ping the meter to check online status
+    final pingMeterUseCase = sl<PingMeter>();
+    final result = await pingMeterUseCase(widget.meterId);
+    
+    if (mounted) {
+      setState(() {
+        _isPinging = false;
+      });
+    }
+
+    bool isOnline = true;
+    result.fold(
+      (failure) => isOnline = false, // If error, assume offline for fallback
+      (online) => isOnline = online,
+    );
+
+    if (!isOnline && mounted) {
+      // Show confirmation dialog for offline meter
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Contador Offline'),
+          content: const Text(
+            'O contador parece estar offline ou sem ligação à internet.\n\n'
+            'A compra de energia não será interrompida, mas será gerado um '
+            'Código Manual (STS) de 20 dígitos que deverá ser introduzido '
+            'manualmente no contador.\n\n'
+            'Deseja prosseguir com o pagamento?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryOrange,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Prosseguir'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) {
+        return; // User cancelled
+      }
+    }
+
     widget.onConfirm(phone);
   }
 
@@ -396,7 +453,7 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
 
               // Botão Confirmar
               GestureDetector(
-                onTap: _handleConfirm,
+                onTap: _isPinging ? null : _handleConfirm,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -406,14 +463,23 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Text(
-                    'Confirmar pagamento · ${widget.amount} MT',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: _isPinging 
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Confirmar pagamento · ${widget.amount} MT',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
                 ),
               ),
             ],

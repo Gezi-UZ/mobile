@@ -96,4 +96,14 @@ class MeterRepositoryImpl implements MeterRepository {
   Stream<List<Meter>> watchUserMeters(String userId) {
     return realtimeDataSource.watchUserMeters(userId);
   }
+
+  @override
+  Future<Either<Failure, bool>> pingMeter(String meterId) async {
+    try {
+      final isOnline = await remoteDataSource.pingMeter(meterId);
+      return Right(isOnline);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

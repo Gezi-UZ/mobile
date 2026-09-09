@@ -189,6 +189,7 @@ class _RechargePageState extends State<RechargePage> {
                                 RechargeStepAmount(
                                   isForSomeone: true,
                                   meterNumber: _meterNumber,
+                                  meterId: _meterId,
                                   onNext: (val) {
                                     setState(() => _amount = val);
                                     _nextPage(context);
@@ -206,6 +207,7 @@ class _RechargePageState extends State<RechargePage> {
                                 RechargeStepAmount(
                                   isForSomeone: false,
                                   meterNumber: _meterNumber,
+                                  meterId: _meterId,
                                   onNext: (val) {
                                     setState(() => _amount = val);
                                     _nextPage(context);

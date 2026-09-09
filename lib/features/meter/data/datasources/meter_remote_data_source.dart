@@ -15,6 +15,7 @@ abstract class MeterRemoteDataSource {
   Future<MeterModel> getMeterDetails(String meterId);
   Future<MeterModel> updateMeter(String meterId, {String? alias, bool? isPrimary});
   Future<MeterModel> validateMeterBySerial(String serialNumber);
+  Future<bool> pingMeter(String meterId);
 }
 
 class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
@@ -160,7 +161,27 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
       if (e.response?.statusCode == 404) {
         throw ServerException('Contador não encontrado no sistema EDM');
       }
-      throw ServerException(e.message ?? 'Erro ao validar contador');
+      throw ServerException('Erro ao validar contador');
+    }
+  }
+
+  @override
+  Future<bool> pingMeter(String meterId) async {
+    try {
+      final response = await dioClient.dio.get('/meters/$meterId/status');
+      if (response.statusCode == 200) {
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+        
+        return item['is_online'] == true;
+      } else {
+        return false;
+      }
+    } on DioException catch (_) {
+      // If there's an error reaching the server or meter not found, assume offline for the fallback
+      return false;
     }
   }
 }

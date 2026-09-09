@@ -70,6 +70,7 @@ import 'features/meter/domain/usecases/edit_meter.dart';
 import 'features/meter/domain/usecases/validate_meter_by_serial.dart';
 import 'features/meter/domain/usecases/watch_meter_realtime.dart';
 import 'features/meter/domain/usecases/watch_user_meters.dart';
+import 'features/meter/domain/usecases/ping_meter.dart';
 import 'features/meter/presentation/bloc/meter_bloc.dart';
 
 // IoT
@@ -217,6 +218,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ValidateMeterBySerial(sl()));
   sl.registerLazySingleton(() => WatchMeterRealtime(sl()));
   sl.registerLazySingleton(() => WatchUserMeters(sl()));
+  sl.registerLazySingleton(() => PingMeter(sl()));
 
   // MeterBloc is a lazy singleton — shared between HomePage, MeterListPage, and Recharge flows
   sl.registerLazySingleton(
