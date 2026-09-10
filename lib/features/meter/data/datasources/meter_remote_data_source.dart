@@ -132,34 +132,21 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
   @override
   Future<MeterModel> validateMeterBySerial(String serialNumber) async {
     try {
-      // First try backend direct lookup endpoint
-      try {
-        final response = await dioClient.dio.get(
-          '/meters/lookup',
-          queryParameters: {'serial_number': serialNumber},
-        );
-        if (response.statusCode == 200) {
-          final dynamic raw = response.data;
-          final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
-              ? raw['data'] as Map<String, dynamic>
-              : raw as Map<String, dynamic>;
-          return MeterModel.fromJson(item);
-        }
-      } catch (_) {
-        // Fallback to /meters/{serialNumber}
-        final response = await dioClient.dio.get('/meters/$serialNumber');
-        if (response.statusCode == 200) {
-          final dynamic raw = response.data;
-          final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
-              ? raw['data'] as Map<String, dynamic>
-              : raw as Map<String, dynamic>;
-          return MeterModel.fromJson(item);
-        }
+      final response = await dioClient.dio.get(
+        '/meters/lookup',
+        queryParameters: {'serial_number': serialNumber},
+      );
+      if (response.statusCode == 200) {
+        final dynamic raw = response.data;
+        final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
+            ? raw['data'] as Map<String, dynamic>
+            : raw as Map<String, dynamic>;
+        return MeterModel.fromJson(item);
       }
       throw ServerException('Contador não encontrado');
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        throw ServerException('Contador não encontrado no sistema EDM');
+        throw ServerException('Contador não encontrado');
       }
       throw ServerException('Erro ao validar contador');
     }
