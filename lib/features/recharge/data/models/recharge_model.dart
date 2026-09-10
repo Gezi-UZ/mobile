@@ -28,8 +28,8 @@ class RechargeModel extends Recharge {
     return RechargeModel(
       id: json['recharge_id'] ?? json['id'] ?? '',
       meterId: json['meter_id'] ?? '',
-      amountMzn: (json['amount_mzn'] as num?)?.toDouble() ?? 0.0,
-      creditKwh: (json['credit_kwh'] as num?)?.toDouble() ?? 0.0,
+      amountMzn: double.tryParse(json['amount_mzn']?.toString() ?? '') ?? 0.0,
+      creditKwh: double.tryParse(json['credit_kwh']?.toString() ?? '') ?? 0.0,
       status: json['status'] ?? json['payment_status'] ?? 'UNKNOWN',
       createdAt: parseDate(json['created_at'] ?? json['recharged_at'] ?? json['applied_at']),
       token: json['token_sts']?.toString() ?? json['token']?.toString(),

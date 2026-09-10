@@ -204,7 +204,7 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                 if (_isInBackground) {
                   // App em background — disparar notificação local
                   sl<LocalNotificationService>().showRechargeStatusNotification(
-                    title: 'Recarga concluída! ✅',
+                    title: 'Recarga concluída!',
                     body:
                         'A sua recarga de ${currentRecharge.amountMzn.toStringAsFixed(0)} MT '
                         '(${currentRecharge.creditKwh.toStringAsFixed(2)} kWh) foi aplicada ao '

@@ -17,6 +17,7 @@ import '../widgets/meter_balance_card.dart';
 import '../widgets/meter_stats_row.dart';
 import '../widgets/meter_consumption_chart.dart';
 import '../widgets/meter_recent_transactions.dart';
+import '../widgets/chart_data_point.dart';
 
 /// MeterDetailPage observa o [HomeBloc] e o [MeterBloc] em tempo real.
 /// Quando uma nova recarga é concluída e o HomeBloc refresca os dados,
@@ -52,9 +53,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
 
-    // Filtrar apenas recargas bem-sucedidas
+    // Filtrar apenas recargas bem-sucedidas do contador atual
     final successfulRecharges = recentRecharges
-        .where((r) => r.status == RechargeStatus.success)
+        .where((r) => r.status == RechargeStatus.success && r.meterSerialNumber == meter.serialNumber)
         .toList();
 
     final thisMonthRecharges = successfulRecharges
@@ -90,13 +91,46 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
     final int estimatedDaysRemaining =
         (dailyAvgKwh > 0) ? (meter.kwhBalance / dailyAvgKwh).round() : 0;
 
+    final hasData = successfulRecharges.isNotEmpty;
+    
+    // 1. Dados da semana (últimos 7 dias)
+    final List<ChartDataPoint> weeklyData = [];
+    if (hasData) {
+      for (int i = 6; i >= 0; i--) {
+        final date = now.subtract(Duration(days: i));
+        final label = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+        final dailyKwh = successfulRecharges
+            .where((r) => r.rechargedAt.year == date.year && r.rechargedAt.month == date.month && r.rechargedAt.day == date.day)
+            .fold(0.0, (sum, r) => sum + r.kwhAmount);
+        weeklyData.add(ChartDataPoint(label: label, value: dailyKwh));
+      }
+    }
+
+    // 2. Dados do mês (últimas 4 semanas)
+    final List<ChartDataPoint> monthlyData = [];
+    if (hasData) {
+      for (int i = 3; i >= 0; i--) {
+        final endDate = now.subtract(Duration(days: i * 7));
+        final startDate = endDate.subtract(const Duration(days: 6));
+        final label = 'Sem ${4 - i}';
+        final weeklyKwh = successfulRecharges
+            .where((r) => 
+                r.rechargedAt.isAfter(startDate.subtract(const Duration(milliseconds: 1))) && 
+                r.rechargedAt.isBefore(endDate.add(const Duration(days: 1))))
+            .fold(0.0, (sum, r) => sum + r.kwhAmount);
+        monthlyData.add(ChartDataPoint(label: label, value: weeklyKwh));
+      }
+    }
+
     return _MeterMetrics(
       monthlyKwh: monthlyKwh,
       dailyAvgKwh: dailyAvgKwh,
       rechargeCount: successfulRecharges.length,
       daysBetweenRecharges: daysBetweenRecharges,
       estimatedDaysRemaining: estimatedDaysRemaining,
-      allRecharges: recentRecharges,
+      allRecharges: recentRecharges.where((r) => r.meterSerialNumber == meter.serialNumber).toList(),
+      weeklyChartData: weeklyData,
+      monthlyChartData: monthlyData,
     );
   }
 
@@ -181,7 +215,10 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                       metrics.daysBetweenRecharges,
                       metrics.estimatedDaysRemaining,
                     ),
-                    const MeterConsumptionChart(),
+                    MeterConsumptionChart(
+                      weeklyData: metrics.weeklyChartData,
+                      monthlyData: metrics.monthlyChartData,
+                    ),
                     MeterRecentTransactions(recharges: metrics.allRecharges),
                   ],
                 ),
@@ -425,6 +462,8 @@ class _MeterMetrics {
   final int daysBetweenRecharges;
   final int estimatedDaysRemaining;
   final List<Recharge> allRecharges;
+  final List<ChartDataPoint> weeklyChartData;
+  final List<ChartDataPoint> monthlyChartData;
 
   const _MeterMetrics({
     required this.monthlyKwh,
@@ -433,5 +472,7 @@ class _MeterMetrics {
     required this.daysBetweenRecharges,
     required this.estimatedDaysRemaining,
     required this.allRecharges,
+    required this.weeklyChartData,
+    required this.monthlyChartData,
   });
 }
