@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gezi/core/services/local_notification_service.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/injection_container.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../injection_container.dart';
 import '../../domain/entities/recharge.dart';
 import '../bloc/recharge_bloc.dart';
 
@@ -33,12 +34,28 @@ class RechargeStatusPage extends StatefulWidget {
   State<RechargeStatusPage> createState() => _RechargeStatusPageState();
 }
 
-class _RechargeStatusPageState extends State<RechargeStatusPage> {
+class _RechargeStatusPageState extends State<RechargeStatusPage>
+    with WidgetsBindingObserver {
   bool _successDialogShown = false;
+  bool _isInBackground = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _isInBackground = state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden;
   }
 
   void _showSuccessDialog(Map<String, dynamic> mappedRecharge, Recharge currentRecharge) {
@@ -183,8 +200,30 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                   'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
                   'tokenSts': currentRecharge.token,
                 };
-                
-                _showSuccessDialog(mappedRecharge, currentRecharge);
+
+                if (_isInBackground) {
+                  // App em background — disparar notificação local
+                  sl<LocalNotificationService>().showRechargeStatusNotification(
+                    title: 'Recarga concluída! ✅',
+                    body:
+                        'A sua recarga de ${currentRecharge.amountMzn.toStringAsFixed(0)} MT '
+                        '(${currentRecharge.creditKwh.toStringAsFixed(2)} kWh) foi aplicada ao '
+                        'contador ${currentRecharge.meterNumber ?? widget.meterNumber}.',
+                    rechargeId: currentRecharge.id,
+                    status: 'SUCCESS',
+                  );
+                } else {
+                  _showSuccessDialog(mappedRecharge, currentRecharge);
+                }
+              }
+              if (state is RechargeError && _isInBackground) {
+                // App em background — notificar falha
+                sl<LocalNotificationService>().showRechargeStatusNotification(
+                  title: 'Falha na recarga ❌',
+                  body: 'O pagamento não foi confirmado. Nenhum valor foi cobrado.',
+                  rechargeId: widget.rechargeId,
+                  status: 'FAILED',
+                );
               }
             },
             builder: (context, state) {

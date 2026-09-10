@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/alert/presentation/bloc/alert_bloc.dart';
+import 'package:gezi/features/alert/presentation/bloc/alert_state.dart';
 import 'package:go_router/go_router.dart';
 
 class DashboardHeaderWidget extends StatelessWidget {
   final String userName;
+  // notificationCount mantido por retrocompatibilidade mas o badge usa o AlertBloc
   final int notificationCount;
 
   const DashboardHeaderWidget({
     super.key,
     required this.userName,
-    required this.notificationCount,
+    this.notificationCount = 0,
   });
 
   @override
@@ -21,7 +25,7 @@ class DashboardHeaderWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildGreeting(context),
-          _buildActionIcons(),
+          _buildActionIcons(context),
         ],
       ),
     );
@@ -49,18 +53,24 @@ class DashboardHeaderWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildActionIcons() {
+  Widget _buildActionIcons(BuildContext context) {
     return Row(
       spacing: 8,
       children: [
-        _NotificationIconButton(count: notificationCount),
+        // Badge dinâmico via AlertBloc
+        BlocBuilder<AlertBloc, AlertState>(
+          builder: (context, state) {
+            final count = state is AlertLoaded ? state.unreadCount : 0;
+            return _NotificationIconButton(count: count);
+          },
+        ),
         const _AvatarIconButton(),
       ],
     );
   }
 }
 
-/// Botão de notificações com badge de contagem.
+/// Botão de notificações com badge de contagem dinâmica.
 class _NotificationIconButton extends StatelessWidget {
   final int count;
 
@@ -80,7 +90,7 @@ class _NotificationIconButton extends StatelessWidget {
             height: 40,
             decoration: ShapeDecoration(
               color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
-              shape: CircleBorder(),
+              shape: const CircleBorder(),
             ),
             child: const Icon(
               Icons.notifications_outlined,
@@ -101,7 +111,7 @@ class _NotificationIconButton extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    '$count',
+                    count > 99 ? '99+' : '$count',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 9,

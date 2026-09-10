@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
+import 'package:gezi/features/alert/presentation/bloc/alert_bloc.dart';
+import 'package:gezi/features/alert/presentation/bloc/alert_event.dart';
+import 'package:gezi/features/alert/presentation/bloc/alert_state.dart';
 import 'package:gezi/features/home/domain/entities/meter_balance.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
@@ -40,6 +43,10 @@ class _HomePageState extends State<HomePage> {
     sl<ProfileBloc>().add(const ProfileLoadRequested());
     // Load meters
     sl<MeterBloc>().add(const MeterListRequested());
+    // Start alert stream (singleton — safe to call again)
+    if (sl<AlertBloc>().state is AlertInitial) {
+      sl<AlertBloc>().add(const AlertWatchStarted());
+    }
   }
 
   @override
@@ -49,6 +56,7 @@ class _HomePageState extends State<HomePage> {
         BlocProvider.value(value: sl<HomeBloc>()),
         BlocProvider.value(value: sl<ProfileBloc>()),
         BlocProvider.value(value: sl<MeterBloc>()),
+        BlocProvider.value(value: sl<AlertBloc>()),
       ],
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -88,7 +96,6 @@ class _HomePageState extends State<HomePage> {
                                 : 'Bem-vindo';
                             return DashboardHeaderWidget(
                               userName: name,
-                              notificationCount: state.notificationCount,
                             );
                           },
                         ),
@@ -157,6 +164,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         QuickActionsWidget(
                           onMeters: () => context.go('/meters'),
+                          onAlerts: () => context.push('/alerts'),
                         ),
                         RecentRechargesWidget(recharges: state.recentRecharges),
                       ],

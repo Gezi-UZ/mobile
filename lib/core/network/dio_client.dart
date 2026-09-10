@@ -16,7 +16,7 @@ enum ApiEnvironment {
 class DioClient {
   late final Dio _dio;
 
-  static const ApiEnvironment currentEnv = ApiEnvironment.local;
+  static const ApiEnvironment currentEnv = ApiEnvironment.production;
 
   DioClient() {
     String baseUrl;

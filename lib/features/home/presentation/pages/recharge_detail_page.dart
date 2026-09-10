@@ -260,7 +260,7 @@ class RechargeDetailPage extends StatelessWidget {
                       _buildInfoRow(context, 'Método', recharge.paymentMethod),
                       const SizedBox(height: 12),
                       if (recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty) ...[
-                        _buildInfoRow(context, 'Código da recarga', recharge.tokenSts!),
+                        _buildClickableCodeRow(context, recharge.tokenSts!, recharge),
                         const SizedBox(height: 12),
                       ],
                       _buildInfoRow(context, 'Contador', recharge.meterSerialNumber),
@@ -338,6 +338,69 @@ class RechargeDetailPage extends StatelessWidget {
               fontSize: 14,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClickableCodeRow(BuildContext context, String code, Recharge recharge) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Código da recarga',
+            style: TextStyle(
+              color: isDark ? Colors.white60 : const Color(0xFF666666),
+              fontSize: 14,
+              fontFamily: 'Poppins',
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              final rawCode = code.replaceAll('-', '');
+              context.go(Uri(
+                path: '/recharge/status',
+                queryParameters: {
+                  'amount': '0',
+                  'meterNumber': recharge.meterSerialNumber,
+                  'isCodeRecharge': 'true',
+                  'code': rawCode,
+                },
+              ).toString());
+            },
+            child: Row(
+              children: [
+                Text(
+                  code,
+                  style: TextStyle(
+                    color: AppTheme.primaryOrange,
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppTheme.primaryOrange,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.send_rounded,
+                  color: AppTheme.primaryOrange,
+                  size: 16,
+                ),
+              ],
             ),
           ),
         ],

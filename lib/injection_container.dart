@@ -59,6 +59,14 @@ import 'features/recharge/presentation/bloc/recharge_bloc.dart';
 // History
 import 'features/history/presentation/bloc/history_cubit.dart';
 
+// Alert
+import 'features/alert/data/datasources/alert_realtime_data_source.dart';
+import 'features/alert/data/repositories/alert_repository_impl.dart';
+import 'features/alert/domain/repositories/alert_repository.dart';
+import 'features/alert/domain/usecases/watch_alerts.dart';
+import 'features/alert/domain/usecases/mark_notification_read.dart';
+import 'features/alert/presentation/bloc/alert_bloc.dart';
+
 // Meter
 import 'features/meter/data/datasources/meter_remote_data_source.dart';
 import 'features/meter/data/datasources/meter_realtime_data_source.dart';
@@ -260,12 +268,34 @@ Future<void> init() async {
     ),
   );
 
-  // ── History ──────────────────────────────────────────────────────
+  // ── History ──────────────────────────────────────────────────────────────────
 
   sl.registerFactory(
     () => HistoryCubit(
       getRechargeHistory: sl(),
       getDashboardStats: sl(),
+    ),
+  );
+
+  // ── Alert ────────────────────────────────────────────────────────────────────
+
+  sl.registerLazySingleton<AlertRealtimeDataSource>(
+    () => AlertRealtimeDataSourceImpl(),
+  );
+  sl.registerLazySingleton<AlertRepository>(
+    () => AlertRepositoryImpl(dataSource: sl()),
+  );
+  sl.registerLazySingleton(() => WatchAlerts(sl()));
+  sl.registerLazySingleton(() => MarkNotificationRead(sl()));
+  sl.registerLazySingleton(() => MarkAllNotificationsRead(sl()));
+  sl.registerLazySingleton(() => GetUnreadCount(sl()));
+
+  // AlertBloc é lazy singleton — partilhado entre Home, AlertsPage e qualquer widget que precise do badge
+  sl.registerLazySingleton(
+    () => AlertBloc(
+      watchAlerts: sl(),
+      markNotificationRead: sl(),
+      markAllNotificationsRead: sl(),
     ),
   );
 

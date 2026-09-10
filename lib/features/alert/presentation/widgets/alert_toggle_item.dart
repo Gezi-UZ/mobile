@@ -16,7 +16,7 @@ class AlertToggleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -24,22 +24,12 @@ class AlertToggleItem extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.w500,
             ),
           ),
           Switch(
             value: value,
+            activeThumbColor: AppTheme.primaryOrange,
             onChanged: onChanged,
-            activeThumbColor: Theme.of(context).colorScheme.surface,
-            activeTrackColor: AppTheme.primaryOrange,
-            inactiveThumbColor: Theme.of(context).colorScheme.surface,
-            inactiveTrackColor: Colors.grey.shade300,
-            trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
-              if (states.contains(WidgetState.selected)) {
-                return AppTheme.primaryOrange;
-              }
-              return Colors.grey.shade300;
-            }),
           ),
         ],
       ),

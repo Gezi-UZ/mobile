@@ -224,9 +224,10 @@ class RechargeReceiptPage extends StatelessWidget {
                             ),
                           ],
                           if (recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty)
-                            _ReceiptRow(
+                            _ClickableReceiptRow(
                               title: 'Código da recarga',
                               value: recharge.tokenSts!,
+                              recharge: recharge,
                             ),
                           _ReceiptRow(
                             title: _isPending(recharge.rawStatus) ? 'Crédito a aplicar' : 'Crédito aplicado',
@@ -616,6 +617,87 @@ class _SecondaryButton extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClickableReceiptRow extends StatelessWidget {
+  final String title;
+  final String value;
+  final Recharge recharge;
+
+  const _ClickableReceiptRow({required this.title, required this.value, required this.recharge});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              width: 1.11,
+              color: Colors.black.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  final rawCode = value.replaceAll('-', '');
+                  context.go(Uri(
+                    path: '/recharge/status',
+                    queryParameters: {
+                      'amount': '0',
+                      'meterNumber': recharge.meterSerialNumber,
+                      'isCodeRecharge': 'true',
+                      'code': rawCode,
+                    },
+                  ).toString());
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        value,
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AppTheme.primaryOrange,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppTheme.primaryOrange,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.send_rounded,
+                      color: AppTheme.primaryOrange,
+                      size: 16,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
