@@ -82,21 +82,90 @@ class MeterBalanceCard extends StatelessWidget {
                       'assets/images/recharge_icon.png',
                       width: 28,
                       height: 28,
-                      color: iconColor, // Dinamicamente aplicando cor ao PNG
+                      color: iconColor,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              '· sync 14:32',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.50), // Increased alpha slightly for readability
-              ),
+            Row(
+              spacing: 8,
+              children: [
+                _MeterStatusBadge(isOnline: meter.isOnline),
+                if (meter.lastSyncAt != null)
+                  Text(
+                    '· sync ${_formatLastSync(meter.lastSyncAt!)}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _formatLastSync(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt.toLocal());
+    if (diff.inMinutes < 1) return 'agora mesmo';
+    if (diff.inMinutes < 60) return 'há ${diff.inMinutes} min';
+    if (diff.inHours < 24) {
+      final h = dt.toLocal().hour.toString().padLeft(2, '0');
+      final m = dt.toLocal().minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    }
+    final d = dt.toLocal().day.toString().padLeft(2, '0');
+    final mo = dt.toLocal().month.toString().padLeft(2, '0');
+    return '$d/$mo';
+  }
+}
+
+/// Badge de status de ligação do contador (Online / Offline).
+class _MeterStatusBadge extends StatelessWidget {
+  final bool isOnline;
+
+  const _MeterStatusBadge({required this.isOnline});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: ShapeDecoration(
+        color: isOnline
+            ? Colors.white.withValues(alpha: 0.20)
+            : Colors.white.withValues(alpha: 0.12),
+        shape: const StadiumBorder(),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: ShapeDecoration(
+              color: isOnline
+                  ? const Color(0xFF00C950) // verde
+                  : Colors.white.withValues(alpha: 0.50), // branco semi-transparente
+              shape: const CircleBorder(),
+            ),
+          ),
+          Text(
+            isOnline ? 'Online' : 'Offline',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: isOnline
+                  ? const Color(0xFFB6FFD6)
+                  : Colors.white.withValues(alpha: 0.70),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -297,6 +297,13 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
   }
 
   Widget _buildMeterHeader(BuildContext context, Meter meter) {
+    // Calcular is_online dinamicamente baseado no lastSyncAt (threshold: 5 min)
+    final bool isOnline = () {
+      final sync = meter.lastSyncAt;
+      if (sync == null) return false;
+      return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
+    }();
+
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
       child: Row(
@@ -334,45 +341,74 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
               ],
             ),
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: meter.isOnline
-                  ? const Color(0xFFDCFCE7)
-                  : const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(37282700),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: meter.isOnline
-                        ? const Color(0xFF00C950)
-                        : const Color(0xFF9CA3AF),
-                    borderRadius: BorderRadius.circular(37282700),
-                  ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            spacing: 4,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isOnline
+                      ? const Color(0xFFDCFCE7)
+                      : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(37282700),
                 ),
-                const SizedBox(width: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: isOnline
+                            ? const Color(0xFF00C950)
+                            : const Color(0xFF9CA3AF),
+                        borderRadius: BorderRadius.circular(37282700),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isOnline ? 'Online' : 'Offline',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: isOnline
+                                ? const Color(0xFF008236)
+                                : const Color(0xFF6B7280),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              if (meter.lastSyncAt != null)
                 Text(
-                  meter.isOnline ? 'Online' : 'Offline',
+                  _formatLastSync(meter.lastSyncAt!),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: meter.isOnline
-                            ? const Color(0xFF008236)
-                            : const Color(0xFF6B7280),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 10,
                       ),
                 ),
-              ],
-            ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  String _formatLastSync(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt.toLocal());
+    if (diff.inMinutes < 1) return 'sync agora mesmo';
+    if (diff.inMinutes < 60) return 'sync há ${diff.inMinutes} min';
+    if (diff.inHours < 24) {
+      final h = dt.toLocal().hour.toString().padLeft(2, '0');
+      final m = dt.toLocal().minute.toString().padLeft(2, '0');
+      return 'sync $h:$m';
+    }
+    final d = dt.toLocal().day.toString().padLeft(2, '0');
+    final mo = dt.toLocal().month.toString().padLeft(2, '0');
+    return 'sync $d/$mo';
   }
 }
 

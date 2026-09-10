@@ -44,7 +44,9 @@ class MeterModel extends Meter {
       addr = json['address'] as String?;
     }
 
-    final isOnlineVal = json['estado'] == 'ONLINE' || json['status'] == 'ONLINE';
+    // is_online: prefer the explicit backend field (dynamically computed), fallback to estado string
+    final isOnlineVal = json['is_online'] as bool?
+        ?? (json['estado'] == 'ONLINE' || json['status'] == 'ONLINE');
     final relayStateVal = json['estado_rele'] as bool? ?? json['relay_state'] as bool? ?? true;
 
     DateTime? lastRecharge;
