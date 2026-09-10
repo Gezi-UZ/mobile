@@ -162,7 +162,20 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
         throw ServerException('Failed to apply code');
       }
     } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Network error');
+      String errorMessage = 'Network error';
+      if (e.response != null && e.response?.data is Map<String, dynamic>) {
+        final data = e.response?.data as Map<String, dynamic>;
+        if (data.containsKey('detail')) {
+          errorMessage = data['detail'].toString();
+        } else if (data.containsKey('message')) {
+          errorMessage = data['message'].toString();
+        } else {
+          errorMessage = e.message ?? 'Unknown error';
+        }
+      } else {
+        errorMessage = e.message ?? 'Network error';
+      }
+      throw ServerException(errorMessage);
     }
   }
 
