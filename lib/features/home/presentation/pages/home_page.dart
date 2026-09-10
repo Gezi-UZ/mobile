@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                               kwhBalance: activeMeter.kwhBalance,
                               meterId: activeMeter.serialNumber,
                               isOnline: activeMeter.isOnline,
-                              lastSyncAt: activeMeter.lastSyncAt ?? DateTime.now(),
+                              lastSyncAt: activeMeter.lastSyncAt ?? state.meterBalance.lastSyncAt,
                               isLowBalance: activeMeter.kwhBalance < 5.0,
                             );
 

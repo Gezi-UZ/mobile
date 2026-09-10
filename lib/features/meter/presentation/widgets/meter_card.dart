@@ -97,8 +97,14 @@ class _MeterAvatar extends StatelessWidget {
 
   const _MeterAvatar({required this.meter});
 
+  bool get _isOnline {
+    final sync = meter.lastSyncAt;
+    if (sync == null) return meter.isOnline;
+    return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
+  }
+
   Color get _statusColor {
-    if (!meter.isOnline) return const Color(0xFFD32F2F);
+    if (!_isOnline) return const Color(0xFFD32F2F);
     if (meter.kwhBalance >= 5) return const Color(0xFF00C950);
     if (meter.kwhBalance > 0) return const Color(0xFFFFB300);
     return const Color(0xFFD32F2F);
@@ -140,8 +146,15 @@ class _MeterInfo extends StatelessWidget {
 
   const _MeterInfo({required this.meter});
 
+  bool get _isOnline {
+    final sync = meter.lastSyncAt;
+    if (sync == null) return meter.isOnline;
+    return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isOnline = _isOnline;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -174,9 +187,9 @@ class _MeterInfo extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 8,
           children: [
-            MeterStatusBadge(isOnline: meter.isOnline),
+            MeterStatusBadge(isOnline: isOnline),
             Text(
-              meter.isOnline
+              isOnline
                   ? '${meter.kwhBalance.toStringAsFixed(2).replaceAll(RegExp(r'0$'), '')} kWh'
                   : '0 kWh',
               style: TextStyle(
@@ -194,7 +207,7 @@ class _MeterInfo extends StatelessWidget {
   }
 
   Color get _kwhColor {
-    if (!meter.isOnline) return const Color(0xFFD32F2F);
+    if (!_isOnline) return const Color(0xFFD32F2F);
     if (meter.kwhBalance >= 5) return const Color(0xFF00C950);
     if (meter.kwhBalance > 0) return const Color(0xFFFFB300);
     return const Color(0xFFD32F2F);

@@ -8,6 +8,7 @@ import 'package:gezi/features/home/presentation/bloc/home_bloc.dart';
 import 'package:gezi/features/home/presentation/bloc/home_event.dart';
 import 'package:gezi/features/home/presentation/bloc/home_state.dart';
 import 'package:gezi/features/meter/presentation/bloc/meter_bloc.dart';
+import 'package:gezi/features/meter/presentation/bloc/meter_event.dart';
 import 'package:gezi/features/meter/presentation/bloc/meter_state.dart';
 import 'package:gezi/core/shared_widgets/buttons/primary_button.dart';
 import 'package:gezi/injection_container.dart';
@@ -43,6 +44,7 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
     super.initState();
     // Forçar refresh dos dados ao entrar na página.
     sl<HomeBloc>().add(const HomeDashboardLoadRequested(isRefresh: true));
+    sl<MeterBloc>().add(const MeterListRequested());
   }
 
   /// Calcula as métricas a partir das recargas disponíveis.
@@ -152,8 +154,11 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                 else
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
-                    onPressed: () => sl<HomeBloc>()
-                        .add(const HomeDashboardLoadRequested(isRefresh: true)),
+                    onPressed: () {
+                      sl<HomeBloc>()
+                          .add(const HomeDashboardLoadRequested(isRefresh: true));
+                      sl<MeterBloc>().add(const MeterListRequested());
+                    },
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
               ],

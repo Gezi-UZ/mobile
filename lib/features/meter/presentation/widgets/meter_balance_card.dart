@@ -89,19 +89,29 @@ class MeterBalanceCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              spacing: 8,
-              children: [
-                _MeterStatusBadge(isOnline: meter.isOnline),
-                if (meter.lastSyncAt != null)
-                  Text(
-                    '· sync ${_formatLastSync(meter.lastSyncAt!)}',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.55),
-                      fontSize: 11,
-                    ),
-                  ),
-              ],
+            Builder(
+              builder: (context) {
+                final bool isOnline = () {
+                  final sync = meter.lastSyncAt;
+                  if (sync == null) return meter.isOnline;
+                  return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
+                }();
+
+                return Row(
+                  spacing: 8,
+                  children: [
+                    _MeterStatusBadge(isOnline: isOnline),
+                    if (meter.lastSyncAt != null)
+                      Text(
+                        '· sync ${_formatLastSync(meter.lastSyncAt!)}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          fontSize: 11,
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ],
         ),

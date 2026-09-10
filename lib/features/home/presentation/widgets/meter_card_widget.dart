@@ -153,6 +153,11 @@ class MeterCardWidget extends StatelessWidget {
   }
 
   Widget _buildMeterInfoRow(BuildContext context) {
+    final bool isOnline = () {
+      final sync = balance.lastSyncAt;
+      return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
+    }();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -178,12 +183,12 @@ class MeterCardWidget extends StatelessWidget {
         Row(
           spacing: 8,
           children: [
-            _MeterStatusBadge(isOnline: balance.isOnline),
+            _MeterStatusBadge(isOnline: isOnline),
             Text(
-              '· ${_formatTime(balance.lastSyncAt)}',
+              '· ${_formatLastSync(balance.lastSyncAt)}',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.50),
-                fontSize: 9,
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 11,
               ),
             ),
           ],
@@ -192,10 +197,19 @@ class MeterCardWidget extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m';
+  String _formatLastSync(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt.toLocal());
+    if (diff.inMinutes < 1) return 'agora mesmo';
+    if (diff.inMinutes < 60) return 'há ${diff.inMinutes} min';
+    if (diff.inHours < 24) {
+      final h = dt.toLocal().hour.toString().padLeft(2, '0');
+      final m = dt.toLocal().minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    }
+    final d = dt.toLocal().day.toString().padLeft(2, '0');
+    final mo = dt.toLocal().month.toString().padLeft(2, '0');
+    return '$d/$mo';
   }
 }
 
@@ -211,8 +225,8 @@ class _MeterStatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: ShapeDecoration(
         color: isOnline
-            ? const Color(0xFFDCFCE7) // verde claro
-            : const Color(0xFFF3F4F6), // cinza claro
+            ? Colors.white.withValues(alpha: 0.20)
+            : Colors.white.withValues(alpha: 0.12),
         shape: const StadiumBorder(),
       ),
       child: Row(
@@ -225,7 +239,7 @@ class _MeterStatusBadge extends StatelessWidget {
             decoration: ShapeDecoration(
               color: isOnline
                   ? const Color(0xFF00C950) // verde
-                  : const Color(0xFF9CA3AF), // cinza
+                  : Colors.white.withValues(alpha: 0.50), // branco semi-transparente
               shape: const CircleBorder(),
             ),
           ),
@@ -233,9 +247,9 @@ class _MeterStatusBadge extends StatelessWidget {
             isOnline ? 'Online' : 'Offline',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: isOnline
-                  ? const Color(0xFF008236)
-                  : const Color(0xFF6B7280),
-              fontSize: 12,
+                  ? const Color(0xFFB6FFD6)
+                  : Colors.white.withValues(alpha: 0.70),
+              fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
