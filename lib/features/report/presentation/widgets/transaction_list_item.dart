@@ -7,6 +7,7 @@ class TransactionListItem extends StatelessWidget {
   final String amount;
   final bool isCredit;
   final IconData icon;
+  final String? subtitle;
 
   const TransactionListItem({
     super.key,
@@ -15,6 +16,7 @@ class TransactionListItem extends StatelessWidget {
     required this.amount,
     this.isCredit = false,
     this.icon = Icons.receipt_long,
+    this.subtitle,
   });
 
   @override
@@ -65,6 +67,16 @@ class TransactionListItem extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.primaryOrange,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ],
               ],
             ),
           ),

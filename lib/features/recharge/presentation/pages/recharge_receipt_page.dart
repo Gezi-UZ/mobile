@@ -24,6 +24,11 @@ class RechargeReceiptPage extends StatelessWidget {
     this.code,
   });
 
+  bool _isPending(String status) {
+    final s = status.toUpperCase();
+    return s == 'PENDING' || s == 'MQTT_SENT' || s == 'CONFIRMED' || s == 'PROCESSING';
+  }
+
   @override
   Widget build(BuildContext context) {
     final double totalAmount = recharge.paidAmount;
@@ -88,13 +93,13 @@ class RechargeReceiptPage extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
+                        color: _isPending(recharge.rawStatus) ? const Color(0xFFFFF8E1) : const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(40),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
-                          Icons.check_circle_rounded,
-                          color: Color(0xFF00C950),
+                          _isPending(recharge.rawStatus) ? Icons.access_time_filled_rounded : Icons.check_circle_rounded,
+                          color: _isPending(recharge.rawStatus) ? const Color(0xFFFFB300) : const Color(0xFF00C950),
                           size: 40,
                         ),
                       ),
@@ -103,7 +108,7 @@ class RechargeReceiptPage extends StatelessWidget {
 
                     // Títulos
                     Text(
-                      'Recarga concluída!',
+                      _isPending(recharge.rawStatus) ? 'Recarga em processamento' : 'Recarga concluída!',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
@@ -113,7 +118,9 @@ class RechargeReceiptPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${estimatedKwh.toStringAsFixed(1)} kWh adicionados ao seu contador',
+                      _isPending(recharge.rawStatus)
+                          ? '${estimatedKwh.toStringAsFixed(1)} kWh a serem adicionados ao seu contador'
+                          : '${estimatedKwh.toStringAsFixed(1)} kWh adicionados ao seu contador',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -216,13 +223,13 @@ class RechargeReceiptPage extends StatelessWidget {
                                   '${txLixo.toStringAsFixed(2)} ${recharge.currency}',
                             ),
                           ],
-                          if (recharge.tokenSts != null)
+                          if (recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty)
                             _ReceiptRow(
                               title: 'Código da recarga',
                               value: recharge.tokenSts!,
                             ),
                           _ReceiptRow(
-                            title: 'Crédito aplicado',
+                            title: _isPending(recharge.rawStatus) ? 'Crédito a aplicar' : 'Crédito aplicado',
                             value: '${estimatedKwh.toStringAsFixed(1)} kWh',
                           ),
                           _ReceiptRow(
@@ -249,10 +256,10 @@ class RechargeReceiptPage extends StatelessWidget {
                                       ),
                                 ),
                                 Text(
-                                  'Concluído',
+                                  _isPending(recharge.rawStatus) ? 'Pendente' : 'Concluído',
                                   style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(
-                                        color: const Color(0xFF00A63E),
+                                        color: _isPending(recharge.rawStatus) ? AppTheme.primaryOrange : const Color(0xFF00A63E),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -417,14 +424,14 @@ class RechargeReceiptPage extends StatelessWidget {
         ['Tx Lixo', '${txLixo.toStringAsFixed(2)} ${recharge.currency}'],
       ]);
       
-      if (recharge.tokenSts != null) {
+      if (recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty) {
         tableData.add(['Código da recarga', recharge.tokenSts!]);
       }
     }
 
     tableData.addAll([
-      ['Crédito aplicado', '${estimatedKwh.toStringAsFixed(1)} kWh'],
-      ['Método', isCodeRecharge ? 'Código STS' : recharge.paymentMethod],
+      [_isPending(recharge.rawStatus) ? 'Crédito a aplicar' : 'Crédito aplicado', '${estimatedKwh.toStringAsFixed(1)} kWh'],
+      ['Método', isCodeRecharge ? 'Código STS' : recharge.paymentMethod ],
     ]);
 
     pdf.addPage(

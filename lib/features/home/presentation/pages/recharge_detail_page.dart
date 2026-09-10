@@ -259,6 +259,10 @@ class RechargeDetailPage extends StatelessWidget {
                       const SizedBox(height: 12),
                       _buildInfoRow(context, 'Método', recharge.paymentMethod),
                       const SizedBox(height: 12),
+                      if (recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty) ...[
+                        _buildInfoRow(context, 'Código da recarga', recharge.tokenSts!),
+                        const SizedBox(height: 12),
+                      ],
                       _buildInfoRow(context, 'Contador', recharge.meterSerialNumber),
                       const SizedBox(height: 12),
                       _buildInfoRow(context, 'Destinatário', isMyMeter ? 'Próprio' : 'Outro', noBorder: true),

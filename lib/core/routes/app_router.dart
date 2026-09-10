@@ -133,12 +133,13 @@ class AppRouter {
                 paidAmount: json['paidAmount'],
                 currency: json['currency'],
                 rechargedAt: DateTime.parse(json['rechargedAt']),
-                status: RechargeStatus.success, // We assume success here based on mapping
-                rawStatus: 'SUCCESS',
+                status: (json['status']?.toString().toUpperCase() == 'SUCCESS' || json['status']?.toString().toUpperCase() == 'CONCLUIDA') ? RechargeStatus.success : RechargeStatus.pending,
+                rawStatus: json['status']?.toString() ?? 'SUCCESS',
                 meterSerialNumber: json['meterSerialNumber'],
                 isMyMeter: json['isMyMeter'],
                 paymentMethod: json['paymentMethod'],
                 meterAlias: json['meterAlias'],
+                tokenSts: json['tokenSts'],
               );
             } else {
               recharge = extra['recharge'] as Recharge?;

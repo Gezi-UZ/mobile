@@ -32,12 +32,12 @@ class RechargeModel extends Recharge {
       creditKwh: (json['credit_kwh'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] ?? json['payment_status'] ?? 'UNKNOWN',
       createdAt: parseDate(json['created_at'] ?? json['recharged_at'] ?? json['applied_at']),
-      token: json['token'],
+      token: json['token_sts']?.toString() ?? json['token']?.toString(),
       paymentMethod: json['payment_method'],
       paymentReference: json['referencia_mpesa'] ?? json['payment_reference'],
       rechargeType: json['recharge_type'] ?? 'SELF',
       otherPartyName: json['other_party_name'],
-      meterNumber: json['meter_number'],
+      meterNumber: json['meter_number'] ?? json['meter_serial_number'],
     );
   }
 

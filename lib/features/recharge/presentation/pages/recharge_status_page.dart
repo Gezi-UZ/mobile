@@ -176,11 +176,12 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                   'paidAmount': currentRecharge.amountMzn,
                   'currency': 'MT',
                   'rechargedAt': currentRecharge.createdAt.toIso8601String(),
-                  'status': 'SUCCESS',
+                  'status': currentRecharge.status,
                   'meterAlias': null,
                   'meterSerialNumber': currentRecharge.meterNumber ?? widget.meterNumber,
                   'isMyMeter': true,
                   'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
+                  'tokenSts': currentRecharge.token,
                 };
                 
                 _showSuccessDialog(mappedRecharge, currentRecharge);
@@ -370,11 +371,12 @@ class _RechargeStatusPageState extends State<RechargeStatusPage> {
                                   'paidAmount': recharge.amountMzn,
                                   'currency': 'MT',
                                   'rechargedAt': recharge.createdAt.toIso8601String(),
-                                  'status': 'SUCCESS',
+                                  'status': recharge.status,
                                   'meterAlias': null,
                                   'meterSerialNumber': recharge.meterNumber ?? widget.meterNumber,
                                   'isMyMeter': true,
                                   'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
+                                  'tokenSts': recharge.token,
                                 };
                                 context.go(
                                   '/recharge/receipt',

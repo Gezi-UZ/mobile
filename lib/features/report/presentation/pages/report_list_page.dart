@@ -117,10 +117,11 @@ class _ReportListPageViewState extends State<ReportListPageView> {
                                   rechargedAt: recharge.createdAt,
                                   status: mappedStatus,
                                   rawStatus: recharge.status,
-                                  meterSerialNumber: recharge.meterId,
+                                  meterSerialNumber: recharge.meterNumber ?? recharge.meterId,
                                   isMyMeter: true,
                                   paymentMethod: recharge.paymentMethod ?? 'M-Pesa',
                                   paymentReference: recharge.paymentReference,
+                                  tokenSts: recharge.token,
                                 );
                                 context.push('/receipt_preview', extra: homeRechargeObj);
                               },
@@ -130,6 +131,7 @@ class _ReportListPageViewState extends State<ReportListPageView> {
                                 amount: '${recharge.amountMzn.toStringAsFixed(0)} MT',
                                 isCredit: true,
                                 icon: Icons.add_card,
+                                subtitle: (recharge.token != null && recharge.token!.isNotEmpty) ? 'STS: ${recharge.token}' : null,
                               ),
                             );
                           },

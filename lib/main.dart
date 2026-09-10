@@ -10,6 +10,9 @@ import 'core/theme/theme_cubit.dart';
 import 'core/theme/theme_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,15 @@ void main() async {
 
   // 3. Initialize all DI dependencies
   await di.init();
+
+  // 3.5 Initialize Firebase and Push Notifications
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await di.sl<PushNotificationService>().init();
+  } catch (e) {
+    debugPrint('Firebase initialization failed (probably missing config): $e');
+  }
 
   // 4. Localisation
   await initializeDateFormatting('pt_PT', null);

@@ -10,6 +10,7 @@ class RechargeTileWidget extends StatelessWidget {
 
   final String rechargeType; // 'SELF', 'RECEIVED', 'FOR_OTHER'
   final String? otherPartyName;
+  final String? tokenSts;
 
   const RechargeTileWidget({
     super.key,
@@ -21,6 +22,7 @@ class RechargeTileWidget extends StatelessWidget {
     this.statusColor = const Color(0xFF2E7D32), // Default to success green
     this.rechargeType = 'SELF',
     this.otherPartyName,
+    this.tokenSts,
   });
 
   IconData _getIcon() {
@@ -133,6 +135,18 @@ class RechargeTileWidget extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 10,
+                              ),
+                        ),
+                      ],
+                      if (tokenSts != null && tokenSts!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'STS: $tokenSts',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFFE65100), // Dark orange
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                letterSpacing: 0.5,
                               ),
                         ),
                       ],

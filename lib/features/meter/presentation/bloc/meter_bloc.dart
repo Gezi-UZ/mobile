@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecases/usecases.dart';
 import '../../../../core/supabase/supabase_client.dart';
-import '../../../../core/services/local_notification_service.dart';
-import '../../../../injection_container.dart';
 import '../../domain/usecases/get_my_meters.dart';
 import '../../domain/usecases/edit_meter.dart';
 import '../../domain/usecases/register_meter.dart';
@@ -66,24 +64,13 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
     );
   }
 
-  final Set<String> _notifiedMeters = {};
 
   void _onUpdatedRealtime(
     MeterUpdatedRealtime event,
     Emitter<MeterState> emit,
   ) {
     emit(MeterLoaded(meters: event.meters));
-
-    for (final meter in event.meters) {
-      if (meter.kwhBalance < 5.0) {
-        if (!_notifiedMeters.contains(meter.id)) {
-          sl<LocalNotificationService>().showLowBalanceNotification(meter.kwhBalance);
-          _notifiedMeters.add(meter.id);
-        }
-      } else {
-        _notifiedMeters.remove(meter.id);
-      }
-    }
+    // Notificações de saldo baixo agora são geridas por Push Notifications (FCM) no backend
   }
 
   Future<void> _onSetPrimaryRequested(

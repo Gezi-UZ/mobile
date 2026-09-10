@@ -282,6 +282,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                                       statusColor: statusColor,
                                       rechargeType: recharge.rechargeType,
                                       otherPartyName: recharge.otherPartyName,
+                                      tokenSts: recharge.token,
                                     );
                                   }),
                               ],

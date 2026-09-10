@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gezi/core/services/local_notification_service.dart';
 import 'package:gezi/core/network/dio_client.dart';
 import 'package:gezi/core/theme/theme_cubit.dart';
+import 'package:gezi/core/services/push_notification_service.dart';
 
 // Core
 import 'core/supabase/supabase_client.dart';
@@ -117,6 +118,11 @@ Future<void> init() async {
   final localNotificationService = LocalNotificationService();
   await localNotificationService.init();
   sl.registerLazySingleton(() => localNotificationService);
+
+  final pushNotificationService = PushNotificationService();
+  // We don't init here because it requires permissions and shouldn't block app startup unconditionally.
+  // Instead, it should be called after Firebase.initializeApp().
+  sl.registerLazySingleton(() => pushNotificationService);
 
   // Theme
   sl.registerLazySingleton(() => ThemeCubit(sharedPreferences: sl()));
