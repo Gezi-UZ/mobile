@@ -49,19 +49,18 @@ class MeterModel extends Meter {
         ?? (json['estado'] == 'ONLINE' || json['status'] == 'ONLINE');
     final relayStateVal = json['estado_rele'] as bool? ?? json['relay_state'] as bool? ?? true;
 
-    DateTime? lastRecharge;
-    if (json['ultima_recarga'] != null) {
-      lastRecharge = DateTime.tryParse(json['ultima_recarga'].toString());
-    } else if (json['last_recharge_at'] != null) {
-      lastRecharge = DateTime.tryParse(json['last_recharge_at'].toString());
+    DateTime? parseDate(dynamic raw) {
+      if (raw == null) return null;
+      final str = raw.toString().trim();
+      if (str.isEmpty) return null;
+      if (!str.endsWith('Z') && !str.contains('+') && !RegExp(r'-\d{2}:\d{2}$').hasMatch(str)) {
+        return DateTime.tryParse('${str}Z')?.toLocal();
+      }
+      return DateTime.tryParse(str)?.toLocal();
     }
 
-    DateTime? lastSync;
-    if (json['ultima_sincronizacao'] != null) {
-      lastSync = DateTime.tryParse(json['ultima_sincronizacao'].toString());
-    } else if (json['last_seen_at'] != null) {
-      lastSync = DateTime.tryParse(json['last_seen_at'].toString());
-    }
+    final lastRecharge = parseDate(json['ultima_recarga'] ?? json['last_recharge_at']);
+    final lastSync = parseDate(json['ultima_sincronizacao'] ?? json['last_seen_at']);
 
     final idVal = (json['id'] ?? json['meter_id'] ?? json['_id'])?.toString() ?? '';
     final serialVal = (json['serial_number'] ?? json['meter_number'] ?? json['numero_serie'] ?? json['serialNumber'] ?? json['meterNumber'])?.toString() ?? '';

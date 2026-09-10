@@ -154,6 +154,7 @@ class MeterCardWidget extends StatelessWidget {
 
   Widget _buildMeterInfoRow(BuildContext context) {
     final bool isOnline = () {
+      if (balance.isOnline) return true;
       final sync = balance.lastSyncAt;
       return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
     }();

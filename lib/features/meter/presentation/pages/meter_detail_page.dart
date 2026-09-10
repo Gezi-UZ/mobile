@@ -302,8 +302,8 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
   }
 
   Widget _buildMeterHeader(BuildContext context, Meter meter) {
-    // Calcular is_online dinamicamente baseado no lastSyncAt (threshold: 5 min)
     final bool isOnline = () {
+      if (meter.isOnline) return true;
       final sync = meter.lastSyncAt;
       if (sync == null) return false;
       return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
