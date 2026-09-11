@@ -39,7 +39,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (event == sb.AuthChangeEvent.signedIn && session != null) {
         add(const AppStarted());
       } else if (event == sb.AuthChangeEvent.signedOut) {
-        add(const SignOutRequested());
+        if (state is! AuthUnauthenticated) {
+          add(const SignOutRequested());
+        }
       } else if (event == sb.AuthChangeEvent.tokenRefreshed && session != null) {
         add(const AppStarted());
       }
