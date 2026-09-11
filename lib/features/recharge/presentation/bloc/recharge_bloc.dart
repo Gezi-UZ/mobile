@@ -27,6 +27,7 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
     on<InitiateRechargeEvent>(_onInitiateRecharge);
     on<ApplyCodeEvent>(_onApplyCode);
     on<StreamRechargeStatusEvent>(_onStreamRechargeStatus);
+    on<ForceRechargeSuccessEvent>(_onForceRechargeSuccess);
   }
 
   Future<void> _onCalculateBreakdown(
@@ -85,22 +86,48 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
     StreamRechargeStatusEvent event,
     Emitter<RechargeState> emit,
   ) async {
+    bool hasEmittedSuccess = false;
+
     await emit.forEach<Recharge>(
       streamRechargeStatus(event.rechargeId),
       onData: (recharge) {
+        if (hasEmittedSuccess) return RechargeSuccess(recharge);
+
         if (recharge.status == 'FAILED') {
           return RechargeError('Falha no pagamento');
         }
         if (recharge.status == 'CONCLUIDA' || 
             recharge.status == 'SUCCESS' || 
-            recharge.status == 'MQTT_SENT' || 
             recharge.status == 'ACK_RECEIVED' ||
             recharge.status == 'CONFIRMED_NO_DEVICE') {
+          hasEmittedSuccess = true;
           return RechargeSuccess(recharge);
         }
+
+        if (recharge.status == 'MQTT_SENT') {
+          // Se recebermos MQTT_SENT, damos 4 segundos ao dispositivo para enviar o ACK.
+          // Se nao enviar, forcamos o sucesso para que o utilizador veja o recibo com o token STS e tente manualmente.
+          Future.delayed(const Duration(seconds: 4), () {
+            if (!isClosed && state is RechargeStatusUpdated) {
+              final currentState = state as RechargeStatusUpdated;
+              if (currentState.recharge.status == 'MQTT_SENT') {
+                add(ForceRechargeSuccessEvent(currentState.recharge));
+              }
+            }
+          });
+          return RechargeStatusUpdated(recharge);
+        }
+
         return RechargeStatusUpdated(recharge);
       },
       onError: (error, stackTrace) => RechargeError(error.toString()),
     );
+  }
+
+  void _onForceRechargeSuccess(
+    ForceRechargeSuccessEvent event,
+    Emitter<RechargeState> emit,
+  ) {
+    emit(RechargeSuccess(event.recharge));
   }
 }

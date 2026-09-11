@@ -56,3 +56,12 @@ class ApplyCodeEvent extends RechargeEvent {
   @override
   List<Object?> get props => [code];
 }
+
+class ForceRechargeSuccessEvent extends RechargeEvent {
+  final Recharge recharge;
+
+  const ForceRechargeSuccessEvent(this.recharge);
+
+  @override
+  List<Object?> get props => [recharge];
+}
