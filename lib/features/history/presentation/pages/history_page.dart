@@ -167,7 +167,7 @@ class _HistoryPageViewState extends State<HistoryPageView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       HistoryHeaderWidget(
-                        onFilterTap: () {},
+                        onDownloadTap: () {},
                       ),
                       const SizedBox(height: 20),
                       MeterSelectorWidget(

@@ -340,7 +340,7 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
 
   Widget _buildMeterHeader(BuildContext context, Meter meter) {
     final bool isOnline = () {
-      if (meter.isOnline) return true;
+      if (!meter.isOnline) return false;
       final sync = meter.lastSyncAt;
       if (sync == null) return false;
       return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;

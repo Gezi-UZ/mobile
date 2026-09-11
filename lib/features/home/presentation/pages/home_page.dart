@@ -165,6 +165,8 @@ class _HomePageState extends State<HomePage> {
                         QuickActionsWidget(
                           onMeters: () => context.go('/meters'),
                           onAlerts: () => context.push('/alerts'),
+                          onHistory: () => context.go('/recharges'),
+                          onSupport: () => context.go('/profile/support'),
                         ),
                         RecentRechargesWidget(recharges: state.recentRecharges),
                       ],

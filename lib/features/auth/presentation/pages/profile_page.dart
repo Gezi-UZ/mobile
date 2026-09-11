@@ -81,13 +81,13 @@ class ProfilePage extends StatelessWidget {
                 ProfileMenuItem(
                   icon: Icons.support_agent,
                   title: 'Apoio ao cliente',
-                  onTap: () {},
+                  onTap: () => context.go('/profile/support'),
                 ),
-                ProfileMenuItem(
-                  icon: Icons.analytics_outlined,
-                  title: 'Estimativa de consumo',
-                  onTap: () {},
-                ),
+                // ProfileMenuItem(
+                //   icon: Icons.analytics_outlined,
+                //   title: 'Estimativa de consumo',
+                //   onTap: () {},
+                // ),
                 const ProfilePreferencesCard(),
                 ProfileLogoutButton(
                   onTap: () {

@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/features/home/domain/entities/recharge.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:gezi/features/recharge/presentation/utils/recharge_pdf_generator.dart';
 
 class RechargeDetailPage extends StatelessWidget {
   final Recharge recharge;
@@ -17,6 +20,7 @@ class RechargeDetailPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSuccess = recharge.status == RechargeStatus.success;
     final isPending = recharge.status == RechargeStatus.pending;
+    final isFailed = recharge.status == RechargeStatus.failed;
     final isMyMeter = recharge.isMyMeter;
 
     final badgeColor = isMyMeter 
@@ -74,7 +78,7 @@ class RechargeDetailPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Detalhe da recarga',
+                      'Detalhes da recarga',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
@@ -275,22 +279,49 @@ class RechargeDetailPage extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFFF6A00), Color(0xFFE84300)],
-                    ),
+                    gradient: isFailed 
+                        ? null 
+                        : const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFFF6A00), Color(0xFFE84300)],
+                          ),
+                    color: isFailed ? (isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)) : null,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: TextButton.icon(
-                    onPressed: () {
-                      // Ver comprovativo PDF action
+                    onPressed: isFailed ? null : () async {
+                      try {
+                        final pdfData = await RechargePdfGenerator.generatePdf(
+                          recharge: recharge,
+                          isCodeRecharge: recharge.tokenSts != null && recharge.tokenSts!.isNotEmpty,
+                          code: recharge.tokenSts,
+                        );
+                        
+                        final String transactionId = recharge.paymentReference ??
+                            (recharge.id.length >= 4
+                                ? 'GEZI${recharge.id.substring(0, 4).toUpperCase()}'
+                                : 'GEZI${recharge.id.toUpperCase()}');
+
+                        await Printing.layoutPdf(
+                          onLayout: (PdfPageFormat format) async => pdfData,
+                          name: 'Comprovativo_Gezi_$transactionId.pdf',
+                        );
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Erro ao gerar PDF.'),
+                            ),
+                          );
+                        }
+                      }
                     },
-                    icon: const Icon(Icons.picture_as_pdf, color: Colors.white, size: 20),
-                    label: const Text(
+                    icon: Icon(Icons.picture_as_pdf, color: isFailed ? (isDark ? Colors.white30 : Colors.black26) : Colors.white, size: 20),
+                    label: Text(
                       'Ver comprovativo PDF',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isFailed ? (isDark ? Colors.white30 : Colors.black26) : Colors.white,
                         fontSize: 16,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w600,

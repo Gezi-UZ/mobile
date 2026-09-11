@@ -8,7 +8,6 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../bloc/local_auth_bloc.dart';
-import '../bloc/local_auth_event.dart';
 import '../bloc/local_auth_state.dart';
 import '../bloc/email_auth/login_bloc.dart';
 import '../bloc/email_auth/login_event.dart';
@@ -310,36 +309,36 @@ class _LoginPageState extends State<LoginPage> {
                       Center(
                         child: Column(
                           children: [
-                            Text(
-                              'Ou entre com',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            ),
+                            // Text(
+                            //   'Ou entre com',
+                            //   style: Theme.of(context).textTheme.bodySmall
+                            //       ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            // ),
                             const SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 // Passkey (Biometrics)
-                                _buildQuickOption(
-                                  context,
-                                  label: 'Biometria',
-                                  icon: Icons.fingerprint,
-                                  color: AppTheme.primaryOrange,
-                                  onTap: () {
-                                    context.read<LocalAuthBloc>().add(
-                                      const AuthenticateWithBiometricsEvent(),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 12),
+                                // _buildQuickOption(
+                                //   context,
+                                //   label: 'Biometria',
+                                //   icon: Icons.fingerprint,
+                                //   color: AppTheme.primaryOrange,
+                                //   onTap: () {
+                                //     context.read<LocalAuthBloc>().add(
+                                //       const AuthenticateWithBiometricsEvent(),
+                                //     );
+                                //   },
+                                // ),
+                                // const SizedBox(width: 12),
                                 // PIN
-                                _buildQuickOption(
-                                  context,
-                                  label: 'PIN Offline',
-                                  icon: Icons.pin,
-                                  color: AppTheme.primaryOrange,
-                                  onTap: () => context.push('/pin-login'),
-                                ),
+                                // _buildQuickOption(
+                                //   context,
+                                //   label: 'PIN Offline',
+                                //   icon: Icons.pin,
+                                //   color: AppTheme.primaryOrange,
+                                //   onTap: () => context.push('/pin-login'),
+                                // ),
                               ],
                             ),
                           ],
@@ -367,39 +366,39 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildQuickOption(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.08),
-            width: 1.11,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildQuickOption(
+  //   BuildContext context, {
+  //   required String label,
+  //   required IconData icon,
+  //   required Color color,
+  //   required VoidCallback onTap,
+  // }) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  //       decoration: BoxDecoration(
+  //         color: Theme.of(context).colorScheme.surface,
+  //         border: Border.all(
+  //           color: Colors.black.withValues(alpha: 0.08),
+  //           width: 1.11,
+  //         ),
+  //         borderRadius: BorderRadius.circular(20),
+  //       ),
+  //       child: Row(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Icon(icon, size: 16, color: color),
+  //           const SizedBox(width: 6),
+  //           Text(
+  //             label,
+  //             style: Theme.of(context).textTheme.labelMedium?.copyWith(
+  //               color: Theme.of(context).colorScheme.onSurface,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 }

@@ -25,6 +25,8 @@ import '../../features/recharge/presentation/pages/recharge_status_page.dart';
 import '../../features/recharge/presentation/pages/recharge_receipt_page.dart';
 import '../../features/recharge/presentation/pages/recharge_by_code_page.dart';
 import '../../features/alert/presentation/pages/alerts_page.dart';
+import '../../features/support/presentation/pages/support_page.dart';
+import '../../features/support/presentation/pages/faq_page.dart';
 import '../shared_widgets/bottom_nav_bar.dart';
 import '../../features/meter/domain/entities/meter.dart';
 import '../../features/meter/presentation/bloc/meter_bloc.dart';
@@ -269,6 +271,18 @@ class AppRouter {
                 GoRoute(
                   path: '/profile',
                   builder: (context, state) => const ProfilePage(),
+                  routes: [
+                    GoRoute(
+                      path: 'support',
+                      builder: (context, state) => const SupportPage(),
+                      routes: [
+                        GoRoute(
+                          path: 'faq',
+                          builder: (context, state) => const FaqPage(),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),

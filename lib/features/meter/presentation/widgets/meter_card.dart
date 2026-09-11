@@ -98,7 +98,7 @@ class _MeterAvatar extends StatelessWidget {
   const _MeterAvatar({required this.meter});
 
   bool get _isOnline {
-    if (meter.isOnline) return true;
+    if (!meter.isOnline) return false;
     final sync = meter.lastSyncAt;
     if (sync == null) return false;
     return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;
@@ -148,7 +148,7 @@ class _MeterInfo extends StatelessWidget {
   const _MeterInfo({required this.meter});
 
   bool get _isOnline {
-    if (meter.isOnline) return true;
+    if (!meter.isOnline) return false;
     final sync = meter.lastSyncAt;
     if (sync == null) return false;
     return DateTime.now().difference(sync.toLocal()).inMinutes <= 5;

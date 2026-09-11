@@ -94,7 +94,8 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
         if (recharge.status == 'CONCLUIDA' || 
             recharge.status == 'SUCCESS' || 
             recharge.status == 'MQTT_SENT' || 
-            recharge.status == 'ACK_RECEIVED') {
+            recharge.status == 'ACK_RECEIVED' ||
+            recharge.status == 'CONFIRMED_NO_DEVICE') {
           return RechargeSuccess(recharge);
         }
         return RechargeStatusUpdated(recharge);

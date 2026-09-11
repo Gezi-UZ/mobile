@@ -35,12 +35,12 @@ class ProfilePreferencesCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _PreferenceToggleRow(
-            icon: Icons.fingerprint,
-            title: 'Biometria',
-            value: true,
-            onChanged: (val) {},
-          ),
+          // _PreferenceToggleRow(
+          //   icon: Icons.fingerprint,
+          //   title: 'Biometria',
+          //   value: true,
+          //   onChanged: (val) {},
+          // ),
           const SizedBox(height: 16),
           BlocBuilder<ThemeCubit, ThemeState>(
             builder: (context, themeState) {
