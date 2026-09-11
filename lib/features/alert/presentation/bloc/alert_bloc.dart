@@ -63,10 +63,9 @@ class AlertBloc extends Bloc<AlertEvent, AlertState> {
   ) async {
     try {
       await markNotificationRead(event.id);
-      // O stream Realtime vai actualizar automaticamente — não precisamos
-      // de emitir um novo estado manualmente aqui.
-    } catch (_) {
-      // Falha silenciosa — o estado local não muda
+      // O stream Realtime vai actualizar automaticamente
+    } catch (e) {
+      print('Erro ao marcar notificação como lida: $e');
     }
   }
 
@@ -77,8 +76,8 @@ class AlertBloc extends Bloc<AlertEvent, AlertState> {
     try {
       await markAllNotificationsRead();
       // O stream Realtime actualizará automaticamente
-    } catch (_) {
-      // Falha silenciosa
+    } catch (e) {
+      print('Erro ao marcar todas as notificações como lidas: $e');
     }
   }
 

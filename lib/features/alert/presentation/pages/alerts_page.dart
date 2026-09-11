@@ -49,6 +49,8 @@ class _AlertsViewState extends State<_AlertsView> {
     if (bloc.state is AlertInitial) {
       bloc.add(const AlertWatchStarted());
     }
+    // Marca todas as notificações como lidas ao abrir a tela
+    bloc.add(const AlertMarkAllReadRequested());
   }
 
   String _formatTime(DateTime dt) {
