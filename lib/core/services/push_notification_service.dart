@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import 'local_notification_service.dart';
 import '../../injection_container.dart';
 
@@ -69,13 +70,15 @@ class PushNotificationService {
       final platform = Platform.isIOS ? 'ios' : 'android';
       // Upsert the token to the user_devices table
       await _supabase.from('user_devices').upsert({
+        'id': const Uuid().v4(),
         'user_id': user.id,
         'fcm_token': token,
         'platform': platform,
         'updated_at': DateTime.now().toIso8601String(),
       }, onConflict: 'fcm_token');
     } catch (e) {
-      // Ignore if it fails
+      // Ignore if it fails, but log it
+      print('Failed to save FCM token to database: $e');
     }
   }
 }
