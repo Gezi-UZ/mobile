@@ -181,6 +181,7 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
 
   @override
   Stream<RechargeModel> streamRechargeStatus(String rechargeId) async* {
+    bool hadSuccess = false;
     try {
       final response = await dioClient.dio.get(
         '/recharges/$rechargeId/stream',
@@ -205,11 +206,54 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
             return;
           }
           if (event['event'] == 'status_update') {
-            yield RechargeModel.fromJson(event['data']);
+            final model = RechargeModel.fromJson(event['data']);
+            // Marcar como sucesso para o fallback saber que não é preciso recuperar
+            if (const {
+              'CONCLUIDA',
+              'SUCCESS',
+              'ACK_RECEIVED',
+              'CONFIRMED_NO_DEVICE',
+              'CONFIRMED',
+              'MQTT_SENT',
+            }.contains(model.status)) {
+              hadSuccess = true;
+            }
+            yield model;
           }
         }
       }
     } on DioException catch (e) {
+      // Fix 1: Antes de lançar erro, tentar recuperar o estado real via GET one-shot.
+      // Isto evita mostrar tela de falha quando o M-Pesa já confirmou o pagamento
+      // mas a conexão SSE caiu entretanto (ex: mudança de rede, timeout).
+      if (!hadSuccess) {
+        try {
+          final statusResponse = await dioClient.dio.get(
+            '/recharges/$rechargeId/status',
+          );
+          if (statusResponse.statusCode == 200) {
+            final dynamic raw = statusResponse.data;
+            final Map<String, dynamic> data = (raw is Map && raw['data'] is Map)
+                ? raw['data'] as Map<String, dynamic>
+                : (raw is Map ? raw as Map<String, dynamic> : {});
+            final model = RechargeModel.fromJson(data);
+            // Se o estado real for positivo, emitir e terminar sem erro
+            if (const {
+              'CONFIRMED',
+              'MQTT_SENT',
+              'CONCLUIDA',
+              'SUCCESS',
+              'ACK_RECEIVED',
+              'CONFIRMED_NO_DEVICE',
+            }.contains(model.status)) {
+              yield model;
+              return;
+            }
+          }
+        } catch (_) {
+          // Fallback falhou: deixar cair para o throw abaixo
+        }
+      }
       throw ServerException(e.message ?? 'Network error on stream');
     }
   }

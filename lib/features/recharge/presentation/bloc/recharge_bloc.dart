@@ -104,6 +104,12 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
           return RechargeSuccess(recharge);
         }
 
+        // Fix 3: CONFIRMED é um estado intermédio válido (pagamento M-Pesa aceite,
+        // pipeline MQTT ainda a correr). Não deve ser tratado como falha.
+        if (recharge.status == 'CONFIRMED') {
+          return RechargeStatusUpdated(recharge);
+        }
+
         if (recharge.status == 'MQTT_SENT') {
           // Se recebermos MQTT_SENT, damos 4 segundos ao dispositivo para enviar o ACK.
           // Se nao enviar, forcamos o sucesso para que o utilizador veja o recibo com o token STS e tente manualmente.

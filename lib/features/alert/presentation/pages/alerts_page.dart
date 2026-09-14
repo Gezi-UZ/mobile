@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gezi/core/theme/theme.dart';
 import 'package:gezi/injection_container.dart';
 import 'package:intl/intl.dart';
-
 import '../../domain/entities/alert.dart';
 import '../bloc/alert_bloc.dart';
 import '../bloc/alert_event.dart';

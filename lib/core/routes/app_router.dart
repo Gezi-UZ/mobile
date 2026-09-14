@@ -110,6 +110,12 @@ class AppRouter {
             final rechargeId = state.uri.queryParameters['rechargeId'] ?? '';
             final meterId = state.uri.queryParameters['meterId'];
             final phone = state.uri.queryParameters['phone'];
+            // Valores do breakdown calculado pelo backend (passados pela RechargePage)
+            final estimatedKwh = double.tryParse(
+              state.uri.queryParameters['estimatedKwh'] ?? '',
+            );
+            final isFirstPurchaseOfMonth =
+                state.uri.queryParameters['isFirstPurchaseOfMonth'] == 'true';
             return RechargeStatusPage(
               amount: amount,
               meterNumber: meterNumber,
@@ -118,6 +124,8 @@ class AppRouter {
               rechargeId: rechargeId,
               meterId: meterId,
               phone: phone,
+              estimatedKwh: estimatedKwh,
+              isFirstPurchaseOfMonth: isFirstPurchaseOfMonth,
             );
           },
         ),

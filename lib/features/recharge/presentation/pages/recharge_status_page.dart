@@ -18,6 +18,9 @@ class RechargeStatusPage extends StatefulWidget {
   final String rechargeId;
   final String? meterId;
   final String? phone;
+  // Passados pela página anterior com os valores reais do backend
+  final double? estimatedKwh;
+  final bool? isFirstPurchaseOfMonth;
 
   const RechargeStatusPage({
     super.key,
@@ -28,6 +31,8 @@ class RechargeStatusPage extends StatefulWidget {
     this.code,
     this.meterId,
     this.phone,
+    this.estimatedKwh,
+    this.isFirstPurchaseOfMonth,
   });
 
   @override
@@ -138,7 +143,12 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
   @override
   Widget build(BuildContext context) {
     final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
-    const bool isFirstPurchaseOfMonth = true;
+
+    // Fix: usar os valores reais do backend passados via parâmetros,
+    // em vez de assumir sempre isFirstPurchaseOfMonth = true.
+    // Se não forem passados (ex: recharge por código), calcular localmente
+    // de forma conservadora (isFirstPurchaseOfMonth = false).
+    final bool isFirstPurchaseOfMonth = widget.isFirstPurchaseOfMonth ?? false;
     const double ratePerKwh = 7.64;
     double txLixo = 0.0;
     if (isFirstPurchaseOfMonth) {
@@ -156,7 +166,8 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
           0.0,
           double.infinity,
         );
-    final double estimatedKwh = remainingAfterFees / ratePerKwh;
+    // Priorizar o estimatedKwh do backend; fallback local apenas se não houver
+    final double estimatedKwh = widget.estimatedKwh ?? (remainingAfterFees / ratePerKwh);
 
     return BlocProvider(
       create: (_) {

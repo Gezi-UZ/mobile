@@ -61,14 +61,25 @@ class _RechargePageState extends State<RechargePage> {
       );
     } else {
       // Step 3 Confirmation -> Navegar para a página de status, que tratará a iniciação
+      final state = context.read<RechargeBloc>().state;
+      String? estimatedKwh;
+      String? isFirstPurchaseOfMonth;
+
+      if (state is RechargeBreakdownLoaded) {
+        estimatedKwh = state.breakdown.calculatedKwh.toString();
+        isFirstPurchaseOfMonth = state.breakdown.isFirstPurchaseOfMonth.toString();
+      }
+
       context.go(Uri(
         path: '/recharge/status',
         queryParameters: {
           'amount': _amount,
           'meterNumber': _meterNumber,
           'meterId': _meterId,
-          'phone': ?phone,
+          if (phone != null) 'phone': phone,
           'isCodeRecharge': 'false',
+          if (estimatedKwh != null) 'estimatedKwh': estimatedKwh,
+          if (isFirstPurchaseOfMonth != null) 'isFirstPurchaseOfMonth': isFirstPurchaseOfMonth,
         },
       ).toString());
     }
