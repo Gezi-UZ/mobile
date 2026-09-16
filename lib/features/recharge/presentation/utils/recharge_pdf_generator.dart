@@ -24,28 +24,31 @@ class RechargePdfGenerator {
     final logoImage = pw.MemoryImage(logoBytes);
 
     final double totalAmount = recharge.paidAmount;
-    const bool isFirstPurchaseOfMonth = true;
     const double ratePerKwh = 7.64;
+    const double taxaIva = 0.16;
+
+    double valEnergia;
+    double iva;
+    double txRadio = 0.0;
     double txLixo = 0.0;
-    if (isFirstPurchaseOfMonth) {
-      if (totalAmount == 100.0) {
-        txLixo = 50.0;
-      } else if (totalAmount > 100.0) {
-        txLixo = 100.0;
-      }
-    }
-    const double txRadio = 0.0;
     const double dividaPaga = 0.0;
-    final double remainingAfterFees =
-        (totalAmount - txLixo - txRadio - dividaPaga).clamp(
-          0.0,
-          double.infinity,
-        );
-    final double valEnergia = remainingAfterFees / 1.16;
-    final double iva = remainingAfterFees - valEnergia;
-    final double estimatedKwh = recharge.kwhAmount > 0
+    double estimatedKwh = recharge.kwhAmount > 0
         ? recharge.kwhAmount
-        : (isCodeRecharge ? 150.0 : (remainingAfterFees / ratePerKwh));
+        : (isCodeRecharge ? 150.0 : 0.0);
+
+    if (estimatedKwh > 0 && !isCodeRecharge) {
+      valEnergia = (estimatedKwh * ratePerKwh).clamp(0.0, totalAmount);
+      iva = valEnergia * taxaIva;
+      final double deducaoTaxas = (totalAmount - (valEnergia + iva)).clamp(0.0, totalAmount);
+      if (deducaoTaxas > 0) {
+        txRadio = (deducaoTaxas >= 15.0) ? 15.0 : deducaoTaxas;
+        txLixo = (deducaoTaxas - txRadio).clamp(0.0, totalAmount);
+      }
+    } else {
+      valEnergia = totalAmount / (1.0 + taxaIva);
+      iva = totalAmount - valEnergia;
+      estimatedKwh = valEnergia / ratePerKwh;
+    }
 
     final String transactionId =
         recharge.paymentReference ??

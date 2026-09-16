@@ -12,15 +12,25 @@ class RechargeResultModel extends RechargeResult {
   });
 
   factory RechargeResultModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic raw) {
+      if (raw == null) return DateTime.now();
+      final str = raw.toString().trim();
+      if (str.isEmpty) return DateTime.now();
+      if (!str.endsWith('Z') &&
+          !str.contains('+') &&
+          !RegExp(r'-\d{2}:\d{2}$').hasMatch(str)) {
+        return (DateTime.tryParse('${str}Z') ?? DateTime.now()).toLocal();
+      }
+      return (DateTime.tryParse(str) ?? DateTime.now()).toLocal();
+    }
+
     return RechargeResultModel(
       transactionId: json['transaction_id'] ?? '',
       meterNumber: json['meter_number'] ?? '',
       amount: (json['amount'] ?? 0.0).toDouble(),
       kwh: (json['kwh'] ?? 0.0).toDouble(),
       method: json['method'] ?? 'M-Pesa',
-      timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
-          : DateTime.now(),
+      timestamp: parseDate(json['timestamp']),
       status: json['status'] ?? 'Concluído',
     );
   }

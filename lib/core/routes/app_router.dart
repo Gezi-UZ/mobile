@@ -35,14 +35,22 @@ import '../../features/home/domain/entities/recharge.dart';
 import '../../injection_container.dart';
 
 /// Routes that do NOT require authentication
-const _publicRoutes = ['/onboarding', '/login', '/pin-login', '/signup', '/passkey-setup', '/create-pin'];
+const _publicRoutes = [
+  '/onboarding',
+  '/login',
+  '/pin-login',
+  '/signup',
+  '/passkey-setup',
+  '/create-pin',
+];
 
 class AppRouter {
   static late final GoRouter router;
   static late final AuthBloc _authBloc;
 
   static void init(SharedPreferences prefs) {
-    final bool hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    final bool hasSeenOnboarding =
+        prefs.getBool('has_seen_onboarding') ?? false;
 
     // Singleton AuthBloc — drives reactive auth-based routing
     _authBloc = sl<AuthBloc>()..add(const AppStarted());
@@ -72,10 +80,7 @@ class AppRouter {
           path: '/onboarding',
           builder: (context, state) => const OnboardingPage(),
         ),
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const LoginPage(),
-        ),
+        GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
         GoRoute(
           path: '/pin-login',
           builder: (context, state) => const PinLoginPage(),
@@ -133,9 +138,10 @@ class AppRouter {
           path: '/recharge/receipt',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>? ?? {};
-            
+
             Recharge? recharge;
-            if (extra.containsKey('rechargeJson') && extra['rechargeJson'] != null) {
+            if (extra.containsKey('rechargeJson') &&
+                extra['rechargeJson'] != null) {
               final json = extra['rechargeJson'] as Map<String, dynamic>;
               recharge = Recharge(
                 id: json['id'],
@@ -143,7 +149,11 @@ class AppRouter {
                 paidAmount: json['paidAmount'],
                 currency: json['currency'],
                 rechargedAt: DateTime.parse(json['rechargedAt']),
-                status: (json['status']?.toString().toUpperCase() == 'SUCCESS' || json['status']?.toString().toUpperCase() == 'CONCLUIDA') ? RechargeStatus.success : RechargeStatus.pending,
+                status:
+                    (json['status']?.toString().toUpperCase() == 'SUCCESS' ||
+                        json['status']?.toString().toUpperCase() == 'CONCLUIDA')
+                    ? RechargeStatus.success
+                    : RechargeStatus.pending,
                 rawStatus: json['status']?.toString() ?? 'SUCCESS',
                 meterSerialNumber: json['meterSerialNumber'],
                 isMyMeter: json['isMyMeter'],
@@ -154,12 +164,14 @@ class AppRouter {
             } else {
               recharge = extra['recharge'] as Recharge?;
             }
-            
+
             final isCodeRecharge = extra['isCodeRecharge'] as bool? ?? false;
             final code = extra['code'] as String?;
-            
+
             if (recharge == null) {
-              return const Scaffold(body: Center(child: Text('Recarga não encontrada')));
+              return const Scaffold(
+                body: Center(child: Text('Recarga não encontrada')),
+              );
             }
 
             return RechargeReceiptPage(
@@ -189,9 +201,11 @@ class AppRouter {
                 meter = meterState.primaryMeter ?? meterState.meters.first;
               }
             }
-            final recharges = (extra['recharges'] as List?)?.cast<Recharge>().toList() ?? [];
+            final recharges =
+                (extra['recharges'] as List?)?.cast<Recharge>().toList() ?? [];
             return MeterDetailPage(
-              meter: meter ??
+              meter:
+                  meter ??
                   const Meter(
                     id: '',
                     alias: 'Contador',
@@ -217,9 +231,7 @@ class AppRouter {
           builder: (context, state) {
             final recharge = state.extra as Recharge;
             // Reusing RechargeReceiptPage for preview
-            return RechargeReceiptPage(
-              recharge: recharge,
-            );
+            return RechargeReceiptPage(recharge: recharge);
           },
         ),
         // ── Shell with bottom nav (protected) ─────────────────────────

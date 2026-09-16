@@ -20,7 +20,8 @@ class RechargeStepSelectMeter extends StatefulWidget {
   });
 
   @override
-  State<RechargeStepSelectMeter> createState() => _RechargeStepSelectMeterState();
+  State<RechargeStepSelectMeter> createState() =>
+      _RechargeStepSelectMeterState();
 }
 
 class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
@@ -69,16 +70,16 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                   Text(
                     'Nenhum contador associado',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Adicione um contador para realizar recargas.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -88,13 +89,17 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
 
         // Initialize selection if null
         if (_selectedMeterId == null && meters.isNotEmpty) {
-          final primary = meters.firstWhere(
-            (m) => m.isPrimary,
-            orElse: () => meters.first,
-          );
+          Meter? primary;
+          for (final m in meters) {
+            if (m.isPrimary) {
+              primary = m;
+              break;
+            }
+          }
+          primary ??= meters.first;
           _selectedMeterId = primary.id;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            widget.onMeterSelected(primary.id, primary.serialNumber);
+            widget.onMeterSelected(primary!.id, primary.serialNumber);
           });
         }
 
@@ -124,14 +129,19 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                         padding: const EdgeInsets.all(16),
                         decoration: ShapeDecoration(
                           color: isSelected
-                              ? Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground
+                              ? Theme.of(context)
+                                    .extension<AppColorsExtension>()!
+                                    .lightOrangeBackground
                               : Theme.of(context).colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 1.11,
                               color: isSelected
                                   ? AppTheme.primaryOrange
-                                  : Theme.of(context).extension<AppColorsExtension>()?.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
+                                  : Theme.of(context)
+                                            .extension<AppColorsExtension>()
+                                            ?.dividerColor ??
+                                        Colors.grey.withValues(alpha: 0.2),
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -142,7 +152,9 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                               width: 36,
                               height: 36,
                               decoration: ShapeDecoration(
-                                color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
+                                color: Theme.of(context)
+                                    .extension<AppColorsExtension>()!
+                                    .inputBackground,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -168,7 +180,9 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                             .textTheme
                                             .titleMedium
                                             ?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
                                               fontWeight: FontWeight.w700,
                                             ),
                                       ),
@@ -182,8 +196,9 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                           decoration: BoxDecoration(
                                             color: AppTheme.primaryOrange
                                                 .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
                                           ),
                                           child: Text(
                                             'Favorito',
@@ -202,11 +217,11 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                   ),
                                   Text(
                                     meter.serialNumber,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                           fontWeight: FontWeight.w500,
                                         ),
                                   ),
@@ -225,7 +240,14 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                     width: 1.11,
                                     color: isSelected
                                         ? AppTheme.primaryOrange
-                                        : Theme.of(context).extension<AppColorsExtension>()?.dividerColor ?? Colors.grey.withValues(alpha: 0.2),
+                                        : Theme.of(context)
+                                                  .extension<
+                                                    AppColorsExtension
+                                                  >()
+                                                  ?.dividerColor ??
+                                              Colors.grey.withValues(
+                                                alpha: 0.2,
+                                              ),
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -238,8 +260,9 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                                         decoration: ShapeDecoration(
                                           color: Colors.white,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -274,9 +297,9 @@ class _RechargeStepSelectMeterState extends State<RechargeStepSelectMeter> {
                       'Continuar',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),

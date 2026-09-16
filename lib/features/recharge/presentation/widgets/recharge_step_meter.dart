@@ -31,7 +31,9 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
     if (text.length == 11) {
       _validateMeter(text);
     } else {
-      if (_validatedMeter != null || _validationError != null || _isValidating) {
+      if (_validatedMeter != null ||
+          _validationError != null ||
+          _isValidating) {
         setState(() {
           _validatedMeter = null;
           _validationError = null;
@@ -95,7 +97,9 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: ShapeDecoration(
-              color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+              color: Theme.of(
+                context,
+              ).extension<AppColorsExtension>()!.lightOrangeBackground,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -136,15 +140,17 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: ShapeDecoration(
-              color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
+              color: Theme.of(
+                context,
+              ).extension<AppColorsExtension>()!.inputBackground,
               shape: RoundedRectangleBorder(
                 side: BorderSide(
                   width: 1.11,
                   color: _validatedMeter != null
                       ? Colors.green
                       : _validationError != null
-                          ? Colors.red
-                          : Colors.black.withValues(alpha: 0.08),
+                      ? Colors.red
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -175,9 +181,10 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
                       hintText: '00000000000',
                       hintStyle: Theme.of(context).textTheme.titleLarge
                           ?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.5,
-                            ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.5),
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.80,
@@ -205,11 +212,7 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
                     size: 20,
                   )
                 else if (_validationError != null)
-                  const Icon(
-                    Icons.cancel_rounded,
-                    color: Colors.red,
-                    size: 20,
-                  ),
+                  const Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
               ],
             ),
           ),
@@ -257,7 +260,8 @@ class _RechargeStepMeterState extends State<RechargeStepMeter> {
             onTap: canContinue
                 ? () {
                     final id = _validatedMeter?.id ?? '';
-                    final number = _validatedMeter?.serialNumber ?? _meterController.text;
+                    final number =
+                        _validatedMeter?.serialNumber ?? _meterController.text;
                     widget.onNext(id.isNotEmpty ? id : number, number);
                   }
                 : null,

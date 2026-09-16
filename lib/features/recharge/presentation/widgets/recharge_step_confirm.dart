@@ -37,10 +37,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
     // This ensures is_primeira_compra_mes is determined server-side correctly.
     final amount = double.tryParse(widget.amount) ?? 0.0;
     if (amount > 0 && widget.meterId.isNotEmpty) {
-      context.read<RechargeBloc>().add(CalculateBreakdownEvent(
-        amount: amount,
-        meterId: widget.meterId,
-      ));
+      context.read<RechargeBloc>().add(
+        CalculateBreakdownEvent(amount: amount, meterId: widget.meterId),
+      );
     }
   }
 
@@ -48,13 +47,13 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
   void didUpdateWidget(RechargeStepConfirm oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Refetch if amount or meterId changed (e.g. user went back and changed them)
-    if (oldWidget.amount != widget.amount || oldWidget.meterId != widget.meterId) {
+    if (oldWidget.amount != widget.amount ||
+        oldWidget.meterId != widget.meterId) {
       final amount = double.tryParse(widget.amount) ?? 0.0;
       if (amount > 0 && widget.meterId.isNotEmpty) {
-        context.read<RechargeBloc>().add(CalculateBreakdownEvent(
-          amount: amount,
-          meterId: widget.meterId,
-        ));
+        context.read<RechargeBloc>().add(
+          CalculateBreakdownEvent(amount: amount, meterId: widget.meterId),
+        );
       }
     }
   }
@@ -75,7 +74,10 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
       });
       return;
     }
-    if (!phone.startsWith('84') && !phone.startsWith('85') && !phone.startsWith('86') && !phone.startsWith('87')) {
+    if (!phone.startsWith('84') &&
+        !phone.startsWith('85') &&
+        !phone.startsWith('86') &&
+        !phone.startsWith('87')) {
       setState(() {
         _phoneError = 'O número deve começar por 84, 85, 86 ou 87';
       });
@@ -95,7 +97,7 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
     // Ping the meter to check online status
     final pingMeterUseCase = sl<PingMeter>();
     final result = await pingMeterUseCase(widget.meterId);
-    
+
     if (mounted) {
       setState(() {
         _isPinging = false;
@@ -147,12 +149,14 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
   }
 
   /// Fallback local calculation (used while the backend response loads).
-  /// Note: always assumes isFirstPurchaseOfMonth = false (conservative).
+  /// Note: assumes isFirstPurchaseOfMonth = false (conservative) unless overridden.
   _FallbackBreakdown _localFallback() {
     final double totalAmount = double.tryParse(widget.amount) ?? 0.0;
     const double ratePerKwh = 7.64;
+    const double taxaIva = 0.16;
+
     final double remainingAfterFees = totalAmount.clamp(0.0, double.infinity);
-    final double valEnergia = remainingAfterFees / 1.17;
+    final double valEnergia = remainingAfterFees / (1.0 + taxaIva);
     final double iva = remainingAfterFees - valEnergia;
     final double calculatedKwh = valEnergia / ratePerKwh;
     return _FallbackBreakdown(
@@ -183,7 +187,8 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
         final double txLixo = breakdown?.txLixo ?? fb.txLixo;
         final double txRadio = breakdown?.txRadio ?? fb.txRadio;
         final double dividaPaga = breakdown?.dividaPaga ?? fb.dividaPaga;
-        final double calculatedKwh = breakdown?.calculatedKwh ?? fb.calculatedKwh;
+        final double calculatedKwh =
+            breakdown?.calculatedKwh ?? fb.calculatedKwh;
         final bool isFirstPurchase = breakdown?.isFirstPurchaseOfMonth ?? false;
 
         return Padding(
@@ -201,7 +206,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: ShapeDecoration(
-                          color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+                          color: Theme.of(context)
+                              .extension<AppColorsExtension>()!
+                              .lightOrangeBackground,
                           shape: RoundedRectangleBorder(
                             side: const BorderSide(
                               width: 1.11,
@@ -241,9 +248,13 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                 children: [
                                   Text(
                                     'M-Pesa',
-                                    style: Theme.of(context).textTheme.titleMedium
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
                                         ?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                           fontWeight: FontWeight.w700,
                                         ),
                                   ),
@@ -251,7 +262,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                     'Vodacom M-Pesa',
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                           fontWeight: FontWeight.w500,
                                         ),
                                   ),
@@ -290,9 +303,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                       Text(
                         'Número de telemóvel M-Pesa',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
@@ -305,24 +318,41 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                         decoration: InputDecoration(
                           hintText: 'Ex: 841234567',
                           errorText: _phoneError,
-                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                          ),
+                          hintStyle: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.5),
+                              ),
                           counterText: '',
                           filled: true,
-                          fillColor: Theme.of(context).extension<AppColorsExtension>()?.inputBackground ?? const Color(0xFFF9FAFB),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          fillColor:
+                              Theme.of(context)
+                                  .extension<AppColorsExtension>()
+                                  ?.inputBackground ??
+                              const Color(0xFFF9FAFB),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EB),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE5E7EB),
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primaryOrange),
+                            borderSide: const BorderSide(
+                              color: AppTheme.primaryOrange,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -345,7 +375,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: ShapeDecoration(
-                          color: Theme.of(context).extension<AppColorsExtension>()!.lightOrangeBackground,
+                          color: Theme.of(context)
+                              .extension<AppColorsExtension>()!
+                              .lightOrangeBackground,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -355,7 +387,9 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                 child: Padding(
                                   padding: EdgeInsets.all(16.0),
                                   child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryOrange),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.primaryOrange,
+                                    ),
                                     strokeWidth: 2,
                                   ),
                                 ),
@@ -367,40 +401,60 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                     children: [
                                       Text(
                                         'Detalhes da recarga',
-                                        style: Theme.of(context).textTheme.titleSmall
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
                                             ?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
                                               fontWeight: FontWeight.w700,
                                             ),
                                       ),
                                       if (isFirstPurchase) ...[
                                         const SizedBox(width: 8),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.primaryOrange.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: AppTheme.primaryOrange
+                                                .withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             '1ª compra do mês',
-                                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                              color: AppTheme.primaryOrange,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall
+                                                ?.copyWith(
+                                                  color: AppTheme.primaryOrange,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ),
                                       ],
                                     ],
                                   ),
                                   const SizedBox(height: 12),
-                                  _SummaryRow(title: 'Contador', value: widget.meterNumber),
+                                  _SummaryRow(
+                                    title: 'Contador',
+                                    value: widget.meterNumber,
+                                  ),
                                   const SizedBox(height: 8),
-                                  _SummaryRow(title: 'Valor total', value: '${widget.amount} MT'),
+                                  _SummaryRow(
+                                    title: 'Valor total',
+                                    value: '${widget.amount} MT',
+                                  ),
                                   const SizedBox(height: 8),
                                   _SummaryRow(
                                     title: 'Val Energia',
-                                    value: '${valEnergia.toStringAsFixed(2)} MT',
+                                    value:
+                                        '${valEnergia.toStringAsFixed(2)} MT',
                                   ),
                                   const SizedBox(height: 8),
                                   _SummaryRow(
@@ -411,7 +465,8 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                     const SizedBox(height: 8),
                                     _SummaryRow(
                                       title: 'Dívida Paga',
-                                      value: '${dividaPaga.toStringAsFixed(2)} MT',
+                                      value:
+                                          '${dividaPaga.toStringAsFixed(2)} MT',
                                     ),
                                   ],
                                   if (txRadio > 0) ...[
@@ -438,11 +493,15 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                                   const SizedBox(height: 8),
                                   _SummaryRow(
                                     title: 'Crédito estimado',
-                                    value: '${calculatedKwh.toStringAsFixed(2)} kWh',
+                                    value:
+                                        '${calculatedKwh.toStringAsFixed(2)} kWh',
                                     isBold: true,
                                   ),
                                   const SizedBox(height: 8),
-                                  const _SummaryRow(title: 'Método', value: 'M-Pesa'),
+                                  const _SummaryRow(
+                                    title: 'Método',
+                                    value: 'M-Pesa',
+                                  ),
                                 ],
                               ),
                       ),
@@ -463,23 +522,23 @@ class _RechargeStepConfirmState extends State<RechargeStepConfirm> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: _isPinging 
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  child: _isPinging
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          'Confirmar pagamento · ${widget.amount} MT',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(color: Colors.white, fontSize: 16),
                         ),
-                      )
-                    : Text(
-                        'Confirmar pagamento · ${widget.amount} MT',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
                 ),
               ),
             ],
@@ -530,9 +589,9 @@ class _SummaryRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         Text(
           value,
@@ -540,10 +599,12 @@ class _SummaryRow extends StatelessWidget {
             color: isHighlighted
                 ? Colors.orange.shade700
                 : isBold
-                    ? AppTheme.primaryOrange
-                    : Theme.of(context).colorScheme.onSurface,
+                ? AppTheme.primaryOrange
+                : Theme.of(context).colorScheme.onSurface,
             fontSize: 12,
-            fontWeight: (isBold || isHighlighted) ? FontWeight.w700 : FontWeight.w600,
+            fontWeight: (isBold || isHighlighted)
+                ? FontWeight.w700
+                : FontWeight.w600,
           ),
         ),
       ],

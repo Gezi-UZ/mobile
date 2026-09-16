@@ -18,9 +18,7 @@ abstract class RechargeRemoteDataSource {
     String? phone,
   });
 
-  Future<RechargeModel> applyCode({
-    required String code,
-  });
+  Future<RechargeModel> applyCode({required String code});
 
   Stream<RechargeModel> streamRechargeStatus(String rechargeId);
 
@@ -50,10 +48,7 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     try {
       final response = await dioClient.dio.get(
         '/recharges/calculate',
-        queryParameters: {
-          'meter_id': meterId,
-          'amount_mzn': amount,
-        },
+        queryParameters: {'meter_id': meterId, 'amount_mzn': amount},
       );
       if (response.statusCode == 200) {
         final dynamic raw = response.data;
@@ -63,46 +58,76 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
         return RechargeBreakdownModel.fromJson(data);
       }
     } catch (_) {
-      // Fallback para fórmula tarifária oficial EDM (CREDELEC Doméstica)
+      // Fallback para fórmula tarifária oficial EDM/CREDELEC
     }
-
-    const double ratePerKwh = 7.64; // Tarifa Doméstica padrão EDM
-    bool isFirstPurchase = amount >= 100.0;
+    bool isFirstPurchase = false;
 
     try {
-      final history = await getRechargeHistory(meterId: meterId, page: 1, pageSize: 20);
-      final now = DateTime.now();
-      final hasPurchaseThisMonth = history.any((r) => 
-        r.createdAt.month == now.month && 
-        r.createdAt.year == now.year &&
-        (r.status.toLowerCase() == 'success' || r.status.toLowerCase() == 'concluída')
+      final history = await getRechargeHistory(
+        meterId: meterId,
+        page: 1,
+        pageSize: 20,
       );
-      if (hasPurchaseThisMonth) {
-        isFirstPurchase = false;
+      final now = DateTime.now();
+      final hasPurchaseThisMonth = history.any(
+        (r) =>
+            r.createdAt.month == now.month &&
+            r.createdAt.year == now.year &&
+            (const {
+              'success',
+              'concluída',
+              'concluida',
+              'ack_received',
+              'confirmed',
+              'mqtt_sent',
+              'confirmed_no_device',
+              'completed',
+            }.contains(r.status.toLowerCase())),
+      );
+      if (!hasPurchaseThisMonth) {
+        isFirstPurchase = true;
       }
     } catch (_) {
       // Ignorar se a busca de histórico falhar
     }
 
-    double lixoFee = 0.0;
+    const double ratePerKwh = 7.64;
+    const double taxaIva = 0.16;
+    const double taxaRadio = 15.00;
+    const double taxaLixo = 100.00;
+
+    final double maxDeducao = amount * 0.5;
+    double totalDeduzido = 0.0;
+    double txRadio = 0.0;
+    double txLixo = 0.0;
+
     if (isFirstPurchase) {
-      if (amount == 100.0) {
-        lixoFee = 50.0;
-      } else if (amount > 100.0) {
-        lixoFee = 100.0;
-      }
+      final double pagoRadio = (taxaRadio < (maxDeducao - totalDeduzido))
+          ? taxaRadio
+          : (maxDeducao - totalDeduzido);
+      txRadio = (pagoRadio > 0) ? pagoRadio : 0.0;
+      totalDeduzido += txRadio;
+
+      final double pagoLixo = (taxaLixo < (maxDeducao - totalDeduzido))
+          ? taxaLixo
+          : (maxDeducao - totalDeduzido);
+      txLixo = (pagoLixo > 0) ? pagoLixo : 0.0;
+      totalDeduzido += txLixo;
     }
-    final double netForEnergy = (amount > lixoFee) ? (amount - lixoFee) : amount;
-    final double kwh = netForEnergy / ratePerKwh;
+
+    final double restante = amount - totalDeduzido;
+    final double valEnergia = restante / (1.0 + taxaIva);
+    final double iva = restante - valEnergia;
+    final double kwh = valEnergia / ratePerKwh;
 
     return RechargeBreakdownModel(
       meterNumber: meterId,
-      totalAmount: amount,
-      valEnergia: netForEnergy,
-      iva: amount * 0.16,
+      totalAmount: double.parse(amount.toStringAsFixed(2)),
+      valEnergia: double.parse(valEnergia.toStringAsFixed(2)),
+      iva: double.parse(iva.toStringAsFixed(2)),
       dividaPaga: 0.0,
-      txRadio: 0.0,
-      txLixo: lixoFee,
+      txRadio: double.parse(txRadio.toStringAsFixed(2)),
+      txLixo: double.parse(txLixo.toStringAsFixed(2)),
       calculatedKwh: double.parse(kwh.toStringAsFixed(2)),
       isFirstPurchaseOfMonth: isFirstPurchase,
     );
@@ -115,14 +140,11 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     String? phone,
   }) async {
     try {
-      final data = {
-        'meter_id': meterId,
-        'amount_mzn': amount,
-      };
+      final data = {'meter_id': meterId, 'amount_mzn': amount};
       if (phone != null && phone.isNotEmpty) {
         data['phone'] = phone;
       }
-      
+
       final response = await dioClient.dio.post(
         '/recharges/initiate',
         data: data,
@@ -142,15 +164,11 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
   }
 
   @override
-  Future<RechargeModel> applyCode({
-    required String code,
-  }) async {
+  Future<RechargeModel> applyCode({required String code}) async {
     try {
       final response = await dioClient.dio.post(
         '/recharges/manual-code',
-        data: {
-          'recharge_code': code,
-        },
+        data: {'recharge_code': code},
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         final dynamic raw = response.data;
@@ -181,81 +199,130 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
 
   @override
   Stream<RechargeModel> streamRechargeStatus(String rechargeId) async* {
-    bool hadSuccess = false;
+    String lastStatus = 'PENDING';
+    RechargeModel? lastModel;
+
     try {
       final response = await dioClient.dio.get(
         '/recharges/$rechargeId/stream',
         options: Options(
           responseType: ResponseType.stream,
-          headers: {
-            'Accept': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-          },
+          headers: {'Accept': 'text/event-stream', 'Cache-Control': 'no-cache'},
         ),
       );
 
       final stream = response.data.stream as Stream<List<int>>;
 
-      await for (final line in stream.transform(utf8.decoder).transform(const LineSplitter())) {
+      await for (final line
+          in stream.transform(utf8.decoder).transform(const LineSplitter())) {
         if (line.startsWith('data: ')) {
           final jsonStr = line.substring(6);
           if (jsonStr.trim().isEmpty) continue;
 
           final event = jsonDecode(jsonStr);
           if (event['event'] == 'stream_end') {
-            return;
-          }
-          if (event['event'] == 'status_update') {
-            final model = RechargeModel.fromJson(event['data']);
-            // Marcar como sucesso para o fallback saber que não é preciso recuperar
             if (const {
               'CONCLUIDA',
               'SUCCESS',
               'ACK_RECEIVED',
               'CONFIRMED_NO_DEVICE',
-              'CONFIRMED',
-              'MQTT_SENT',
-            }.contains(model.status)) {
-              hadSuccess = true;
+              'FAILED',
+              'REFUNDED',
+              'EXPIRED',
+            }.contains(lastStatus)) {
+              return;
             }
-            yield model;
+            break;
           }
-        }
-      }
-    } on DioException catch (e) {
-      // Fix 1: Antes de lançar erro, tentar recuperar o estado real via GET one-shot.
-      // Isto evita mostrar tela de falha quando o M-Pesa já confirmou o pagamento
-      // mas a conexão SSE caiu entretanto (ex: mudança de rede, timeout).
-      if (!hadSuccess) {
-        try {
-          final statusResponse = await dioClient.dio.get(
-            '/recharges/$rechargeId/status',
-          );
-          if (statusResponse.statusCode == 200) {
-            final dynamic raw = statusResponse.data;
-            final Map<String, dynamic> data = (raw is Map && raw['data'] is Map)
-                ? raw['data'] as Map<String, dynamic>
-                : (raw is Map ? raw as Map<String, dynamic> : {});
-            final model = RechargeModel.fromJson(data);
-            // Se o estado real for positivo, emitir e terminar sem erro
+
+          if (event['event'] == 'status_update' && event['data'] != null) {
+            final model =
+                RechargeModel.fromJson(event['data'] as Map<String, dynamic>);
+            lastStatus = model.status.toUpperCase();
+            lastModel = model;
+            yield model;
+
             if (const {
-              'CONFIRMED',
-              'MQTT_SENT',
               'CONCLUIDA',
               'SUCCESS',
               'ACK_RECEIVED',
               'CONFIRMED_NO_DEVICE',
-            }.contains(model.status)) {
-              yield model;
+              'FAILED',
+              'REFUNDED',
+              'EXPIRED',
+            }.contains(lastStatus)) {
               return;
             }
           }
-        } catch (_) {
-          // Fallback falhou: deixar cair para o throw abaixo
         }
       }
-      throw ServerException(e.message ?? 'Network error on stream');
+    } catch (_) {
+      // SSE desconectou, falhou ou deu timeout. Passamos para o polling de fallback.
     }
+
+    // ─────────────────────────────────────────────────────────────────
+    // FALLBACK: POLLING REGULAR
+    // Se a stream SSE caiu ou encerrou antes de atingir um estado terminal,
+    // fazemos polling a /status a cada 2.5s durante até 60 segundos.
+    // ─────────────────────────────────────────────────────────────────
+    final startTime = DateTime.now();
+    const pollInterval = Duration(milliseconds: 2500);
+    const maxDuration = Duration(seconds: 60);
+
+    while (DateTime.now().difference(startTime) < maxDuration) {
+      try {
+        final statusResponse = await dioClient.dio.get(
+          '/recharges/$rechargeId/status',
+        );
+
+        if (statusResponse.statusCode == 200) {
+          final dynamic raw = statusResponse.data;
+          final Map<String, dynamic> data = (raw is Map && raw['data'] is Map)
+              ? raw['data'] as Map<String, dynamic>
+              : (raw is Map ? raw as Map<String, dynamic> : {});
+
+          if (data.isNotEmpty) {
+            final model = RechargeModel.fromJson(data);
+            lastStatus = model.status.toUpperCase();
+            lastModel = model;
+            yield model;
+
+            if (const {
+              'CONCLUIDA',
+              'SUCCESS',
+              'ACK_RECEIVED',
+              'CONFIRMED_NO_DEVICE',
+              'FAILED',
+              'REFUNDED',
+              'EXPIRED',
+            }.contains(lastStatus)) {
+              return;
+            }
+          }
+        }
+      } catch (_) {
+        // Ignora erros individuais de HTTP no polling e tenta no ciclo seguinte
+      }
+
+      await Future.delayed(pollInterval);
+    }
+
+    // Se após 60s de polling ainda não tivemos resposta terminal:
+    // Se tính tínhamos chegado a CONFIRMED ou MQTT_SENT, entregamos esse modelo final.
+    if (lastModel != null &&
+        const {
+          'CONFIRMED',
+          'MQTT_SENT',
+          'CONCLUIDA',
+          'SUCCESS',
+          'ACK_RECEIVED',
+          'CONFIRMED_NO_DEVICE',
+        }.contains(lastStatus)) {
+      yield lastModel;
+      return;
+    }
+
+    throw ServerException('Tempo limite excedido a aguardar confirmação do pagamento');
   }
 
   @override
@@ -280,14 +347,18 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
           list = raw;
         } else if (raw is Map && raw['data'] is List) {
           list = raw['data'] as List;
-        } else if (raw is Map && raw['data'] is Map && raw['data']['recharges'] is List) {
+        } else if (raw is Map &&
+            raw['data'] is Map &&
+            raw['data']['recharges'] is List) {
           list = raw['data']['recharges'] as List;
         } else if (raw is Map && raw['recharges'] is List) {
           list = raw['recharges'] as List;
         } else {
           list = [];
         }
-        return list.map((json) => RechargeModel.fromJson(json as Map<String, dynamic>)).toList();
+        return list
+            .map((json) => RechargeModel.fromJson(json as Map<String, dynamic>))
+            .toList();
       } else {
         throw ServerException('Failed to get recharge history');
       }
@@ -304,10 +375,7 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     try {
       final response = await dioClient.dio.get(
         '/recharges/dashboard',
-        queryParameters: {
-          'meter_id': meterId,
-          'period': period,
-        },
+        queryParameters: {'meter_id': meterId, 'period': period},
       );
       if (response.statusCode == 200) {
         final dynamic raw = response.data;

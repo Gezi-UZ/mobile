@@ -31,18 +31,15 @@ class AlertBloc extends Bloc<AlertEvent, AlertState> {
     emit(const AlertLoading());
 
     await _notificationsSub?.cancel();
-    _notificationsSub = null;
-
-    await emit.forEach<List<AppNotification>>(
-      watchAlerts(),
-      onData: (notifications) {
-        final unreadCount = notifications.where((n) => !n.isRead).length;
-        return AlertLoaded(
-          notifications: notifications,
-          unreadCount: unreadCount,
-        );
+    _notificationsSub = watchAlerts().listen(
+      (notifications) {
+        add(AlertsUpdated(notifications));
       },
-      onError: (error, _) => AlertError(error.toString()),
+      onError: (error) {
+        if (!isClosed) {
+          add(AlertsUpdated(const []));
+        }
+      },
     );
   }
 

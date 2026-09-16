@@ -13,7 +13,11 @@ abstract class MeterRemoteDataSource {
     required String address,
   });
   Future<MeterModel> getMeterDetails(String meterId);
-  Future<MeterModel> updateMeter(String meterId, {String? alias, bool? isPrimary});
+  Future<MeterModel> updateMeter(
+    String meterId, {
+    String? alias,
+    bool? isPrimary,
+  });
   Future<MeterModel> validateMeterBySerial(String serialNumber);
   Future<bool> pingMeter(String meterId);
 }
@@ -34,14 +38,18 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
           list = raw;
         } else if (raw is Map && raw['data'] is List) {
           list = raw['data'] as List;
-        } else if (raw is Map && raw['data'] is Map && raw['data']['meters'] is List) {
+        } else if (raw is Map &&
+            raw['data'] is Map &&
+            raw['data']['meters'] is List) {
           list = raw['data']['meters'] as List;
         } else if (raw is Map && raw['meters'] is List) {
           list = raw['meters'] as List;
         } else {
           list = [];
         }
-        return list.map((json) => MeterModel.fromJson(json as Map<String, dynamic>)).toList();
+        return list
+            .map((json) => MeterModel.fromJson(json as Map<String, dynamic>))
+            .toList();
       } else {
         throw ServerException('Failed to load meters');
       }
@@ -68,10 +76,10 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
             'latitude': latitude,
             'longitude': longitude,
             'address': address,
-          }
+          },
         },
       );
-      
+
       if (response.statusCode == 201 || response.statusCode == 200) {
         final dynamic raw = response.data;
         final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
@@ -105,7 +113,11 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
   }
 
   @override
-  Future<MeterModel> updateMeter(String meterId, {String? alias, bool? isPrimary}) async {
+  Future<MeterModel> updateMeter(
+    String meterId, {
+    String? alias,
+    bool? isPrimary,
+  }) async {
     try {
       final data = <String, dynamic>{};
       if (alias != null) data['label'] = alias;
@@ -161,7 +173,7 @@ class MeterRemoteDataSourceImpl implements MeterRemoteDataSource {
         final Map<String, dynamic> item = (raw is Map && raw['data'] is Map)
             ? raw['data'] as Map<String, dynamic>
             : raw as Map<String, dynamic>;
-        
+
         return item['is_online'] == true;
       } else {
         return false;

@@ -24,4 +24,3 @@ class ValidateMeterParams extends Equatable {
   @override
   List<Object?> get props => [serialNumber];
 }
-

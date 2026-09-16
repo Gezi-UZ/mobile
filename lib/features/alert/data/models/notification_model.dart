@@ -13,6 +13,18 @@ class NotificationModel extends AppNotification {
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic raw) {
+      if (raw == null) return DateTime.now();
+      final str = raw.toString().trim();
+      if (str.isEmpty) return DateTime.now();
+      if (!str.endsWith('Z') &&
+          !str.contains('+') &&
+          !RegExp(r'-\d{2}:\d{2}$').hasMatch(str)) {
+        return (DateTime.tryParse('${str}Z') ?? DateTime.now()).toLocal();
+      }
+      return (DateTime.tryParse(str) ?? DateTime.now()).toLocal();
+    }
+
     return NotificationModel(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -21,9 +33,7 @@ class NotificationModel extends AppNotification {
       body: json['body'] as String? ?? '',
       isRead: json['is_read'] as bool? ?? false,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(
-        json['created_at'] as String? ?? DateTime.now().toIso8601String(),
-      ),
+      createdAt: parseDate(json['created_at']),
     );
   }
 

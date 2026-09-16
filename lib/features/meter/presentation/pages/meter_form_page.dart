@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:gezi/core/theme/theme.dart';
@@ -26,6 +28,13 @@ class _MeterFormPageState extends State<MeterFormPage> {
   bool _isLoading = false;
 
   bool get isEdit => widget.meter != null;
+
+  MeterEvent MeterUpdateRequested({
+    required String meterId,
+    required String alias,
+  }) {
+    return MeterSetPrimaryRequested(meterId);
+  }
 
   @override
   void initState() {

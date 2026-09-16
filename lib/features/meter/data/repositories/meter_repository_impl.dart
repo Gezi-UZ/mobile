@@ -19,7 +19,7 @@ class MeterRepositoryImpl implements MeterRepository {
   Future<Either<Failure, List<Meter>>> getMeters() async {
     try {
       final meters = await remoteDataSource.getMeters();
-      return Right(meters);
+      return Right(List<Meter>.from(meters));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -64,9 +64,17 @@ class MeterRepositoryImpl implements MeterRepository {
   }
 
   @override
-  Future<Either<Failure, Meter>> updateMeter(String meterId, {String? alias, bool? isPrimary}) async {
+  Future<Either<Failure, Meter>> updateMeter(
+    String meterId, {
+    String? alias,
+    bool? isPrimary,
+  }) async {
     try {
-      final meter = await remoteDataSource.updateMeter(meterId, alias: alias, isPrimary: isPrimary);
+      final meter = await remoteDataSource.updateMeter(
+        meterId,
+        alias: alias,
+        isPrimary: isPrimary,
+      );
       return Right(meter);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -81,7 +89,9 @@ class MeterRepositoryImpl implements MeterRepository {
   }
 
   @override
-  Future<Either<Failure, Meter>> validateMeterBySerial(String serialNumber) async {
+  Future<Either<Failure, Meter>> validateMeterBySerial(
+    String serialNumber,
+  ) async {
     try {
       final meter = await remoteDataSource.validateMeterBySerial(serialNumber);
       return Right(meter);
@@ -94,7 +104,9 @@ class MeterRepositoryImpl implements MeterRepository {
 
   @override
   Stream<List<Meter>> watchUserMeters(String userId) {
-    return realtimeDataSource.watchUserMeters(userId);
+    return realtimeDataSource
+        .watchUserMeters(userId)
+        .map((models) => List<Meter>.from(models));
   }
 
   @override

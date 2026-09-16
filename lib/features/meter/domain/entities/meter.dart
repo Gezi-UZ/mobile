@@ -2,9 +2,9 @@ import 'package:equatable/equatable.dart';
 
 /// Tipo de ícone/avatar associado ao contador.
 enum MeterIconType {
-  home,    // Casa
-  office,  // Escritório
-  store,   // Armazém / Loja
+  home, // Casa
+  office, // Escritório
+  store, // Armazém / Loja
   generic, // Genérico
 }
 
@@ -67,20 +67,20 @@ class Meter extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        alias,
-        serialNumber,
-        isOnline,
-        isPrimary,
-        kwhBalance,
-        iconType,
-        latitude,
-        longitude,
-        address,
-        relayState,
-        lastRechargeAt,
-        lastSyncAt,
-      ];
+    id,
+    alias,
+    serialNumber,
+    isOnline,
+    isPrimary,
+    kwhBalance,
+    iconType,
+    latitude,
+    longitude,
+    address,
+    relayState,
+    lastRechargeAt,
+    lastSyncAt,
+  ];
 
   Meter copyWith({
     String? id,

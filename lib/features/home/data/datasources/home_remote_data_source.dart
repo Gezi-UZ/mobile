@@ -16,7 +16,6 @@ abstract class HomeRemoteDataSource {
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
-
   final DioClient dioClient;
 
   HomeRemoteDataSourceImpl({required this.dioClient});
@@ -32,7 +31,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           list = raw;
         } else if (raw is Map && raw['data'] is List) {
           list = raw['data'] as List;
-        } else if (raw is Map && raw['data'] is Map && raw['data']['meters'] is List) {
+        } else if (raw is Map &&
+            raw['data'] is Map &&
+            raw['data']['meters'] is List) {
           list = raw['data']['meters'] as List;
         } else if (raw is Map && raw['meters'] is List) {
           list = raw['meters'] as List;
@@ -88,7 +89,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           list = raw;
         } else if (raw is Map && raw['data'] is List) {
           list = raw['data'] as List;
-        } else if (raw is Map && raw['data'] is Map && raw['data']['recharges'] is List) {
+        } else if (raw is Map &&
+            raw['data'] is Map &&
+            raw['data']['recharges'] is List) {
           list = raw['data']['recharges'] as List;
         } else if (raw is Map && raw['recharges'] is List) {
           list = raw['recharges'] as List;

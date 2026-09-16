@@ -67,21 +67,24 @@ class _RechargePageState extends State<RechargePage> {
 
       if (state is RechargeBreakdownLoaded) {
         estimatedKwh = state.breakdown.calculatedKwh.toString();
-        isFirstPurchaseOfMonth = state.breakdown.isFirstPurchaseOfMonth.toString();
+        isFirstPurchaseOfMonth = state.breakdown.isFirstPurchaseOfMonth
+            .toString();
       }
 
-      context.go(Uri(
-        path: '/recharge/status',
-        queryParameters: {
-          'amount': _amount,
-          'meterNumber': _meterNumber,
-          'meterId': _meterId,
-          if (phone != null) 'phone': phone,
-          'isCodeRecharge': 'false',
-          if (estimatedKwh != null) 'estimatedKwh': estimatedKwh,
-          if (isFirstPurchaseOfMonth != null) 'isFirstPurchaseOfMonth': isFirstPurchaseOfMonth,
-        },
-      ).toString());
+      context.go(
+        Uri(
+          path: '/recharge/status',
+          queryParameters: {
+            'amount': _amount,
+            'meterNumber': _meterNumber,
+            'meterId': _meterId,
+            'isCodeRecharge': 'false',
+            'phone': ?phone,
+            'estimatedKwh': ?estimatedKwh,
+            'isFirstPurchaseOfMonth': ?isFirstPurchaseOfMonth,
+          },
+        ).toString(),
+      );
     }
   }
 
@@ -126,143 +129,159 @@ class _RechargePageState extends State<RechargePage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
-        child: BlocConsumer<RechargeBloc, RechargeState>(
-          listener: (context, state) {
-            if (state is RechargeError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = false; // We no longer load here on Step 3
-            
-            return Stack(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12, left: 24, right: 24, bottom: 12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: _previousPage,
-                            icon: Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              size: 20,
+          child: BlocConsumer<RechargeBloc, RechargeState>(
+            listener: (context, state) {
+              if (state is RechargeError) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+            builder: (context, state) {
+              final isLoading = false; // We no longer load here on Step 3
+
+              return Stack(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 12,
+                          left: 24,
+                          right: 24,
+                          bottom: 12,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: _previousPage,
+                              icon: Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                             ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            _title,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Text(
+                              _title,
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Step Progress Indicator
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      child: StepProgressIndicator(
-                        currentStep: _currentStep + 1,
-                        label: _stepLabel,
+                      // Step Progress Indicator
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
+                        child: StepProgressIndicator(
+                          currentStep: _currentStep + 1,
+                          label: _stepLabel,
+                        ),
                       ),
-                    ),
 
-                    // PageView Content
-                    Expanded(
-                      child: PageView(
-                        controller: _pageController,
-                        physics: const NeverScrollableScrollPhysics(), // Desativa o swipe manual
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentStep = index;
-                          });
-                        },
-                        children: widget.isForSomeone
-                            ? [
-                                RechargeStepMeter(onNext: (id, number) {
-                                  _meterId = id;
-                                  _meterNumber = number;
-                                  _nextPage(context);
-                                }),
-                                RechargeStepAmount(
-                                  isForSomeone: true,
-                                  meterNumber: _meterNumber,
-                                  meterId: _meterId,
-                                  onNext: (val) {
-                                    setState(() => _amount = val);
-                                    _nextPage(context);
-                                  },
-                                ),
-                                RechargeStepConfirm(
-                                   amount: _amount,
-                                   meterNumber: _meterNumber,
-                                   meterId: _meterId,
-                                   isForSomeone: true,
-                                   onConfirm: (phone) => _nextPage(context, phone: phone),
-                                 ),
-                              ]
-                            : [
-                                RechargeStepAmount(
-                                  isForSomeone: false,
-                                  meterNumber: _meterNumber,
-                                  meterId: _meterId,
-                                  onNext: (val) {
-                                    setState(() => _amount = val);
-                                    _nextPage(context);
-                                  },
-                                ),
-                                RechargeStepSelectMeter(
-                                  selectedMeterId: _meterId,
-                                  onMeterSelected: (id, number) {
-                                    setState(() {
+                      // PageView Content
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Desativa o swipe manual
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentStep = index;
+                            });
+                          },
+                          children: widget.isForSomeone
+                              ? [
+                                  RechargeStepMeter(
+                                    onNext: (id, number) {
                                       _meterId = id;
                                       _meterNumber = number;
-                                    });
-                                  },
-                                  onNext: () => _nextPage(context),
-                                ),
-                                RechargeStepConfirm(
-                                   amount: _amount,
-                                   meterNumber: _meterNumber,
-                                   meterId: _meterId,
-                                   isForSomeone: false,
-                                   onConfirm: (phone) => _nextPage(context, phone: phone),
-                                 ),
-                              ],
+                                      _nextPage(context);
+                                    },
+                                  ),
+                                  RechargeStepAmount(
+                                    isForSomeone: true,
+                                    meterNumber: _meterNumber,
+                                    meterId: _meterId,
+                                    onNext: (val) {
+                                      setState(() => _amount = val);
+                                      _nextPage(context);
+                                    },
+                                  ),
+                                  RechargeStepConfirm(
+                                    amount: _amount,
+                                    meterNumber: _meterNumber,
+                                    meterId: _meterId,
+                                    isForSomeone: true,
+                                    onConfirm: (phone) =>
+                                        _nextPage(context, phone: phone),
+                                  ),
+                                ]
+                              : [
+                                  RechargeStepAmount(
+                                    isForSomeone: false,
+                                    meterNumber: _meterNumber,
+                                    meterId: _meterId,
+                                    onNext: (val) {
+                                      setState(() => _amount = val);
+                                      _nextPage(context);
+                                    },
+                                  ),
+                                  RechargeStepSelectMeter(
+                                    selectedMeterId: _meterId,
+                                    onMeterSelected: (id, number) {
+                                      setState(() {
+                                        _meterId = id;
+                                        _meterNumber = number;
+                                      });
+                                    },
+                                    onNext: () => _nextPage(context),
+                                  ),
+                                  RechargeStepConfirm(
+                                    amount: _amount,
+                                    meterNumber: _meterNumber,
+                                    meterId: _meterId,
+                                    isForSomeone: false,
+                                    onConfirm: (phone) =>
+                                        _nextPage(context, phone: phone),
+                                  ),
+                                ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                if (isLoading)
-                  Container(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryOrange),
-                      ),
-                    ),
+                    ],
                   ),
-              ],
-            );
-          },
+                  if (isLoading)
+                    Container(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppTheme.primaryOrange,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
-
-

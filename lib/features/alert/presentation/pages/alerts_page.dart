@@ -54,13 +54,14 @@ class _AlertsViewState extends State<_AlertsView> {
 
   String _formatTime(DateTime dt) {
     final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'agora mesmo';
+    final localDt = dt.toLocal();
+    final diff = now.difference(localDt);
+    if (diff.isNegative || diff.inMinutes < 1) return 'agora mesmo';
     if (diff.inMinutes < 60) return 'há ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'há ${diff.inHours} horas';
+    if (diff.inHours < 24) return 'há ${diff.inHours} ${diff.inHours == 1 ? 'hora' : 'horas'}';
     if (diff.inDays == 1) return 'ontem';
     if (diff.inDays < 7) return 'há ${diff.inDays} dias';
-    return DateFormat('dd MMM', 'pt_PT').format(dt);
+    return DateFormat('dd MMM', 'pt_PT').format(localDt);
   }
 
   _NotificationStyle _styleForType(NotificationType type) {

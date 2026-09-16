@@ -10,4 +10,3 @@ class WatchUserMeters {
     return repository.watchUserMeters(userId);
   }
 }
-

@@ -31,7 +31,6 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
     on<MeterUpdatedRealtime>(_onUpdatedRealtime);
     on<MeterValidateRequested>(_onValidateRequested);
     on<MeterAddRequested>(_onAddRequested);
-    on<MeterUpdateRequested>(_onUpdateRequested);
   }
 
   Future<void> _onListRequested(
@@ -40,13 +39,12 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
   ) async {
     emit(const MeterLoading());
     final result = await getMyMeters(NoParams());
-    result.fold(
-      (failure) => emit(MeterError(message: failure.message)),
-      (meters) {
-        emit(MeterLoaded(meters: meters));
-        _subscribeToRealtime();
-      },
-    );
+    result.fold((failure) => emit(MeterError(message: failure.message)), (
+      meters,
+    ) {
+      emit(MeterLoaded(meters: meters));
+      _subscribeToRealtime();
+    });
   }
 
   void _subscribeToRealtime() {
@@ -64,13 +62,11 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
     );
   }
 
-
   void _onUpdatedRealtime(
     MeterUpdatedRealtime event,
     Emitter<MeterState> emit,
   ) {
     emit(MeterLoaded(meters: event.meters));
-    // Notificações de saldo baixo agora são geridas por Push Notifications (FCM) no backend
   }
 
   Future<void> _onSetPrimaryRequested(
@@ -85,10 +81,9 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
       }).toList();
       emit(MeterLoaded(meters: updated));
 
-      final result = await editMeter(EditMeterParams(
-        meterId: event.meterId,
-        isPrimary: true,
-      ));
+      final result = await editMeter(
+        EditMeterParams(meterId: event.meterId, isPrimary: true),
+      );
 
       result.fold(
         (failure) {
@@ -122,39 +117,19 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
     Emitter<MeterState> emit,
   ) async {
     emit(const MeterLoading());
-    final result = await registerMeter(RegisterMeterParams(
-      serialNumber: event.serialNumber,
-      alias: event.alias,
-      latitude: event.latitude,
-      longitude: event.longitude,
-      address: event.address,
-    ));
-
-    result.fold(
-      (failure) => emit(MeterError(message: failure.message)),
-      (_) {
-        add(const MeterListRequested());
-      },
+    final result = await registerMeter(
+      RegisterMeterParams(
+        serialNumber: event.serialNumber,
+        alias: event.alias,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        address: event.address,
+      ),
     );
-  }
 
-  Future<void> _onUpdateRequested(
-    MeterUpdateRequested event,
-    Emitter<MeterState> emit,
-  ) async {
-    emit(const MeterLoading());
-    final result = await editMeter(EditMeterParams(
-      meterId: event.meterId,
-      alias: event.alias,
-      isPrimary: event.isPrimary,
-    ));
-
-    result.fold(
-      (failure) => emit(MeterError(message: failure.message)),
-      (_) {
-        add(const MeterListRequested());
-      },
-    );
+    result.fold((failure) => emit(MeterError(message: failure.message)), (_) {
+      add(const MeterListRequested());
+    });
   }
 
   @override
@@ -163,4 +138,3 @@ class MeterBloc extends Bloc<MeterEvent, MeterState> {
     return super.close();
   }
 }
-

@@ -19,7 +19,11 @@ abstract class MeterRepository {
   Future<Either<Failure, Meter>> getMeterDetails(String meterId);
 
   /// Atualiza dados do contador.
-  Future<Either<Failure, Meter>> updateMeter(String meterId, {String? alias, bool? isPrimary});
+  Future<Either<Failure, Meter>> updateMeter(
+    String meterId, {
+    String? alias,
+    bool? isPrimary,
+  });
 
   /// Subscreve às atualizações em tempo real do estado do contador.
   Stream<Meter> watchMeterStatus(String meterId);

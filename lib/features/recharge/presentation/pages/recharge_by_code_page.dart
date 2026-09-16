@@ -39,7 +39,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
       if (cleanText.length > 20) {
         cleanText = cleanText.substring(0, 20);
       }
-      
+
       // Format with dashes
       String formatted = '';
       for (int i = 0; i < cleanText.length; i++) {
@@ -48,7 +48,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
         }
         formatted += cleanText[i];
       }
-      
+
       setState(() {
         _codeController.text = formatted;
       });
@@ -67,7 +67,12 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
           children: [
             // Top Bar
             Padding(
-              padding: const EdgeInsets.only(top: 12, left: 24, right: 24, bottom: 24),
+              padding: const EdgeInsets.only(
+                top: 12,
+                left: 24,
+                right: 24,
+                bottom: 24,
+              ),
               child: Row(
                 children: [
                   GestureDetector(
@@ -77,7 +82,9 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+                        border: Border.all(
+                          color: Colors.black.withValues(alpha: 0.08),
+                        ),
                       ),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
@@ -93,7 +100,8 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                       children: [
                         Text(
                           'Inserir código de recarga',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -101,8 +109,11 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         ),
                         Text(
                           'Código STS de 20 dígitos',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                         ),
@@ -112,7 +123,7 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                 ],
               ),
             ),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -126,7 +137,8 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                       children: [
                         Text(
                           'Código de recarga',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -135,7 +147,10 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         GestureDetector(
                           onTap: _pasteCode,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0x19FF6A00),
                               borderRadius: BorderRadius.circular(20),
@@ -150,7 +165,8 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                                 const SizedBox(width: 6),
                                 Text(
                                   'Colar',
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
                                         color: AppTheme.primaryOrange,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -168,7 +184,9 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).extension<AppColorsExtension>()!.inputBackground,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppColorsExtension>()!.inputBackground,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.black.withValues(alpha: 0.08),
@@ -189,19 +207,26 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                         decoration: InputDecoration(
                           hintText: 'XXXX-XXXX-XXXX-XXXX-XXXX',
                           hintStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 18,
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.80,
                           ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 20,
+                            horizontal: 16,
+                          ),
                         ),
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           _StsCodeInputFormatter(),
-                          LengthLimitingTextInputFormatter(24), // 20 digits + 4 dashes
+                          LengthLimitingTextInputFormatter(
+                            24,
+                          ), // 20 digits + 4 dashes
                         ],
                         onChanged: (val) {
                           setState(() {});
@@ -214,42 +239,54 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     Text(
                       '$digitCount/20 dígitos',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 32),
-
-
                   ],
                 ),
               ),
             ),
-            
+
             // Bottom Action
             Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24, top: 12),
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                bottom: 24,
+                top: 12,
+              ),
               child: GestureDetector(
                 onTap: digitCount == 20
                     ? () {
-                        final rawCode = _codeController.text.replaceAll('-', '');
-                        context.go(Uri(
-                          path: '/recharge/status',
-                          queryParameters: {
-                            'amount': '0',
-                            'meterNumber': '',
-                            'isCodeRecharge': 'true',
-                            'code': rawCode,
-                          },
-                        ).toString());
+                        final rawCode = _codeController.text.replaceAll(
+                          '-',
+                          '',
+                        );
+                        context.go(
+                          Uri(
+                            path: '/recharge/status',
+                            queryParameters: {
+                              'amount': '0',
+                              'meterNumber': '',
+                              'isCodeRecharge': 'true',
+                              'code': rawCode,
+                            },
+                          ).toString(),
+                        );
                       }
                     : null,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: ShapeDecoration(
-                    gradient: digitCount == 20 ? AppTheme.primaryGradient : null,
-                    color: digitCount == 20 ? null : Colors.black.withValues(alpha: 0.04),
+                    gradient: digitCount == 20
+                        ? AppTheme.primaryGradient
+                        : null,
+                    color: digitCount == 20
+                        ? null
+                        : Colors.black.withValues(alpha: 0.04),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -258,9 +295,11 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
                     'Aplicar recarga',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: digitCount == 20 ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 16,
-                        ),
+                      color: digitCount == 20
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -274,7 +313,10 @@ class _RechargeByCodePageState extends State<RechargeByCodePage> {
 
 class _StsCodeInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var text = newValue.text;
 
     if (newValue.selection.baseOffset == 0) {
@@ -285,7 +327,9 @@ class _StsCodeInputFormatter extends TextInputFormatter {
     for (int i = 0; i < text.length; i++) {
       buffer.write(text[i]);
       var nonZeroIndex = i + 1;
-      if (nonZeroIndex % 4 == 0 && nonZeroIndex != text.length && nonZeroIndex <= 20) {
+      if (nonZeroIndex % 4 == 0 &&
+          nonZeroIndex != text.length &&
+          nonZeroIndex <= 20) {
         buffer.write('-'); // Add dash after every 4 digits
       }
     }

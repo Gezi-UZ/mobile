@@ -19,7 +19,8 @@ class RechargeModel extends Recharge {
 
   factory RechargeModel.fromJson(Map<String, dynamic> json) {
     DateTime parsedDate = DateTime.now();
-    final dateStr = json['recharged_at'] ?? json['created_at'] ?? json['applied_at'];
+    final dateStr =
+        json['recharged_at'] ?? json['created_at'] ?? json['applied_at'];
     if (dateStr != null) {
       // O backend envia timestamps em UTC sem sufixo 'Z'. Forçar parse como UTC e converter para local.
       final s = dateStr.toString();
@@ -27,15 +28,18 @@ class RechargeModel extends Recharge {
       parsedDate = (DateTime.tryParse(utcStr) ?? DateTime.now()).toLocal();
     }
 
-    final rawStatus = (json['status'] ?? json['payment_status'])?.toString() ?? '';
+    final rawStatus =
+        (json['status'] ?? json['payment_status'])?.toString() ?? '';
 
     return RechargeModel(
       id: json['id'] as String? ?? json['recharge_id'] as String? ?? '',
-      kwhAmount: double.tryParse(json['kwh_amount']?.toString() ?? '') ??
+      kwhAmount:
+          double.tryParse(json['kwh_amount']?.toString() ?? '') ??
           double.tryParse(json['credit_kwh']?.toString() ?? '') ??
           double.tryParse(json['kwh']?.toString() ?? '') ??
           0.0,
-      paidAmount: double.tryParse(json['paid_amount']?.toString() ?? '') ??
+      paidAmount:
+          double.tryParse(json['paid_amount']?.toString() ?? '') ??
           double.tryParse(json['amount_mzn']?.toString() ?? '') ??
           double.tryParse(json['amount']?.toString() ?? '') ??
           0.0,
@@ -44,37 +48,41 @@ class RechargeModel extends Recharge {
       status: _parseStatus(rawStatus),
       rawStatus: rawStatus,
       meterAlias: json['meter_alias'] as String? ?? json['label'] as String?,
-      meterSerialNumber: (json['meter_serial_number'] ??
-              json['meter_number'] ??
-              json['serial_number'] ??
-              json['numero_serie'] ??
-              json['meter_id'])
-          ?.toString() ??
+      meterSerialNumber:
+          (json['meter_serial_number'] ??
+                  json['meter_number'] ??
+                  json['serial_number'] ??
+                  json['numero_serie'] ??
+                  json['meter_id'])
+              ?.toString() ??
           '',
       isMyMeter: json['is_my_meter'] as bool? ?? true,
-      paymentMethod: json['payment_method'] as String? ??
+      paymentMethod:
+          json['payment_method'] as String? ??
           json['provider'] as String? ??
           'M-Pesa',
-      paymentReference: json['referencia_mpesa'] as String? ?? json['payment_reference'] as String?,
+      paymentReference:
+          json['referencia_mpesa'] as String? ??
+          json['payment_reference'] as String?,
       tokenSts: json['token_sts'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'kwh_amount': kwhAmount,
-        'paid_amount': paidAmount,
-        'currency': currency,
-        'recharged_at': rechargedAt.toIso8601String(),
-        'status': status.name,
-        'raw_status': rawStatus,
-        'meter_alias': meterAlias,
-        'meter_serial_number': meterSerialNumber,
-        'is_my_meter': isMyMeter,
-        'payment_method': paymentMethod,
-        'referencia_mpesa': paymentReference,
-        'token_sts': tokenSts,
-      };
+    'id': id,
+    'kwh_amount': kwhAmount,
+    'paid_amount': paidAmount,
+    'currency': currency,
+    'recharged_at': rechargedAt.toIso8601String(),
+    'status': status.name,
+    'raw_status': rawStatus,
+    'meter_alias': meterAlias,
+    'meter_serial_number': meterSerialNumber,
+    'is_my_meter': isMyMeter,
+    'payment_method': paymentMethod,
+    'referencia_mpesa': paymentReference,
+    'token_sts': tokenSts,
+  };
 
   static RechargeStatus _parseStatus(String raw) {
     final upper = raw.toUpperCase();
@@ -84,14 +92,14 @@ class RechargeModel extends Recharge {
         upper == 'ACK_RECEIVED') {
       return RechargeStatus.success;
     }
-    if (upper == 'FAILED' || 
-        upper == 'FAIL' || 
-        upper == 'FALHADA' || 
-        upper == 'FALHOU' || 
-        upper == 'ERROR' || 
-        upper == 'ERRO' || 
-        upper == 'REJECTED' || 
-        upper == 'CANCELLED' || 
+    if (upper == 'FAILED' ||
+        upper == 'FAIL' ||
+        upper == 'FALHADA' ||
+        upper == 'FALHOU' ||
+        upper == 'ERROR' ||
+        upper == 'ERRO' ||
+        upper == 'REJECTED' ||
+        upper == 'CANCELLED' ||
         upper == 'REFUNDED') {
       return RechargeStatus.failed;
     }

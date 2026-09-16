@@ -93,30 +93,46 @@ class RechargeBloc extends Bloc<RechargeEvent, RechargeState> {
       onData: (recharge) {
         if (hasEmittedSuccess) return RechargeSuccess(recharge);
 
-        if (recharge.status == 'FAILED') {
+        final status = recharge.status.toUpperCase();
+
+        if (status == 'FAILED' ||
+            status == 'REFUNDED' ||
+            status == 'EXPIRED' ||
+            status == 'CANCELLED') {
           return RechargeError('Falha no pagamento');
         }
-        if (recharge.status == 'CONCLUIDA' || 
-            recharge.status == 'SUCCESS' || 
-            recharge.status == 'ACK_RECEIVED' ||
-            recharge.status == 'CONFIRMED_NO_DEVICE') {
+
+        if (status == 'CONCLUIDA' ||
+            status == 'SUCCESS' ||
+            status == 'ACK_RECEIVED' ||
+            status == 'CONFIRMED_NO_DEVICE') {
           hasEmittedSuccess = true;
           return RechargeSuccess(recharge);
         }
 
-        // Fix 3: CONFIRMED é um estado intermédio válido (pagamento M-Pesa aceite,
-        // pipeline MQTT ainda a correr). Não deve ser tratado como falha.
-        if (recharge.status == 'CONFIRMED') {
+        if (status == 'CONFIRMED') {
+          // Se o pagamento foi confirmado pelo M-Pesa, agendamos um timer de 8s
+          // para o caso de o pipeline MQTT não emitir evento seguinte a tempo.
+          Future.delayed(const Duration(seconds: 8), () {
+            if (!isClosed && state is RechargeStatusUpdated) {
+              final currentState = state as RechargeStatusUpdated;
+              final currentStatus = currentState.recharge.status.toUpperCase();
+              if (currentStatus == 'CONFIRMED' || currentStatus == 'MQTT_SENT') {
+                add(ForceRechargeSuccessEvent(currentState.recharge));
+              }
+            }
+          });
           return RechargeStatusUpdated(recharge);
         }
 
-        if (recharge.status == 'MQTT_SENT') {
+        if (status == 'MQTT_SENT') {
           // Se recebermos MQTT_SENT, damos 4 segundos ao dispositivo para enviar o ACK.
-          // Se nao enviar, forcamos o sucesso para que o utilizador veja o recibo com o token STS e tente manualmente.
+          // Se não enviar, forçamos o sucesso para que o utilizador veja o recibo com o token STS.
           Future.delayed(const Duration(seconds: 4), () {
             if (!isClosed && state is RechargeStatusUpdated) {
               final currentState = state as RechargeStatusUpdated;
-              if (currentState.recharge.status == 'MQTT_SENT') {
+              final currentStatus = currentState.recharge.status.toUpperCase();
+              if (currentStatus == 'MQTT_SENT' || currentStatus == 'CONFIRMED') {
                 add(ForceRechargeSuccessEvent(currentState.recharge));
               }
             }

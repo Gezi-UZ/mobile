@@ -22,9 +22,7 @@ class MeterStatsRow extends StatelessWidget {
             child: _buildStatCard(
               context,
               'Este mês',
-              monthlyKwh > 0
-                  ? '${monthlyKwh.toStringAsFixed(2)} kWh'
-                  : '— kWh',
+              monthlyKwh > 0 ? '${monthlyKwh.toStringAsFixed(2)} kWh' : '— kWh',
             ),
           ),
           const SizedBox(width: 12),
@@ -39,11 +37,7 @@ class MeterStatsRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: _buildStatCard(
-              context,
-              'Recargas',
-              '$rechargeCount',
-            ),
+            child: _buildStatCard(context, 'Recargas', '$rechargeCount'),
           ),
         ],
       ),

@@ -23,10 +23,10 @@ class MeterLoaded extends MeterState {
 
   Meter? get primaryMeter {
     if (meters.isEmpty) return null;
-    return meters.cast<Meter>().firstWhere(
-      (m) => m.isPrimary,
-      orElse: () => meters.first,
-    );
+    for (final m in meters) {
+      if (m.isPrimary) return m;
+    }
+    return meters.first;
   }
 
   @override
@@ -63,4 +63,3 @@ class MeterValidationFailure extends MeterState {
   @override
   List<Object?> get props => [message];
 }
-

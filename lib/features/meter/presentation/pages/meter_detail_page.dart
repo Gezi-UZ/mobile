@@ -55,7 +55,11 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
 
     // Filtrar apenas recargas bem-sucedidas do contador atual
     final successfulRecharges = recentRecharges
-        .where((r) => r.status == RechargeStatus.success && r.meterSerialNumber == meter.serialNumber)
+        .where(
+          (r) =>
+              r.status == RechargeStatus.success &&
+              r.meterSerialNumber == meter.serialNumber,
+        )
         .toList();
 
     final thisMonthRecharges = successfulRecharges
@@ -73,34 +77,41 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
     if (successfulRecharges.length >= 2) {
       final sorted = List<Recharge>.from(successfulRecharges)
         ..sort((a, b) => a.rechargedAt.compareTo(b.rechargedAt));
-      final totalIntervalDays =
-          sorted.last.rechargedAt.difference(sorted.first.rechargedAt).inDays;
+      final totalIntervalDays = sorted.last.rechargedAt
+          .difference(sorted.first.rechargedAt)
+          .inDays;
       if (totalIntervalDays > 0) {
         final totalKwh = sorted.fold(0.0, (acc, r) => acc + r.kwhAmount);
-        dailyAvgKwh =
-            (totalKwh / totalIntervalDays).clamp(0.5, 50.0);
-        daysBetweenRecharges =
-            (totalIntervalDays / (sorted.length - 1)).round().clamp(1, 90);
+        dailyAvgKwh = (totalKwh / totalIntervalDays).clamp(0.5, 50.0);
+        daysBetweenRecharges = (totalIntervalDays / (sorted.length - 1))
+            .round()
+            .clamp(1, 90);
       }
     } else if (successfulRecharges.length == 1) {
-      dailyAvgKwh =
-          (successfulRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
+      dailyAvgKwh = (successfulRecharges.first.kwhAmount / 15).clamp(1.0, 10.0);
       daysBetweenRecharges = 15;
     }
 
-    final int estimatedDaysRemaining =
-        (dailyAvgKwh > 0) ? (meter.kwhBalance / dailyAvgKwh).round() : 0;
+    final int estimatedDaysRemaining = (dailyAvgKwh > 0)
+        ? (meter.kwhBalance / dailyAvgKwh).round()
+        : 0;
 
     final hasData = successfulRecharges.isNotEmpty;
-    
+
     // 1. Dados da semana (últimos 7 dias)
     final List<ChartDataPoint> weeklyData = [];
     if (hasData) {
       for (int i = 6; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
-        final label = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+        final label =
+            '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
         final dailyKwh = successfulRecharges
-            .where((r) => r.rechargedAt.year == date.year && r.rechargedAt.month == date.month && r.rechargedAt.day == date.day)
+            .where(
+              (r) =>
+                  r.rechargedAt.year == date.year &&
+                  r.rechargedAt.month == date.month &&
+                  r.rechargedAt.day == date.day,
+            )
             .fold(0.0, (sum, r) => sum + r.kwhAmount);
         weeklyData.add(ChartDataPoint(label: label, value: dailyKwh));
       }
@@ -114,9 +125,13 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
         final startDate = endDate.subtract(const Duration(days: 6));
         final label = 'Sem ${4 - i}';
         final weeklyKwh = successfulRecharges
-            .where((r) => 
-                r.rechargedAt.isAfter(startDate.subtract(const Duration(milliseconds: 1))) && 
-                r.rechargedAt.isBefore(endDate.add(const Duration(days: 1))))
+            .where(
+              (r) =>
+                  r.rechargedAt.isAfter(
+                    startDate.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  r.rechargedAt.isBefore(endDate.add(const Duration(days: 1))),
+            )
             .fold(0.0, (sum, r) => sum + r.kwhAmount);
         monthlyData.add(ChartDataPoint(label: label, value: weeklyKwh));
       }
@@ -128,7 +143,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
       rechargeCount: successfulRecharges.length,
       daysBetweenRecharges: daysBetweenRecharges,
       estimatedDaysRemaining: estimatedDaysRemaining,
-      allRecharges: recentRecharges.where((r) => r.meterSerialNumber == meter.serialNumber).toList(),
+      allRecharges: recentRecharges
+          .where((r) => r.meterSerialNumber == meter.serialNumber)
+          .toList(),
       weeklyChartData: weeklyData,
       monthlyChartData: monthlyData,
     );
@@ -168,8 +185,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
               backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 0,
               scrolledUnderElevation: 0,
-              iconTheme:
-                  IconThemeData(color: Theme.of(context).colorScheme.onSurface),
+              iconTheme: IconThemeData(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               actions: [
                 // Botão de refresh manual
                 if (homeState is HomeLoading)
@@ -180,8 +198,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppTheme.primaryOrange),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryOrange,
+                        ),
                       ),
                     ),
                   )
@@ -189,8 +208,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
                     onPressed: () {
-                      sl<HomeBloc>()
-                          .add(const HomeDashboardLoadRequested(isRefresh: true));
+                      sl<HomeBloc>().add(
+                        const HomeDashboardLoadRequested(isRefresh: true),
+                      );
                       sl<MeterBloc>().add(const MeterListRequested());
                     },
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -227,7 +247,11 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
             bottomNavigationBar: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(
-                    left: 20, right: 20, bottom: 20, top: 12),
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                  top: 12,
+                ),
                 child: SizedBox(
                   child: PrimaryButton(
                     text: 'Recarregar este contador',
@@ -264,9 +288,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context)
-              .extension<AppColorsExtension>()!
-              .lightOrangeBackground,
+          color: Theme.of(
+            context,
+          ).extension<AppColorsExtension>()!.lightOrangeBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.primaryOrange.withValues(alpha: 0.2),
@@ -287,9 +311,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                 Text(
                   'Estimativa de Autonomia',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppTheme.darkerOrange,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: AppTheme.darkerOrange,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -298,14 +322,13 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
               'Com base na frequência das recargas (média a cada $daysBetweenRecharges dias), '
               'o seu consumo estimado é de ${dailyAvgKwh.toStringAsFixed(2)} kWh/dia.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 12,
-                  ),
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 12),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
@@ -316,18 +339,17 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                   Text(
                     'Autonomia prevista:',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   Text(
                     '~$estimatedDaysRemaining dias restantes',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: estimatedDaysRemaining <= 3
-                              ? Colors.red
-                              : AppTheme.darkerOrange,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: estimatedDaysRemaining <= 3
+                          ? Colors.red
+                          : AppTheme.darkerOrange,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -354,11 +376,11 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
           Container(
             width: 32,
             height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+            child: const Icon(
+              Icons.flash_on_rounded,
+              color: AppTheme.primaryOrange,
             ),
-            child: const Icon(Icons.flash_on_rounded,
-                color: AppTheme.primaryOrange),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -368,17 +390,16 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                 Text(
                   meter.alias,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   meter.serialNumber,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color:
-                            Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -388,8 +409,7 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
             spacing: 4,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: isOnline
                       ? const Color(0xFFDCFCE7)
@@ -413,12 +433,12 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                     Text(
                       isOnline ? 'Online' : 'Offline',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isOnline
-                                ? const Color(0xFF008236)
-                                : const Color(0xFF6B7280),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        color: isOnline
+                            ? const Color(0xFF008236)
+                            : const Color(0xFF6B7280),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -427,9 +447,9 @@ class _MeterDetailPageState extends State<MeterDetailPage> {
                 Text(
                   _formatLastSync(meter.lastSyncAt!),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 10,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                 ),
             ],
           ),

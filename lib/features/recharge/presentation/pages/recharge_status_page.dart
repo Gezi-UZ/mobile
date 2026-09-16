@@ -58,12 +58,16 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _isInBackground = state == AppLifecycleState.paused ||
+    _isInBackground =
+        state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached ||
         state == AppLifecycleState.hidden;
   }
 
-  void _showSuccessDialog(Map<String, dynamic> mappedRecharge, Recharge currentRecharge) {
+  void _showSuccessDialog(
+    Map<String, dynamic> mappedRecharge,
+    Recharge currentRecharge,
+  ) {
     if (_successDialogShown) return;
     _successDialogShown = true;
 
@@ -89,10 +93,7 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                     duration: const Duration(milliseconds: 600),
                     curve: Curves.elasticOut,
                     builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: child,
-                      );
+                      return Transform.scale(scale: value, child: child);
                     },
                     child: Container(
                       width: 80,
@@ -114,8 +115,8 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                   Text(
                     'Recarga Concluída!',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -150,41 +151,54 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
     // de forma conservadora (isFirstPurchaseOfMonth = false).
     final bool isFirstPurchaseOfMonth = widget.isFirstPurchaseOfMonth ?? false;
     const double ratePerKwh = 7.64;
-    double txLixo = 0.0;
-    if (isFirstPurchaseOfMonth) {
-      if (totalAmount == 100.0) {
-        txLixo = 50.0;
-      } else if (totalAmount > 100.0) {
-        txLixo = 100.0;
-      }
-    }
-    const double txRadio = 0.0;
-    const double dividaPaga = 0.0;
+    const double taxaIva = 0.16;
+    const double taxaRadio = 15.00;
+    const double taxaLixo = 100.00;
 
-    final double remainingAfterFees =
-        (totalAmount - txLixo - txRadio - dividaPaga).clamp(
-          0.0,
-          double.infinity,
-        );
+    final double maxDeducao = totalAmount * 0.5;
+    double totalDeduzido = 0.0;
+    double txRadio = 0.0;
+    double txLixo = 0.0;
+
+    if (isFirstPurchaseOfMonth) {
+      final double pagoRadio = (taxaRadio < (maxDeducao - totalDeduzido))
+          ? taxaRadio
+          : (maxDeducao - totalDeduzido);
+      txRadio = (pagoRadio > 0) ? pagoRadio : 0.0;
+      totalDeduzido += txRadio;
+
+      final double pagoLixo = (taxaLixo < (maxDeducao - totalDeduzido))
+          ? taxaLixo
+          : (maxDeducao - totalDeduzido);
+      txLixo = (pagoLixo > 0) ? pagoLixo : 0.0;
+      totalDeduzido += txLixo;
+    }
+
+    final double restante = totalAmount - totalDeduzido;
+    final double valEnergia = restante / (1.0 + taxaIva);
+    final double fallbackKwh = valEnergia / ratePerKwh;
+
     // Priorizar o estimatedKwh do backend; fallback local apenas se não houver
-    final double estimatedKwh = widget.estimatedKwh ?? (remainingAfterFees / ratePerKwh);
+    final double estimatedKwh = widget.estimatedKwh ?? fallbackKwh;
 
     return BlocProvider(
       create: (_) {
         final bloc = sl<RechargeBloc>();
         if (!widget.isCodeRecharge && widget.rechargeId.isNotEmpty) {
           bloc.add(StreamRechargeStatusEvent(widget.rechargeId));
-        } else if (widget.isCodeRecharge && widget.code != null && widget.code!.isNotEmpty) {
-          bloc.add(ApplyCodeEvent(
-            code: widget.code!,
-          ));
+        } else if (widget.isCodeRecharge &&
+            widget.code != null &&
+            widget.code!.isNotEmpty) {
+          bloc.add(ApplyCodeEvent(code: widget.code!));
         } else if (!widget.isCodeRecharge && widget.rechargeId.isEmpty) {
-          bloc.add(InitiateRechargeEvent(
-            amount: totalAmount,
-            meterId: widget.meterId ?? widget.meterNumber,
-            method: 'MPESA',
-            phone: widget.phone,
-          ));
+          bloc.add(
+            InitiateRechargeEvent(
+              amount: totalAmount,
+              meterId: widget.meterId ?? widget.meterNumber,
+              method: 'MPESA',
+              phone: widget.phone,
+            ),
+          );
         }
         return bloc;
       },
@@ -194,7 +208,9 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
           child: BlocConsumer<RechargeBloc, RechargeState>(
             listener: (context, state) {
               if (state is RechargeInitiated) {
-                context.read<RechargeBloc>().add(StreamRechargeStatusEvent(state.recharge.id));
+                context.read<RechargeBloc>().add(
+                  StreamRechargeStatusEvent(state.recharge.id),
+                );
               }
               if (state is RechargeSuccess) {
                 final currentRecharge = state.recharge;
@@ -206,9 +222,12 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                   'rechargedAt': currentRecharge.createdAt.toIso8601String(),
                   'status': currentRecharge.status,
                   'meterAlias': null,
-                  'meterSerialNumber': currentRecharge.meterNumber ?? widget.meterNumber,
+                  'meterSerialNumber':
+                      currentRecharge.meterNumber ?? widget.meterNumber,
                   'isMyMeter': true,
-                  'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
+                  'paymentMethod': widget.isCodeRecharge
+                      ? 'Código STS'
+                      : 'M-Pesa',
                   'tokenSts': currentRecharge.token,
                 };
 
@@ -231,7 +250,8 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                 // App em background — notificar falha
                 sl<LocalNotificationService>().showRechargeStatusNotification(
                   title: 'Falha na recarga ❌',
-                  body: 'O pagamento não foi confirmado. Nenhum valor foi cobrado.',
+                  body:
+                      'O pagamento não foi confirmado. Nenhum valor foi cobrado.',
                   rechargeId: widget.rechargeId,
                   status: 'FAILED',
                 );
@@ -251,15 +271,29 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                 status = 'FAILED';
               }
 
-              bool isMpesaConfirmed = status == 'CONFIRMED' || status == 'MQTT_SENT' || status == 'SUCCESS' || status == 'CONCLUIDA' || status == 'ACK_RECEIVED';
-              bool isApplyingCredit = status == 'CONFIRMED' || status == 'MQTT_SENT';
-              bool isConcluida = status == 'SUCCESS' || status == 'CONCLUIDA' || status == 'ACK_RECEIVED';
+              bool isMpesaConfirmed =
+                  status == 'CONFIRMED' ||
+                  status == 'MQTT_SENT' ||
+                  status == 'SUCCESS' ||
+                  status == 'CONCLUIDA' ||
+                  status == 'ACK_RECEIVED';
+              bool isApplyingCredit =
+                  status == 'CONFIRMED' || status == 'MQTT_SENT';
+              bool isConcluida =
+                  status == 'SUCCESS' ||
+                  status == 'CONCLUIDA' ||
+                  status == 'ACK_RECEIVED';
               bool isFailed = status == 'FAILED' || status == 'ERROR';
 
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 12, left: 24, right: 24, bottom: 4),
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      left: 24,
+                      right: 24,
+                      bottom: 4,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -279,27 +313,42 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 32),
+                      padding: const EdgeInsets.only(
+                        top: 24,
+                        left: 24,
+                        right: 24,
+                        bottom: 32,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            widget.isCodeRecharge ? 'Estado do código STS' : 'Estado da recarga',
+                            widget.isCodeRecharge
+                                ? 'Estado do código STS'
+                                : 'Estado da recarga',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            widget.isCodeRecharge ? 'A aplicar código' : 'A processar pagamento',
+                            widget.isCodeRecharge
+                                ? 'A aplicar código'
+                                : 'A processar pagamento',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                              fontSize: 12,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  fontSize: 12,
+                                ),
                           ),
                           const SizedBox(height: 32),
 
@@ -307,36 +356,56 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: isFailed 
-                                  ? const Color(0xFFFEE2E2) 
-                                  : (isConcluida ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7)),
+                              color: isFailed
+                                  ? const Color(0xFFFEE2E2)
+                                  : (isConcluida
+                                        ? const Color(0xFFDCFCE7)
+                                        : const Color(0xFFFEF3C7)),
                               borderRadius: BorderRadius.circular(40),
                             ),
                             child: Center(
-                              child: isFailed 
-                                  ? const Icon(Icons.error_outline_rounded, color: Colors.red, size: 40)
-                                  : (isConcluida 
-                                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFF00C950), size: 40)
-                                      : const SizedBox(
-                                          width: 40,
-                                          height: 40,
-                                          child: CircularProgressIndicator(color: AppTheme.primaryOrange, strokeWidth: 3),
-                                        )),
+                              child: isFailed
+                                  ? const Icon(
+                                      Icons.error_outline_rounded,
+                                      color: Colors.red,
+                                      size: 40,
+                                    )
+                                  : (isConcluida
+                                        ? const Icon(
+                                            Icons.check_circle_rounded,
+                                            color: Color(0xFF00C950),
+                                            size: 40,
+                                          )
+                                        : const SizedBox(
+                                            width: 40,
+                                            height: 40,
+                                            child: CircularProgressIndicator(
+                                              color: AppTheme.primaryOrange,
+                                              strokeWidth: 3,
+                                            ),
+                                          )),
                             ),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             widget.isCodeRecharge
-                                ? (isConcluida ? 'Código Válido' : 'Validando...')
-                                : (isFailed ? 'Falha no Pagamento' : '+${estimatedKwh.toStringAsFixed(1)} kWh'),
+                                ? (isConcluida
+                                      ? 'Código Válido'
+                                      : 'Validando...')
+                                : (isFailed
+                                      ? 'Falha no Pagamento'
+                                      : '+${estimatedKwh.toStringAsFixed(1)} kWh'),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: isFailed 
-                                  ? Colors.red 
-                                  : (isConcluida ? const Color(0xFF008236) : AppTheme.primaryOrange),
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: isFailed
+                                      ? Colors.red
+                                      : (isConcluida
+                                            ? const Color(0xFF008236)
+                                            : AppTheme.primaryOrange),
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -344,10 +413,13 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                                 ? 'A ser aplicado ao contador ${currentRecharge?.meterNumber ?? widget.meterNumber}'
                                 : 'adicionados ao contador ${currentRecharge?.meterNumber ?? widget.meterNumber}',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  fontSize: 14,
+                                ),
                           ),
                           const SizedBox(height: 32),
 
@@ -358,59 +430,82 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                                   ? [
                                       const _StatusStepItem(
                                         title: 'Código validado',
-                                        description: 'O código STS introduzido é válido.',
+                                        description:
+                                            'O código STS introduzido é válido.',
                                         state: StepState.completed,
                                         isLast: false,
                                       ),
                                       _StatusStepItem(
                                         title: 'A comunicar com o contador',
-                                        description: 'A aguardar confirmação do dispositivo...',
-                                        state: isConcluida ? StepState.completed : StepState.processing,
+                                        description:
+                                            'A aguardar confirmação do dispositivo...',
+                                        state: isConcluida
+                                            ? StepState.completed
+                                            : StepState.processing,
                                         isLast: false,
                                       ),
                                       _StatusStepItem(
                                         title: 'Crédito aplicado!',
-                                        description: 'A operação foi concluída com sucesso.',
-                                        state: isConcluida ? StepState.completed : StepState.pending,
+                                        description:
+                                            'A operação foi concluída com sucesso.',
+                                        state: isConcluida
+                                            ? StepState.completed
+                                            : StepState.pending,
                                         isLast: true,
                                       ),
                                     ]
                                   : [
                                       _StatusStepItem(
                                         title: 'Pagamento solicitado',
-                                        description: 'O seu pedido foi recebido.',
-                                        state: isFailed ? StepState.pending : StepState.completed,
+                                        description:
+                                            'O seu pedido foi recebido.',
+                                        state: isFailed
+                                            ? StepState.pending
+                                            : StepState.completed,
                                         isLast: false,
                                       ),
                                       _StatusStepItem(
                                         title: 'A aguardar M-Pesa',
-                                        description: 'Confirme o PIN no seu telemóvel.',
-                                        state: isFailed 
-                                            ? StepState.pending 
-                                            : (isMpesaConfirmed ? StepState.completed : StepState.processing),
+                                        description:
+                                            'Confirme o PIN no seu telemóvel.',
+                                        state: isFailed
+                                            ? StepState.pending
+                                            : (isMpesaConfirmed
+                                                  ? StepState.completed
+                                                  : StepState.processing),
                                         isLast: false,
                                       ),
                                       _StatusStepItem(
                                         title: 'A aplicar crédito',
-                                        description: 'Comunicando com o contador...',
-                                        state: isFailed 
-                                            ? StepState.pending 
-                                            : (isConcluida ? StepState.completed : (isApplyingCredit ? StepState.processing : StepState.pending)),
+                                        description:
+                                            'Comunicando com o contador...',
+                                        state: isFailed
+                                            ? StepState.pending
+                                            : (isConcluida
+                                                  ? StepState.completed
+                                                  : (isApplyingCredit
+                                                        ? StepState.processing
+                                                        : StepState.pending)),
                                         isLast: false,
                                       ),
                                       _StatusStepItem(
                                         title: 'Recarga concluída!',
-                                        description: 'Crédito adicionado com sucesso.',
-                                        state: isFailed 
-                                            ? StepState.pending 
-                                            : (isConcluida ? StepState.completed : StepState.pending),
+                                        description:
+                                            'Crédito adicionado com sucesso.',
+                                        state: isFailed
+                                            ? StepState.pending
+                                            : (isConcluida
+                                                  ? StepState.completed
+                                                  : StepState.pending),
                                         isLast: true,
                                       ),
                                     ],
                             ),
                           ),
 
-                          if (isConcluida && currentRecharge != null && _successDialogShown)
+                          if (isConcluida &&
+                              currentRecharge != null &&
+                              _successDialogShown)
                             GestureDetector(
                               onTap: () {
                                 final recharge = currentRecharge;
@@ -420,12 +515,17 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                                   'kwhAmount': recharge.creditKwh,
                                   'paidAmount': recharge.amountMzn,
                                   'currency': 'MT',
-                                  'rechargedAt': recharge.createdAt.toIso8601String(),
+                                  'rechargedAt': recharge.createdAt
+                                      .toIso8601String(),
                                   'status': recharge.status,
                                   'meterAlias': null,
-                                  'meterSerialNumber': recharge.meterNumber ?? widget.meterNumber,
+                                  'meterSerialNumber':
+                                      recharge.meterNumber ??
+                                      widget.meterNumber,
                                   'isMyMeter': true,
-                                  'paymentMethod': widget.isCodeRecharge ? 'Código STS' : 'M-Pesa',
+                                  'paymentMethod': widget.isCodeRecharge
+                                      ? 'Código STS'
+                                      : 'M-Pesa',
                                   'tokenSts': recharge.token,
                                 };
                                 context.go(
@@ -439,7 +539,9 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                               },
                               child: Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 decoration: ShapeDecoration(
                                   gradient: AppTheme.primaryGradient,
                                   shape: RoundedRectangleBorder(
@@ -450,7 +552,10 @@ class _RechargeStatusPageState extends State<RechargeStatusPage>
                                   'Ver comprovativo',
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(color: Colors.white, fontSize: 16),
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                 ),
                               ),
                             ),
@@ -512,7 +617,11 @@ class _StatusStepItem extends StatelessWidget {
         iconColor = Theme.of(context).colorScheme.surfaceContainerHighest;
         titleColor = Theme.of(context).colorScheme.onSurfaceVariant;
         lineColor = Colors.transparent;
-        iconWidget = Icon(Icons.circle, color: Theme.of(context).colorScheme.surfaceContainerHighest, size: 10);
+        iconWidget = Icon(
+          Icons.circle,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          size: 10,
+        );
         break;
     }
 

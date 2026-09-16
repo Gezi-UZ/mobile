@@ -94,9 +94,7 @@ class _HomePageState extends State<HomePage> {
                                 : profileState is ProfileUpdateSuccess
                                 ? profileState.profile.nome
                                 : 'Bem-vindo';
-                            return DashboardHeaderWidget(
-                              userName: name,
-                            );
+                            return DashboardHeaderWidget(userName: name);
                           },
                         ),
                         if (state.meterBalance.isLowBalance)
@@ -135,7 +133,9 @@ class _HomePageState extends State<HomePage> {
                               kwhBalance: activeMeter.kwhBalance,
                               meterId: activeMeter.serialNumber,
                               isOnline: activeMeter.isOnline,
-                              lastSyncAt: activeMeter.lastSyncAt ?? state.meterBalance.lastSyncAt,
+                              lastSyncAt:
+                                  activeMeter.lastSyncAt ??
+                                  state.meterBalance.lastSyncAt,
                               isLowBalance: activeMeter.kwhBalance < 5.0,
                             );
 

@@ -47,9 +47,11 @@ class _MeterListPageState extends State<MeterListPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MeterListHeader(onAddTap: () {
-                  context.push('/meters/register');
-                }),
+                _MeterListHeader(
+                  onAddTap: () {
+                    context.push('/meters/register');
+                  },
+                ),
                 const SizedBox(height: 24),
                 Expanded(
                   child: BlocConsumer<MeterBloc, MeterState>(
@@ -88,23 +90,25 @@ class _MeterListPageState extends State<MeterListPage> {
                               Text(
                                 state.message,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
+                                style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
-                                  context
-                                      .read<MeterBloc>()
-                                      .add(const MeterListRequested());
+                                  context.read<MeterBloc>().add(
+                                    const MeterListRequested(),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryOrange,
-                                  foregroundColor: Theme.of(context).colorScheme.surface,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surface,
                                 ),
                                 child: const Text('Tentar novamente'),
                               ),
@@ -127,11 +131,11 @@ class _MeterListPageState extends State<MeterListPage> {
                                 const SizedBox(height: 16),
                                 Text(
                                   'Ainda não tem contadores associados',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
+                                  style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
                                         fontWeight: FontWeight.w600,
                                       ),
                                 ),
@@ -139,11 +143,11 @@ class _MeterListPageState extends State<MeterListPage> {
                                 Text(
                                   'Adicione o seu primeiro contador para começar a gerir energia.',
                                   textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                 ),
                                 const SizedBox(height: 24),
@@ -155,7 +159,9 @@ class _MeterListPageState extends State<MeterListPage> {
                                   label: const Text('Adicionar contador'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.primaryOrange,
-                                    foregroundColor: Theme.of(context).colorScheme.surface,
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -169,9 +175,9 @@ class _MeterListPageState extends State<MeterListPage> {
                         return RefreshIndicator(
                           color: AppTheme.primaryOrange,
                           onRefresh: () async {
-                            context
-                                .read<MeterBloc>()
-                                .add(const MeterListRequested());
+                            context.read<MeterBloc>().add(
+                              const MeterListRequested(),
+                            );
                           },
                           child: ListView.separated(
                             itemCount: state.meters.length,
@@ -181,17 +187,20 @@ class _MeterListPageState extends State<MeterListPage> {
                               final meter = state.meters[index];
                               return GestureDetector(
                                 onTap: () {
-                                  context.push('/meters/detail', extra: {
-                                    'meter': meter,
-                                    'recharges': <dynamic>[],
-                                  });
+                                  context.push(
+                                    '/meters/detail',
+                                    extra: {
+                                      'meter': meter,
+                                      'recharges': <dynamic>[],
+                                    },
+                                  );
                                 },
                                 child: MeterCard(
                                   meter: meter,
                                   onSetPrimary: () {
                                     context.read<MeterBloc>().add(
-                                          MeterSetPrimaryRequested(meter.id),
-                                        );
+                                      MeterSetPrimaryRequested(meter.id),
+                                    );
                                     sl<HomeBloc>().add(
                                       const HomeDashboardLoadRequested(),
                                     );

@@ -14,23 +14,45 @@ class RechargeBreakdownModel extends RechargeBreakdown {
   });
 
   factory RechargeBreakdownModel.fromJson(Map<String, dynamic> json) {
-    return RechargeBreakdownModel(
+    final map = (json['breakdown'] is Map<String, dynamic>)
+        ? json['breakdown'] as Map<String, dynamic>
+        : json;
 
-      meterNumber: json['meter_number'] as String? ?? json['meter_id'] as String? ?? '',
-      totalAmount: (json['total_amount'] as num?)?.toDouble() ??
-          (json['montante_total'] as num?)?.toDouble() ??
-          (json['amount_mzn'] as num?)?.toDouble() ??
-          0.0,
-      valEnergia: (json['val_energia'] as num?)?.toDouble() ?? 0.0,
-      iva: (json['iva'] as num?)?.toDouble() ?? 0.0,
-      dividaPaga: (json['divida_paga'] as num?)?.toDouble() ?? 0.0,
-      txRadio: (json['tx_radio'] as num?)?.toDouble() ?? 0.0,
-      txLixo: (json['tx_lixo'] as num?)?.toDouble() ?? 0.0,
-      calculatedKwh: (json['calculated_kwh'] as num?)?.toDouble() ??
-          (json['kwh_calculado'] as num?)?.toDouble() ??
-          (json['estimated_kwh'] as num?)?.toDouble() ??
-          0.0,
-      isFirstPurchaseOfMonth: json['is_first_purchase_of_month'] as bool? ?? true,
+    double parseNum(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is num) return val.toDouble();
+      return double.tryParse(val.toString()) ?? 0.0;
+    }
+
+    return RechargeBreakdownModel(
+      meterNumber:
+          json['meter_number'] as String? ??
+          json['meter_id'] as String? ??
+          map['meter_number'] as String? ??
+          '',
+      totalAmount: parseNum(
+        map['total_amount'] ??
+            map['montante_total'] ??
+            map['amount_mzn'] ??
+            json['amount_mzn'],
+      ),
+      valEnergia: parseNum(map['val_energia']),
+      iva: parseNum(map['iva']),
+      dividaPaga: parseNum(map['divida_paga']),
+      txRadio: parseNum(map['tx_radio']),
+      txLixo: parseNum(map['tx_lixo']),
+      calculatedKwh: parseNum(
+        map['calculated_kwh'] ??
+            map['kwh_calculado'] ??
+            map['estimated_kwh'] ??
+            json['estimated_kwh'],
+      ),
+      isFirstPurchaseOfMonth:
+          map['is_primeira_compra_mes'] as bool? ??
+          map['is_first_purchase_of_month'] as bool? ??
+          json['is_primeira_compra_mes'] as bool? ??
+          json['is_first_purchase_of_month'] as bool? ??
+          false,
     );
   }
 

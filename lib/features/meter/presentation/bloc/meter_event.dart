@@ -60,22 +60,11 @@ class MeterAddRequested extends MeterEvent {
   });
 
   @override
-  List<Object?> get props => [serialNumber, alias, latitude, longitude, address];
+  List<Object?> get props => [
+    serialNumber,
+    alias,
+    latitude,
+    longitude,
+    address,
+  ];
 }
-
-/// Disparado para atualizar os dados de um contador (ex: etiqueta).
-class MeterUpdateRequested extends MeterEvent {
-  final String meterId;
-  final String? alias;
-  final bool? isPrimary;
-
-  const MeterUpdateRequested({
-    required this.meterId,
-    this.alias,
-    this.isPrimary,
-  });
-
-  @override
-  List<Object?> get props => [meterId, alias, isPrimary];
-}
-

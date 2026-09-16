@@ -28,16 +28,31 @@ class RechargeModel extends Recharge {
     return RechargeModel(
       id: json['recharge_id'] ?? json['id'] ?? '',
       meterId: json['meter_id'] ?? '',
-      amountMzn: double.tryParse(json['amount_mzn']?.toString() ?? '') ?? 0.0,
-      creditKwh: double.tryParse(json['credit_kwh']?.toString() ?? '') ?? 0.0,
+      amountMzn: double.tryParse(
+            json['amount_mzn']?.toString() ??
+                json['amount']?.toString() ??
+                json['montante_pago']?.toString() ??
+                '',
+          ) ??
+          0.0,
+      creditKwh: double.tryParse(
+            json['credit_kwh']?.toString() ??
+                json['kwh']?.toString() ??
+                json['kwh_applied']?.toString() ??
+                '',
+          ) ??
+          0.0,
       status: json['status'] ?? json['payment_status'] ?? 'UNKNOWN',
-      createdAt: parseDate(json['created_at'] ?? json['recharged_at'] ?? json['applied_at']),
+      createdAt: parseDate(
+        json['created_at'] ?? json['recharged_at'] ?? json['applied_at'],
+      ),
       token: json['token_sts']?.toString() ?? json['token']?.toString(),
       paymentMethod: json['payment_method'],
       paymentReference: json['referencia_mpesa'] ?? json['payment_reference'],
       rechargeType: json['recharge_type'] ?? 'SELF',
       otherPartyName: json['other_party_name'],
-      meterNumber: json['meter_number'] ?? json['meter_serial_number'],
+      meterNumber:
+          json['meter_number'] ?? json['meter_serial_number'] ?? json['serial'],
     );
   }
 

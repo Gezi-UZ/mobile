@@ -106,9 +106,7 @@ Future<void> init() async {
 
   // Secure Storage (hardware-backed on Android/iOS)
   sl.registerLazySingleton<FlutterSecureStorage>(
-    () => const FlutterSecureStorage(
-      aOptions: AndroidOptions(),
-    ),
+    () => const FlutterSecureStorage(aOptions: AndroidOptions()),
   );
 
   // Shared Preferences
@@ -178,21 +176,10 @@ Future<void> init() async {
       authenticateWithBiometrics: sl(),
     ),
   );
+  sl.registerFactory(() => LoginBloc(signInWithEmail: sl()));
+  sl.registerFactory(() => SignupBloc(signUpWithEmail: sl()));
   sl.registerFactory(
-    () => LoginBloc(
-      signInWithEmail: sl(),
-    ),
-  );
-  sl.registerFactory(
-    () => SignupBloc(
-      signUpWithEmail: sl(),
-    ),
-  );
-  sl.registerFactory(
-    () => RegisterBloc(
-      authenticateWithBiometrics: sl(),
-      authRepository: sl(),
-    ),
+    () => RegisterBloc(authenticateWithBiometrics: sl(), authRepository: sl()),
   );
 
   // ── Home ─────────────────────────────────────────────────────────
@@ -218,10 +205,7 @@ Future<void> init() async {
     () => MeterRemoteDataSourceImpl(dioClient: sl()),
   );
   sl.registerLazySingleton<MeterRepository>(
-    () => MeterRepositoryImpl(
-      remoteDataSource: sl(),
-      realtimeDataSource: sl(),
-    ),
+    () => MeterRepositoryImpl(remoteDataSource: sl(), realtimeDataSource: sl()),
   );
 
   // Meter Use cases
@@ -271,10 +255,7 @@ Future<void> init() async {
   // ── History ──────────────────────────────────────────────────────────────────
 
   sl.registerFactory(
-    () => HistoryCubit(
-      getRechargeHistory: sl(),
-      getDashboardStats: sl(),
-    ),
+    () => HistoryCubit(getRechargeHistory: sl(), getDashboardStats: sl()),
   );
 
   // ── Alert ────────────────────────────────────────────────────────────────────
@@ -321,9 +302,6 @@ Future<void> init() async {
 
   // ProfileBloc is a lazy singleton — shared between HomePage header and ProfilePage
   sl.registerLazySingleton(
-    () => ProfileBloc(
-      getUserProfile: sl(),
-      updateUserProfile: sl(),
-    ),
+    () => ProfileBloc(getUserProfile: sl(), updateUserProfile: sl()),
   );
 }

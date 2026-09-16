@@ -19,12 +19,14 @@ class MeterModel extends Meter {
 
   factory MeterModel.fromJson(Map<String, dynamic> json) {
     // Determine icon type based on label as a fallback if not provided
-    final label = (json['label'] as String?) ?? (json['alias'] as String?) ?? '';
+    final label =
+        (json['label'] as String?) ?? (json['alias'] as String?) ?? '';
     MeterIconType type = MeterIconType.generic;
     final lowerLabel = label.toLowerCase();
     if (lowerLabel.contains('casa')) {
       type = MeterIconType.home;
-    } else if (lowerLabel.contains('escritório') || lowerLabel.contains('office')) {
+    } else if (lowerLabel.contains('escritório') ||
+        lowerLabel.contains('office')) {
       type = MeterIconType.office;
     } else if (lowerLabel.contains('loja') || lowerLabel.contains('armazém')) {
       type = MeterIconType.store;
@@ -45,33 +47,52 @@ class MeterModel extends Meter {
     }
 
     // is_online: prefer the explicit backend field (dynamically computed), fallback to estado string
-    final isOnlineVal = json['is_online'] as bool?
-        ?? (json['estado'] == 'ONLINE' || json['status'] == 'ONLINE');
-    final relayStateVal = json['estado_rele'] as bool? ?? json['relay_state'] as bool? ?? true;
+    final isOnlineVal =
+        json['is_online'] as bool? ??
+        (json['estado'] == 'ONLINE' || json['status'] == 'ONLINE');
+    final relayStateVal =
+        json['estado_rele'] as bool? ?? json['relay_state'] as bool? ?? true;
 
     DateTime? parseDate(dynamic raw) {
       if (raw == null) return null;
       final str = raw.toString().trim();
       if (str.isEmpty) return null;
-      if (!str.endsWith('Z') && !str.contains('+') && !RegExp(r'-\d{2}:\d{2}$').hasMatch(str)) {
+      if (!str.endsWith('Z') &&
+          !str.contains('+') &&
+          !RegExp(r'-\d{2}:\d{2}$').hasMatch(str)) {
         return DateTime.tryParse('${str}Z')?.toLocal();
       }
       return DateTime.tryParse(str)?.toLocal();
     }
 
-    final lastRecharge = parseDate(json['ultima_recarga'] ?? json['last_recharge_at']);
-    final lastSync = parseDate(json['ultima_sincronizacao'] ?? json['last_seen_at']);
+    final lastRecharge = parseDate(
+      json['ultima_recarga'] ?? json['last_recharge_at'],
+    );
+    final lastSync = parseDate(
+      json['ultima_sincronizacao'] ?? json['last_seen_at'],
+    );
 
-    final idVal = (json['id'] ?? json['meter_id'] ?? json['_id'])?.toString() ?? '';
-    final serialVal = (json['serial_number'] ?? json['meter_number'] ?? json['numero_serie'] ?? json['serialNumber'] ?? json['meterNumber'])?.toString() ?? '';
+    final idVal =
+        (json['id'] ?? json['meter_id'] ?? json['_id'])?.toString() ?? '';
+    final serialVal =
+        (json['serial_number'] ??
+                json['meter_number'] ??
+                json['numero_serie'] ??
+                json['serialNumber'] ??
+                json['meterNumber'])
+            ?.toString() ??
+        '';
 
     return MeterModel(
-      id: idVal.isNotEmpty ? idVal : serialVal, // fallback to serial if id is missing
+      id: idVal.isNotEmpty
+          ? idVal
+          : serialVal, // fallback to serial if id is missing
       alias: label,
       serialNumber: serialVal,
       isOnline: isOnlineVal,
       isPrimary: json['is_primary'] as bool? ?? false,
-      kwhBalance: (json['kwh_saldo'] as num?)?.toDouble() ??
+      kwhBalance:
+          (json['kwh_saldo'] as num?)?.toDouble() ??
           (json['credit_kwh'] as num?)?.toDouble() ??
           0.0,
       iconType: type,
@@ -99,8 +120,10 @@ class MeterModel extends Meter {
           if (longitude != null) 'longitude': longitude,
           if (address != null) 'address': address,
         },
-      if (lastRechargeAt != null) 'ultima_recarga': lastRechargeAt!.toIso8601String(),
-      if (lastSyncAt != null) 'ultima_sincronizacao': lastSyncAt!.toIso8601String(),
+      if (lastRechargeAt != null)
+        'ultima_recarga': lastRechargeAt!.toIso8601String(),
+      if (lastSyncAt != null)
+        'ultima_sincronizacao': lastSyncAt!.toIso8601String(),
     };
   }
 
