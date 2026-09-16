@@ -44,22 +44,8 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
     required double amount,
     required String meterId,
   }) async {
-    // Simulando localmente até existir endpoint real
-    try {
-      final response = await dioClient.dio.get(
-        '/recharges/calculate',
-        queryParameters: {'meter_id': meterId, 'amount_mzn': amount},
-      );
-      if (response.statusCode == 200) {
-        final dynamic raw = response.data;
-        final Map<String, dynamic> data = (raw is Map && raw['data'] is Map)
-            ? raw['data'] as Map<String, dynamic>
-            : (raw is Map ? raw as Map<String, dynamic> : {});
-        return RechargeBreakdownModel.fromJson(data);
-      }
-    } catch (_) {
-      // Fallback para fórmula tarifária oficial EDM/CREDELEC
-    }
+    // Cálculo 100% local em Dart para visualização imediata no frontend,
+    // alinhado com a fórmula oficial CREDELEC do backend.
     bool isFirstPurchase = false;
 
     try {
@@ -84,11 +70,11 @@ class RechargeRemoteDataSourceImpl implements RechargeRemoteDataSource {
               'completed',
             }.contains(r.status.toLowerCase())),
       );
-      if (!hasPurchaseThisMonth) {
+      if (!hasPurchaseThisMonth && history.isNotEmpty) {
         isFirstPurchase = true;
       }
     } catch (_) {
-      // Ignorar se a busca de histórico falhar
+      // Por omissão assume false se não houver histórico carregado
     }
 
     const double ratePerKwh = 7.64;
